@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>아파트 화재 세대별 대피현황판</title>
+<!-- 화면 캡처를 위한 html2canvas 라이브러리 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
     --ink:#0f172a;
@@ -14,7 +16,7 @@
     --evac:#16a34a;        
     --rescue:#e11d48;      
     --locked:#64748b;      
-    --clear-bg:#10b981;    /* 이상없음 초록색 배경 */
+    --clear-bg:#10b981;    
     --normal:#334155;
     --panel-bg:#ffffff;
     --panel-border:#e2e8f0;
@@ -72,6 +74,8 @@
   .field select{width:160px;}
   .field input:focus, .field select:focus{border-color:var(--accent);}
   .field input.wide{width:260px;}
+  
+  /* 하단 툴바 버튼 공통 스타일 */
   button{
     padding:10px 16px;border:none;border-radius:8px;background:var(--accent);
     color:#fff;font-size:13px;cursor:pointer;font-weight:700;
@@ -80,17 +84,24 @@
     -webkit-tap-highlight-color: transparent; 
   }
   button:active{transform:scale(0.98);}
-  button.secondary{
-    background:#f8fafc;color:var(--navy);border:1px solid #cbd5e1;box-shadow:none;
+  button.small{padding:6px 10px;font-size:11.5px;}
+  button:hover{filter:brightness(0.95);}
+  
+  /* 툴바 커스텀 버튼 (교통사고 현황판 스타일 반영) */
+  button.success-outline{
+    background:#fff;color:var(--clear-bg);border:1px solid #6ee7b7;box-shadow:none;
+    display:flex;align-items:center;justify-content:center;gap:4px;
   }
-  button.secondary:hover{background:#f1f5f9;border-color:#94a3b8;}
+  button.success-outline:hover{background:#ecfdf5;border-color:var(--clear-bg);filter:none;}
+  button.secondary{
+    background:#fff;color:var(--navy);border:1px solid #cbd5e1;box-shadow:none;
+  }
+  button.secondary:hover{background:#f8fafc;border-color:#94a3b8;filter:none;}
   button.danger{
     background:#fff1f2;color:var(--rescue);border:1px solid #fecdd3;box-shadow:none;
   }
-  button.danger:hover{background:#ffe4e6;border-color:#fda4af;}
-  button.small{padding:6px 10px;font-size:11.5px;}
-  button:hover{filter:brightness(0.95);}
-  button.secondary:hover, button.danger:hover{filter:none;}
+  button.danger:hover{background:#ffe4e6;border-color:#fda4af;filter:none;}
+
   #titleLine{
     color:#fff;
   }
@@ -267,15 +278,15 @@
     .board-header{flex-wrap:wrap;gap:12px;padding:16px;}
     .board-title{font-size:18px;}
     .modal{width:92vw;max-width:360px;max-height:88vh;overflow-y:auto;padding:20px;}
-    .toolbar{justify-content:stretch;flex-wrap:wrap;}
+    .toolbar{justify-content:stretch;flex-wrap:wrap;gap:8px;}
     .toolbar button{flex:1;}
   }
 
-  /* 인쇄 / 캡처 최적화 스타일 (여백 및 불필요한 요소 숨김) */
+  /* 인쇄 최적화 스타일 */
   @media print{
     body{background:#fff;padding:0;margin:0;}
     body::before {display:none !important;} 
-    .panel, .toolbar, .board-topbar, #setupScreen, .floor-controls button{display:none !important;}
+    .panel, .toolbar, .board-topbar, #setupScreen, .floor-controls button, #autosaveNote{display:none !important;}
     .wrap{max-width:100%; margin:0; padding:0;}
     .board-header{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:none;border-radius:0;margin-bottom:10px;}
     .stat-card{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:none;break-inside:avoid;}
@@ -353,8 +364,10 @@
     <div id="autosaveNote" style="font-size:11px;color:#94a3b8;text-align:right;margin-top:10px;font-weight:600;"></div>
 
     <div class="toolbar" id="toolbar" style="display:none;">
-      <button type="button" class="secondary" onclick="window.print()">보고서 인쇄 / 이미지 저장</button>
-      <button type="button" class="danger" onclick="resetAll()">초기화 (DB 전체삭제)</button>
+      <!-- 교통사고 현황판 스타일 적용 및 전체 화면 캡처 추가 -->
+      <button type="button" class="success-outline" onclick="captureScreen()">📷 전체 화면 캡처</button>
+      <button type="button" class="secondary" onclick="window.print()">인쇄 / PDF 저장</button>
+      <button type="button" class="danger" onclick="resetAll()">초기화</button>
     </div>
   </div>
 </div>
@@ -393,6 +406,44 @@ function showSetupScreen(){
   document.getElementById('setupScreen').style.display='block';
   document.getElementById('boardScreen').style.display='none';
   window.scrollTo(0,0);
+}
+
+// 화면 캡처 기능
+function captureScreen() {
+  const toolbar = document.getElementById('toolbar');
+  const topbar = document.querySelector('.board-topbar');
+  const autosaveNote = document.getElementById('autosaveNote');
+  
+  // 캡처 시 불필요한 영역 임시 숨김
+  toolbar.style.display = 'none';
+  topbar.style.display = 'none';
+  autosaveNote.style.display = 'none';
+  
+  html2canvas(document.body, { 
+    scale: window.devicePixelRatio || 2, 
+    useCORS: true,
+    backgroundColor: "#f1f5f9"
+  }).then(canvas => {
+    // 숨겼던 영역 원상복구
+    toolbar.style.display = 'flex';
+    topbar.style.display = 'flex';
+    autosaveNote.style.display = 'block';
+    
+    // 파일명 생성 및 다운로드 실행
+    const link = document.createElement('a');
+    const now = new Date();
+    const timeStr = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + "_" + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0');
+    
+    link.download = '아파트대피현황판_' + timeStr + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }).catch(err => {
+    console.error("캡처 오류:", err);
+    alert("화면 캡처 중 오류가 발생했습니다.");
+    toolbar.style.display = 'flex';
+    topbar.style.display = 'flex';
+    autosaveNote.style.display = 'block';
+  });
 }
 
 function saveState(){
@@ -770,8 +821,8 @@ function render(){
       const cc = u.clearCount || 0;
       if(cc > 0) clearTotal += cc;
       
-      const ec = u.evacCount || (u.status==='evac'? u.count : 0) || 0;
-      const rc = u.rescueCount || (u.status==='rescue'? u.count : 0) || 0;
+      const ec = u.evacCount || 0;
+      const rc = u.rescueCount || 0;
       
       if(ec > 0){
         evacTotal += ec; evacSelfTotal += ec;
@@ -863,7 +914,7 @@ function render(){
       const u = fl.units[ui];
       
       const cc = u.clearCount || 0;
-      const isClearActive = cc > 0; // 안전 대기 인원이 있으면 초록색 활성화
+      const isClearActive = cc > 0; 
 
       // 배경색 우선순위: 발화지점 > 연소확대 > 이상없음(안전대기) > 문잠김(회색)
       let bg = u.origin ? 'var(--origin)' : (u.spread ? 'var(--spread)' : (isClearActive ? 'var(--clear-bg)' : (u.isLocked ? 'var(--locked)' : '')));
@@ -874,11 +925,11 @@ function render(){
       if(isClearActive) bodyHtml += `<div class="tag-clear">✅ 이상없음 ${cc}명</div>`;
       if(u.isLocked) bodyHtml += `<div class="tag-locked">🔒 문잠김</div>`;
       
-      const ec = u.evacCount || (u.status==='evac'? u.count : 0) || 0;
+      const ec = u.evacCount || 0;
       if(ec > 0) bodyHtml += `<div class="tag-evac">자력대피 ${ec}명</div>`;
       if(u.evacDetails && u.evacDetails.length) bodyHtml += `<div class="status-note">${u.evacDetails.map(d=>'· '+d).join('<br>')}</div>`;
       
-      const rc = u.rescueCount || (u.status==='rescue'? u.count : 0) || 0;
+      const rc = u.rescueCount || 0;
       if(rc > 0) bodyHtml += `<div class="tag-rescue">구조 ${rc}명</div>`;
       if(u.rescueDetails && u.rescueDetails.length) bodyHtml += `<div class="status-note">${u.rescueDetails.map(d=>'· '+d).join('<br>')}</div>`;
 
