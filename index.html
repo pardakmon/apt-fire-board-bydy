@@ -145,7 +145,6 @@
   .stat-card.rescue{border-top:4px solid var(--rescue);}
   .stat-card.evac{border-top:4px solid var(--evac);}
   .stat-card.clear{border-top:4px solid var(--clear-bg);}
-  
   .board-header{
     display:flex;align-items:center;gap:16px;margin-bottom:14px;
     background:linear-gradient(135deg, var(--navy), #334155);
@@ -165,7 +164,6 @@
   .legend{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:8px;font-size:12px;font-weight:600;}
   .legend span{display:inline-flex;align-items:center;gap:6px;}
   .swatch{width:16px;height:16px;display:inline-block;border-radius:4px;}
-  
   #boardHolder{
     overflow-x:auto;-webkit-overflow-scrolling:touch;
     border-radius:12px;
@@ -209,8 +207,8 @@
   .tag-rescue { background: #ffe4e6; color: #e11d48; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #fda4af; }
   
   .status-note{font-size:11px;color:#475569;font-weight:500;margin-top:2px;}
-  .origin-tag{color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;gap:4px;background:rgba(0,0,0,0.25);border-radius:6px;padding:2px 6px;margin-top:4px;}
-  .spread-tag{color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;gap:4px;margin-top:4px;font-size:11.5px;background:rgba(0,0,0,0.15);border-radius:6px;padding:2px 6px;}
+  .origin-tag{color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;gap:4px;background:rgba(0,0,0,0.25);border-radius:6px;padding:4px 6px;margin-top:4px;}
+  .spread-tag{color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;gap:4px;margin-top:4px;font-size:11.5px;background:rgba(0,0,0,0.15);border-radius:6px;padding:4px 6px;}
   .noissue-row td{background:#f8fafc;font-size:13.5px;color:#475569;padding:10px;font-weight:600;}
   
   td.unit-cell.is-origin .unit-no, td.unit-cell.is-origin .status-note,
@@ -223,7 +221,6 @@
   td.unit-cell.is-clear .tag-clear, td.unit-cell.is-clear .tag-locked, td.unit-cell.is-clear .tag-evac, td.unit-cell.is-clear .tag-rescue,
   td.unit-cell.is-locked .tag-clear, td.unit-cell.is-locked .tag-locked, td.unit-cell.is-locked .tag-evac, td.unit-cell.is-locked .tag-rescue { background: rgba(255,255,255,0.2); color: #fff; border-color: transparent; }
   
-  .fire-icon{display:inline-block;vertical-align:middle;width:20px;height:20px;margin-right:4px;}
   .legend .swatch.origin-sw{background:var(--origin);}
   .legend .swatch.spread-sw{background:var(--spread);}
   .legend .swatch.clear-sw{background:var(--clear-bg);}
@@ -367,9 +364,11 @@
         </div>
       </div>
       <div id="summaryCards" class="stat-cards"></div>
+      
+      <!-- 🌟 범례 이모티콘 텍스트로 수정 -->
       <div class="legend">
-        <span><span class="swatch origin-sw"></span><span id="legendFireIcon"></span>발화지점</span>
-        <span><span class="swatch spread-sw"></span><span id="legendSpreadIcon"></span>연소확대</span>
+        <span><span class="swatch origin-sw"></span>🔥 발화지점</span>
+        <span><span class="swatch spread-sw"></span>💥 연소확대</span>
         <span><span class="swatch clear-sw"></span>✅ 안전대기(이상없음)</span>
         <span><span class="swatch locked-sw"></span>🔒 문잠김(미확인)</span>
       </div>
@@ -433,18 +432,14 @@ function captureBoard() {
   const topbar = document.querySelector('.board-topbar');
   const autosaveNote = document.getElementById('autosaveNote');
 
-  // 스크롤 맨 위로 올림
   window.scrollTo(0, 0);
 
-  // [최적화 1] 메모리 폭발 주범인 워터마크 임시 강제 숨김
   captureTarget.classList.add('hide-watermark');
 
-  // 불필요 UI 숨김
   toolbar.style.display = 'none';
   topbar.style.display = 'none';
   autosaveNote.style.display = 'none';
 
-  // [최적화 2] 레이아웃 확장 (무한정 넓어지지 않도록 정확한 픽셀 고정)
   const origOverflow = boardHolder.style.overflow;
   const origMaxWidth = mainWrap.style.maxWidth;
   const origWidth = captureTarget.style.width;
@@ -453,15 +448,13 @@ function captureBoard() {
   mainWrap.style.maxWidth = 'none';
   captureTarget.style.width = Math.max(captureTarget.offsetWidth, boardHolder.scrollWidth) + 'px';
 
-  // 렌더링 여유 시간 확보
   setTimeout(() => {
     html2canvas(captureTarget, {
-      scale: 1.5, // 화질과 메모리 타협점 1.5
+      scale: 1.5,
       useCORS: true,
-      logging: false, // 찌꺼기 메모리 생성 방지
+      logging: false,
       backgroundColor: "#f1f5f9"
     }).then(canvas => {
-      // 화면 원상복구
       captureTarget.classList.remove('hide-watermark');
       boardHolder.style.overflow = origOverflow;
       mainWrap.style.maxWidth = origMaxWidth;
@@ -471,10 +464,8 @@ function captureBoard() {
       topbar.style.display = 'flex';
       autosaveNote.style.display = 'block';
 
-      // [최적화 3] 모바일 메모리 킬러인 무손실 PNG 대신 가벼운 JPEG 포맷으로 변환
       const imgData = canvas.toDataURL('image/jpeg', 0.9);
 
-      // 모달창 띄우기
       const overlay = document.createElement('div');
       overlay.className = 'overlay';
       overlay.id = 'captureOverlay';
@@ -586,16 +577,6 @@ function syncUnitsCountFromPattern(){
   document.getElementById('unitsCount').value = pattern.length || 1;
 }
 
-const FIRE_ICON_SVG = `<svg class="fire-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-  <path d="M12 2C12 2 7 7.5 7 12.5C7 16.09 9.69 19 13 19C16.31 19 19 16.5 19 13.2C19 10.6 17.3 9 17.3 9C17.3 9 17.6 11.2 16.1 12.3C16.6 9.5 15 6.8 12 2Z" fill="#fff2e0"/>
-  <path d="M12 6C12 6 9.2 10 9.2 13.2C9.2 15.5 10.9 17.2 13 17.2C15.1 17.2 16.8 15.5 16.8 13.2C16.8 11.5 15.7 10.3 15.7 10.3C15.7 10.3 15.8 11.8 14.9 12.4C15.2 10.6 14.2 8.7 12 6Z" fill="#c8280a"/>
-</svg>`;
-
-const SPREAD_ICON_SVG = `<svg class="fire-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-  <path d="M7 4C7 4 4.5 8 4.5 11C4.5 13.2 6.1 15 8.2 15C10.3 15 11.8 13.3 11.8 11.2C11.8 9.8 11 8.8 11 8.8C11 8.8 11.1 9.9 10.4 10.4C10.6 8.9 9.8 7.2 7 4Z" fill="none" stroke="#fff" stroke-width="1.3"/>
-  <path d="M15.5 3C15.5 3 12 8.4 12 12.4C12 15.4 14.3 18 17.1 18C19.9 18 22 15.5 22 12.6C22 10.4 20.6 9 20.6 9C20.6 9 20.8 11 19.6 11.9C20 9.6 18.7 7.1 15.5 3Z" fill="none" stroke="#fff" stroke-width="1.5"/>
-</svg>`;
-
 const APT_FIRE_ICON_SVG = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
   <rect x="10" y="36" width="15" height="24" rx="1.5" fill="#e2e8f0"/>
   <rect x="27" y="30" width="17" height="30" rx="1.5" fill="#cbd5e1"/>
@@ -704,7 +685,6 @@ function openEditor(floorIdx, unitIdx){
   overlay.className='overlay';
   overlay.id='editorOverlay';
   
-  // 🌟 요청하신 🔥 발화지점, 💥 연소확대 이모티콘을 추가했습니다!
   overlay.innerHTML = `
     <div class="modal" style="z-index:100;">
       <h3>${u.no}호 현황 입력</h3>
@@ -867,8 +847,6 @@ window.__cellClick = function(td){
 
 function render(){
   document.getElementById('toolbar').style.display='flex';
-  document.getElementById('legendFireIcon').innerHTML = FIRE_ICON_SVG;
-  document.getElementById('legendSpreadIcon').innerHTML = SPREAD_ICON_SVG;
   document.getElementById('iconBadge').innerHTML = APT_FIRE_ICON_SVG;
   const name = document.getElementById('bldgName').value.trim();
   document.getElementById('titleLine').textContent = name || '';
@@ -993,8 +971,9 @@ function render(){
       if(rc > 0) bodyHtml += `<div class="tag-rescue">구조 ${rc}명</div>`;
       if(u.rescueDetails && u.rescueDetails.length) bodyHtml += `<div class="status-note">${u.rescueDetails.map(d=>'· '+d).join('<br>')}</div>`;
 
-      const originTag = u.origin ? `<div class="origin-tag">${FIRE_ICON_SVG}발화지점</div>` : '';
-      const spreadTag = (!u.origin && u.spread) ? `<div class="spread-tag">${SPREAD_ICON_SVG}연소확대</div>` : '';
+      // 🌟 셀 내부 태그도 텍스트 이모티콘으로 수정 완료
+      const originTag = u.origin ? `<div class="origin-tag">🔥 발화지점</div>` : '';
+      const spreadTag = (!u.origin && u.spread) ? `<div class="spread-tag">💥 연소확대</div>` : '';
       
       html += `<td class="${cellCls}" data-fi="${i}" data-ui="${ui}" onclick="__cellClick(this)" style="${bg?('background:'+bg+';'):''}">
         <div class="unit-no">${u.no}호</div>
