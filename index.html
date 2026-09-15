@@ -13,7 +13,7 @@
     --spread:#ea580c;      
     --evac:#16a34a;        
     --rescue:#e11d48;      
-    --locked:#8b5cf6;
+    --locked:#64748b;      /* 문잠김 차분한 슬레이트 회색으로 변경 */
     --clear-bg:#10b981;    /* 이상없음 초록색 배경 */
     --normal:#334155;
     --panel-bg:#ffffff;
@@ -65,11 +65,12 @@
   .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:12px;}
   .field{display:flex;flex-direction:column;gap:6px;}
   .field label{font-size:12px;color:#64748b;font-weight:600;}
-  .field input{
+  .field input, .field select{
     padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;width:140px;
-    outline:none; transition:border-color 0.2s;
+    outline:none; transition:border-color 0.2s; background:#fff;
   }
-  .field input:focus{border-color:var(--accent);}
+  .field select{width:160px;}
+  .field input:focus, .field select:focus{border-color:var(--accent);}
   .field input.wide{width:260px;}
   button{
     padding:10px 16px;border:none;border-radius:8px;background:var(--accent);
@@ -172,7 +173,7 @@
   
   /* 카테고리별 태그 디자인 */
   .tag-clear { background: #f1f5f9; color: #475569; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #cbd5e1; }
-  .tag-locked { background: #f3e8ff; color: #7e22ce; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #d8b4fe; }
+  .tag-locked { background: #f1f5f9; color: var(--locked); font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #cbd5e1; }
   .tag-evac { background: #dcfce7; color: #15803d; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #86efac; }
   .tag-rescue { background: #ffe4e6; color: #e11d48; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #fda4af; }
   
@@ -189,7 +190,8 @@
   
   td.unit-cell.is-origin .tag-clear, td.unit-cell.is-origin .tag-locked, td.unit-cell.is-origin .tag-evac, td.unit-cell.is-origin .tag-rescue,
   td.unit-cell.is-spread .tag-clear, td.unit-cell.is-spread .tag-locked, td.unit-cell.is-spread .tag-evac, td.unit-cell.is-spread .tag-rescue,
-  td.unit-cell.is-clear .tag-clear, td.unit-cell.is-clear .tag-locked, td.unit-cell.is-clear .tag-evac, td.unit-cell.is-clear .tag-rescue { background: rgba(255,255,255,0.2); color: #fff; border-color: transparent; }
+  td.unit-cell.is-clear .tag-clear, td.unit-cell.is-clear .tag-locked, td.unit-cell.is-clear .tag-evac, td.unit-cell.is-clear .tag-rescue,
+  td.unit-cell.is-locked .tag-clear, td.unit-cell.is-locked .tag-locked, td.unit-cell.is-locked .tag-evac, td.unit-cell.is-locked .tag-rescue { background: rgba(255,255,255,0.2); color: #fff; border-color: transparent; }
   
   .fire-icon{display:inline-block;vertical-align:middle;width:20px;height:20px;margin-right:4px;}
   .legend .swatch.origin-sw{background:var(--origin);}
@@ -259,7 +261,7 @@
     .panel{padding:16px;}
     .row{flex-direction:column;align-items:stretch;gap:12px;}
     .field{width:100%;}
-    .field input, .field input.wide{width:100%;}
+    .field input, .field input.wide, .field select{width:100%;}
     .setup-stepper{width:100%;}
     .setup-stepper input{width:auto;}
     .board-header{flex-wrap:wrap;gap:12px;padding:16px;}
@@ -290,6 +292,14 @@
       <div class="row">
         <div class="field"><label>최고층</label><input type="number" id="topFloor" value="12"></div>
         <div class="field"><label>최저층</label><input type="number" id="botFloor" value="1"></div>
+        <div class="field">
+          <label>4층 표기/제외 옵션</label>
+          <select id="skip4Floor">
+            <option value="none">기본 (4층 포함)</option>
+            <option value="skip">4층 완전 제외 (건너뛰기)</option>
+            <option value="f_floor">4층을 'F층'으로 표기</option>
+          </select>
+        </div>
         <div class="field">
           <label>층별 세대수</label>
           <div class="stepper-row setup-stepper">
@@ -388,6 +398,7 @@ function saveState(){
       bldgName: document.getElementById('bldgName').value,
       topFloor: document.getElementById('topFloor').value,
       botFloor: document.getElementById('botFloor').value,
+      skip4Floor: document.getElementById('skip4Floor').value,
       unitPattern: document.getElementById('unitPattern').value,
       unitsCount: document.getElementById('unitsCount').value,
       floors: floors,
@@ -425,6 +436,7 @@ dbRef.on('value', (snapshot) => {
   document.getElementById('bldgName').value = state.bldgName || '';
   document.getElementById('topFloor').value = state.topFloor || 12;
   document.getElementById('botFloor').value = state.botFloor || 1;
+  document.getElementById('skip4Floor').value = state.skip4Floor || 'none';
   document.getElementById('unitPattern').value = state.unitPattern || '01,02,03,04';
   document.getElementById('unitsCount').value = state.unitsCount || 4;
   floors = state.floors || [];
@@ -495,24 +507,34 @@ const APT_FIRE_ICON_SVG = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/200
 function generateBoard(){
   const top = parseInt(document.getElementById('topFloor').value);
   const bot = parseInt(document.getElementById('botFloor').value);
+  const skipOption = document.getElementById('skip4Floor').value;
   const pattern = document.getElementById('unitPattern').value.split(',').map(s=>s.trim()).filter(Boolean);
   if(isNaN(top) || isNaN(bot) || top < bot){ alert('최고층/최저층을 확인하세요.'); return; }
   if(pattern.length===0){ alert('호수 패턴을 입력하세요.'); return; }
 
-  const oldFloorByNum = {};
-  floors.forEach(fl => { oldFloorByNum[fl.floor] = fl; });
+  const oldFloorByName = {};
+  floors.forEach(fl => { oldFloorByName[String(fl.floor)] = fl; });
 
   const newFloors = [];
   for(let f = top; f >= bot; f--){
-    const oldFl = oldFloorByNum[f];
+    if(f === 4 && skipOption === 'skip') continue; // 4층 건너뛰기
+
+    let floorName = String(f);
+    let floorPrefix = String(f);
+    if(f === 4 && skipOption === 'f_floor'){
+      floorName = 'F';
+      floorPrefix = 'F';
+    }
+
+    const oldFl = oldFloorByName[floorName];
     const oldUnitsByNo = {};
     if(oldFl) oldFl.units.forEach(u => { oldUnitsByNo[u.no] = u; });
+
     newFloors.push({
-      floor:f,
+      floor: floorName,
       noIssue: oldFl ? oldFl.noIssue : false,
       units: pattern.map(suf => {
-        const no = String(f)+suf;
-        // 새로운 구조 데이터 적용
+        const no = floorPrefix + suf;
         return oldUnitsByNo[no] || {
           no, 
           isClear: false, 
@@ -536,14 +558,14 @@ function generateBoard(){
 }
 
 function editUnits(floorIdx){
-  const cur = floors[floorIdx].units.map(u=>u.no.slice(String(floors[floorIdx].floor).length)).join(',');
-  const val = prompt(floors[floorIdx].floor+'층 호수(뒤 2자리, 콤마구분) 수정:', cur);
+  const fName = String(floors[floorIdx].floor);
+  const cur = floors[floorIdx].units.map(u=>u.no.slice(fName.length)).join(',');
+  const val = prompt(fName+'층 호수(뒤 2자리, 콤마구분) 수정:', cur);
   if(val===null) return;
   const pattern = val.split(',').map(s=>s.trim()).filter(Boolean);
-  const f = floors[floorIdx].floor;
   const oldByNo = {}; floors[floorIdx].units.forEach(u=>oldByNo[u.no]=u);
   floors[floorIdx].units = pattern.map(suf=>{
-    const no = String(f)+suf;
+    const no = fName + suf;
     return oldByNo[no] || {no, isClear: false, isLocked: false, clearCount: 0, evacCount: 0, rescueCount: 0, origin: false, spread: false, evacDetails: [], rescueDetails: []};
   });
   render();
@@ -786,7 +808,7 @@ function render(){
     </div>
   `;
 
-  function unitSuffix(u, floorNum){ return u.no.slice(String(floorNum).length); }
+  function unitSuffix(u, floorName){ return u.no.slice(String(floorName).length); }
   const suffixSet = new Set();
   floors.forEach(fl=> fl.units.forEach(u=> suffixSet.add(unitSuffix(u, fl.floor))));
   const columns = Array.from(suffixSet).sort((a,b)=> a.localeCompare(b, undefined, {numeric:true}));
@@ -841,7 +863,7 @@ function render(){
       }
       const u = fl.units[ui];
       
-      // 배경색 우선순위: 발화지점 > 연소확대 > 이상없음 > 문잠김
+      // 배경색 우선순위: 발화지점 > 연소확대 > 이상없음 > 문잠김(회색)
       let bg = u.origin ? 'var(--origin)' : (u.spread ? 'var(--spread)' : (u.isClear ? 'var(--clear-bg)' : (u.isLocked ? 'var(--locked)' : '')));
       let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (u.isClear ? ' is-clear' : (u.isLocked ? ' is-locked' : ''))));
       
