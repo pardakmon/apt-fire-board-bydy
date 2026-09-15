@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>아파트 화재 세대별 대피현황판</title>
+<style>
+  :root{
+    --ink:#0f172a;
+    --line:#cbd5e1;
+    --line-soft:#94a3b8;
+    --origin:#dc2626;      /* 발화지점 더 선명한 빨강 */
+    --spread:#ea580c;      /* 연소확대 주황 */
+    --evac:#16a34a;        /* 자력대피 초록 */
+    --rescue:#e11d48;      /* 구조 텍스트 장미색 */
+    --locked:#8b5cf6;      /* 문잠김 보라 */
+    --normal:#334155;
+    --panel-bg:#ffffff;
+    --panel-border:#e2e8f0;
+    --accent:#ea580c;      /* 오렌지 계열 포인트 */
+    --navy:#1e293b;        /* 짙은 슬레이트 네이비 */
+    --gold:#f59e0b;
+  }
+  *{box-sizing:border-box;}
+  
+  body{
+    font-family:"Malgun Gothic","맑은 고딕",sans-serif;
+    background:#f1f5f9;
+    margin:0;
+    padding:24px;
+    color:var(--ink);
+    position: relative;
+    z-index: 0;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    
+    /* ======== 바로 이 부분에 기존 Base64 코드를 넣으세요 ======== */
+    background-image: url('여기에_기존_Base64_코드를_넣어주세요'); 
+    /* ========================================================= */
+
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 60vmin; 
+    opacity: 0.08; 
+    z-index: -1; 
+    pointer-events: none; 
+  }
+
+  .wrap{max-width:1100px;margin:0 auto;}
+  h1{font-size:20px;margin:0 0 16px;color:var(--navy);}
+  .panel{
+    background:var(--panel-bg);
+    border:1px solid var(--panel-border);
+    border-radius:12px;
+    padding:18px 20px;
+    margin-bottom:18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .panel h2{font-size:15px;margin:0 0 12px;color:var(--accent);}
+  .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:12px;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field label{font-size:12px;color:#64748b;font-weight:600;}
+  .field input{
+    padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;width:140px;
+    outline:none; transition:border-color 0.2s;
+  }
+  .field input:focus{border-color:var(--accent);}
+  .field input.wide{width:260px;}
+  button{
+    padding:10px 16px;border:none;border-radius:8px;background:var(--accent);
+    color:#fff;font-size:13px;cursor:pointer;font-weight:700;
+    transition:background 0.2s, transform 0.1s;
+    box-shadow: 0 2px 4px rgba(234,88,12,0.2);
+    -webkit-tap-highlight-color: transparent; 
+  }
+  button:active{transform:scale(0.98);}
+  button.secondary{
+    background:#f8fafc;color:var(--navy);border:1px solid #cbd5e1;box-shadow:none;
+  }
+  button.secondary:hover{background:#f1f5f9;border-color:#94a3b8;}
+  button.danger{
+    background:#fff1f2;color:var(--rescue);border:1px solid #fecdd3;box-shadow:none;
+  }
+  button.danger:hover{background:#ffe4e6;border-color:#fda4af;}
+  button.small{padding:6px 10px;font-size:11.5px;}
+  button:hover{filter:brightness(0.95);}
+  button.secondary:hover, button.danger:hover{filter:none;}
+  #titleLine{
+    color:#fff;
+  }
+  .stat-cards{
+    display:flex;gap:12px;margin:4px 0 16px;
+  }
+  .stat-card{
+    flex:1;text-align:center;border-radius:12px;padding:18px 10px 15px;
+    background:rgba(255, 255, 255, 0.9);
+    border:1px solid var(--panel-border);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+  }
+  .stat-card .num{
+    font-size:36px;font-weight:900;line-height:1;
+  }
+  .stat-card .label{font-size:13.5px;color:#64748b;margin-top:8px;font-weight:700;}
+  .stat-card.total .num{color:var(--navy);}
+  .stat-card.rescue .num{color:var(--rescue);}
+  .stat-card.evac .num{color:var(--evac);}
+  .stat-card.total{border-top:4px solid var(--navy);}
+  .stat-card.rescue{border-top:4px solid var(--rescue);}
+  .stat-card.evac{border-top:4px solid var(--evac);}
+  .board-header{
+    display:flex;align-items:center;gap:16px;margin-bottom:14px;
+    background:linear-gradient(135deg, var(--navy), #334155);
+    padding:16px 20px;border-radius:14px;
+    box-shadow:0 4px 12px rgba(15,23,42,0.2);
+  }
+  .board-header .icon-badge{
+    width:60px;height:60px;border-radius:50%;flex-shrink:0;
+    background:rgba(255,255,255,0.1);
+    border:2px solid rgba(255,255,255,0.2);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .board-header .icon-badge svg{width:40px;height:40px;}
+  .board-header-text{text-align:left;}
+  .board-title{font-size:22px;font-weight:800;color:#fff;min-height:24px;}
+  .board-subtitle{font-size:13px;color:#cbd5e1;margin-top:4px;font-weight:600;letter-spacing:0.5px;}
+  .legend{display:flex;justify-content:flex-end;gap:16px;margin-bottom:8px;font-size:12px;font-weight:600;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .swatch{width:16px;height:16px;display:inline-block;border-radius:4px;}
+  #boardHolder{
+    overflow-x:auto;-webkit-overflow-scrolling:touch;
+    border-radius:12px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  }
+  table.board{
+    border-collapse:collapse;background:rgba(255, 255, 255, 0.95);
+  }
+  table.board.fit-table{width:100%;table-layout:fixed;}
+  table.board.scroll-table{width:max-content;min-width:560px;table-layout:auto;}
+  table.board td, table.board th{
+    border:1px solid var(--line);text-align:center;vertical-align:middle;
+    padding:10px 8px;font-size:13.5px;overflow-wrap:break-word;
+  }
+  table.board.tier-lg td, table.board.tier-lg th{padding:12px 10px;font-size:15px;}
+  table.board.tier-md td, table.board.tier-md th{padding:10px 8px;font-size:13.5px;}
+  table.board.tier-sm td, table.board.tier-sm th{padding:8px 6px;font-size:12px;}
+  table.board.tier-xs td, table.board.tier-xs th{padding:6px 4px;font-size:11px;}
+  table.board.tier-lg td.floor-cell{width:68px;font-size:16px;}
+  table.board.tier-md td.floor-cell{width:60px;font-size:14px;}
+  table.board.tier-sm td.floor-cell{width:50px;font-size:13px;}
+  table.board.tier-xs td.floor-cell{width:42px;font-size:11.5px;}
+  td.floor-cell{
+    font-weight:800;font-size:15px;background:#f8fafc;width:70px;
+    color:var(--navy);
+  }
+  td.unit-no{font-weight:800;font-size:14.5px;padding-top:10px;color:var(--navy);}
+  td.unit-status{
+    padding-bottom:10px;cursor:pointer;min-height:40px;
+  }
+  td.unit-cell{cursor:pointer; transition: background 0.15s;}
+  td.unit-cell:hover{background:#f1f5f9;}
+  td.unit-cell.empty-cell{
+    background:repeating-linear-gradient(135deg, rgba(248,250,252,0.9), rgba(248,250,252,0.9) 8px, rgba(241,245,249,0.9) 8px, rgba(241,245,249,0.9) 16px);
+    cursor:default;
+  }
+  td.unit-cell.empty-cell:hover{background:repeating-linear-gradient(135deg, rgba(248,250,252,0.9), rgba(248,250,252,0.9) 8px, rgba(241,245,249,0.9) 8px, rgba(241,245,249,0.9) 16px);}
+  .status-normal{color:#64748b;font-size:13px;}
+  .status-evac{color:var(--evac);font-weight:800;}
+  .status-rescue{color:var(--rescue);font-weight:800;}
+  .status-locked{color:var(--locked);font-weight:800;}
+  .status-note{font-size:11px;color:#475569;font-weight:500;margin-top:2px;}
+  .origin-tag{color:var(--rescue);font-weight:800;}
+  .noissue-row td{background:#f8fafc;font-size:13.5px;color:#475569;padding:10px;font-weight:600;}
+  td.unit-cell.is-origin .unit-no,
+  td.unit-cell.is-origin .status-normal,
+  td.unit-cell.is-origin .status-evac,
+  td.unit-cell.is-origin .status-rescue,
+  td.unit-cell.is-origin .status-locked,
+  td.unit-cell.is-origin .status-note{color:#fff;}
+  td.unit-cell.is-origin .status-evac,
+  td.unit-cell.is-origin .status-rescue{color:#fff;}
+  td.unit-cell.is-locked .unit-no,
+  td.unit-cell.is-locked .status-locked,
+  td.unit-cell.is-locked .status-note{color:#fff;}
+  .fire-icon{display:inline-block;vertical-align:middle;width:20px;height:20px;margin-right:4px;}
+  .origin-tag{color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;gap:4px;background:rgba(0,0,0,0.25);border-radius:6px;padding:2px 6px;margin-top:4px;}
+  .spread-tag{color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;gap:4px;margin-top:4px;font-size:11.5px;background:rgba(0,0,0,0.15);border-radius:6px;padding:2px 6px;}
+  .legend .swatch.origin-sw{background:var(--origin);}
+  .legend .swatch.spread-sw{background:var(--spread);}
+  .legend .swatch.locked-sw{background:var(--locked);}
+  .floor-controls{display:flex;justify-content:center;gap:6px;margin-top:6px;}
+  #footNotes{margin-top:16px;font-size:13px;line-height:1.7;color:#475569;font-weight:500;}
+  #footNotes .fn-line{margin:3px 0;}
+  .toolbar{display:flex;gap:10px;margin-top:18px;justify-content:flex-end;}
+  .empty-hint{color:#94a3b8;font-size:14px;text-align:center;padding:40px 0;font-weight:600;}
+  .credit-line{text-align:center;font-size:12px;color:#94a3b8;margin:20px 0 10px;letter-spacing:0.5px;font-weight:600;}
+  .board-topbar{display:flex;justify-content:flex-start;margin-bottom:14px;}
+
+  /* modal */
+  .overlay{
+    position:fixed;inset:0;background:rgba(15,23,42,0.6);
+    display:flex;align-items:center;justify-content:center;z-index:50;
+    backdrop-filter: blur(2px);
+  }
+  .modal{
+    background:#fff;border-radius:14px;padding:24px;width:340px;
+    box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+  }
+  .modal h3{margin:0 0 16px;font-size:16px;color:var(--navy);font-weight:800;}
+  .modal .mrow{margin-bottom:12px;}
+  .modal label{font-size:12.5px;color:#475569;display:block;margin-bottom:6px;font-weight:700;}
+  .modal select, .modal input[type=text], .modal input[type=number]{
+    width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13.5px;
+    outline:none; transition:border-color 0.2s;
+  }
+  .modal select:focus, .modal input:focus{border-color:var(--accent);}
+  .modal .checks{display:flex;gap:16px;font-size:13px;align-items:center;margin-top:16px;}
+  .modal .checks label{display:flex;align-items:center;gap:6px;margin:0;font-weight:600;cursor:pointer;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+  .stepper-row{display:flex;align-items:center;gap:8px;}
+  .stepper-row input{text-align:center;flex:1;}
+  .setup-stepper{width:150px;}
+  .setup-stepper input{width:60px;flex:none; pointer-events:none; background-color:#f8fafc;}
+  .step-btn{
+    width:36px;height:36px;padding:0;font-size:18px;line-height:1;border-radius:8px;
+    background:var(--navy);color:#fff;flex-shrink:0;
+  }
+  #detailsList{max-height:120px;overflow-y:auto;margin-bottom:8px;}
+  .detail-item{
+    display:flex;justify-content:space-between;align-items:center;gap:8px;
+    font-size:12.5px;padding:6px 8px;background:#f8fafc;border-radius:6px;margin-bottom:6px;
+    border:1px solid #e2e8f0;
+  }
+  .detail-add-row{display:flex;gap:8px;}
+  .detail-add-row input{flex:1;}
+  #personsList{max-height:160px;overflow-y:auto;margin-bottom:8px;}
+  .person-row{
+    display:flex;align-items:center;gap:8px;
+    font-size:12.5px;padding:6px 8px;background:#f8fafc;border-radius:6px;margin-bottom:6px;
+    border:1px solid #e2e8f0;
+  }
+  .person-row .person-idx{flex-shrink:0;width:36px;color:#64748b;font-weight:700;}
+  .person-row select{flex:1;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;}
+  .person-row .person-other{flex:1;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;}
+
+  @media (min-width: 641px){
+    .board-header{padding:20px 24px;}
+    .board-header-text{
+      display:flex;align-items:baseline;flex-wrap:wrap;column-gap:18px;row-gap:4px;
+    }
+    .board-title{font-size:32px;min-height:auto;}
+    .board-subtitle{margin-top:0;font-size:15px;}
+    .icon-badge{width:64px;height:64px;}
+    .icon-badge svg{width:36px;height:36px;}
+  }
+
+  @media (max-width: 640px){
+    body{padding:12px;}
+    h1{font-size:18px;}
+    .panel{padding:16px;}
+    .row{flex-direction:column;align-items:stretch;gap:12px;}
+    .field{width:100%;}
+    .field input, .field input.wide{width:100%;}
+    .setup-stepper{width:100%;}
+    .setup-stepper input{width:auto;}
+    .board-header{flex-wrap:wrap;gap:12px;padding:16px;}
+    .board-title{font-size:18px;}
+    .stat-cards{flex-wrap:wrap;}
+    .stat-card{min-width:100px;flex:1 1 28%; padding:14px 10px 12px;}
+    .legend{justify-content:flex-start;flex-wrap:wrap;}
+    .modal{width:92vw;max-width:360px;max-height:88vh;overflow-y:auto;padding:20px;}
+    .toolbar{justify-content:stretch;flex-wrap:wrap;}
+    .toolbar button{flex:1;}
+  }
+  @media print{
+    body{background:#fff;padding:0;}
+    body::before {display:none !important;} 
+    .panel, .toolbar, .board-topbar, #setupScreen{display:none !important;}
+    .wrap{max-width:100%;}
+    .board-header{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:none;}
+    .stat-card{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:none;break-inside:avoid;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="setupScreen">
+    <h1>아파트 화재 세대별 대피현황판 생성기</h1>
+    <div class="panel" id="setupPanel">
+      <h2>① 기본 설정</h2>
+      <div class="row">
+        <div class="field"><label>건물명 / 사건명</label><input type="text" id="bldgName" class="wide" placeholder="예) OO아파트 101동 화재" oninput="if(floors.length){ document.getElementById('titleLine').textContent=this.value; saveState(); }"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>최고층</label><input type="number" id="topFloor" value="12"></div>
+        <div class="field"><label>최저층</label><input type="number" id="botFloor" value="1"></div>
+        <div class="field">
+          <label>층별 세대수</label>
+          <div class="stepper-row setup-stepper">
+            <button type="button" class="step-btn" onclick="adjustUnitsCount(-1)">−</button>
+            <input type="text" id="unitsCount" value="4" readonly tabindex="-1">
+            <button type="button" class="step-btn" onclick="adjustUnitsCount(1)">+</button>
+          </div>
+        </div>
+        <div class="field"><label>기본 호수(뒤 2자리, 콤마구분)</label><input type="text" id="unitPattern" class="wide" value="01,02,03,04" oninput="syncUnitsCountFromPattern()"></div>
+      </div>
+      <div class="row">
+        <h2 style="width:100%;margin-top:10px;">② 표 생성</h2>
+        <button type="button" onclick="generateBoard()">표 생성 (현황판으로 이동)</button>
+        <button type="button" class="secondary" id="backToBoardBtn" style="display:none;" onclick="showBoardScreen()">← 현황판으로 돌아가기(재생성 없이)</button>
+      </div>
+      <div style="font-size:12px;color:#64748b;margin-top:6px;line-height:1.5;">
+        예: 세대가 01,02,04,05호로 구성(03호 없음)이면 "01,02,04,05"로 입력. 표 생성 후 각 층마다 별도로 호수 목록을 수정할 수 있습니다.<br>
+        ※ "표 생성"을 다시 누르면 층수·호수 구성이 새로 적용되지만, 기존에 입력해둔 층·호수의 상태값(이상없음/자력대피/구조 등)은 그대로 유지됩니다. 층수·호수 범위에서 빠진 세대만 데이터가 사라집니다.
+      </div>
+    </div>
+    <div class="credit-line">제작 영등포소방서 화재조사팀</div>
+  </div>
+
+  <div id="boardScreen" style="display:none;">
+    <div class="board-topbar">
+      <button type="button" class="secondary" onclick="showSetupScreen()">← 설정으로 돌아가기</button>
+    </div>
+    <div class="board-header">
+      <div class="icon-badge" id="iconBadge"></div>
+      <div class="board-header-text">
+        <div id="titleLine" class="board-title"></div>
+        <div class="board-subtitle">아파트 화재 세대별 대피현황판</div>
+      </div>
+    </div>
+    <div id="summaryCards" class="stat-cards"></div>
+    <div class="legend">
+      <span><span class="swatch origin-sw"></span><span id="legendFireIcon"></span>발화지점</span>
+      <span><span class="swatch spread-sw"></span><span id="legendSpreadIcon"></span>연소확대</span>
+      <span><span class="swatch locked-sw"></span>🔒 문잠김(미확인)</span>
+    </div>
+
+    <div id="footNotes"></div>
+
+    <div id="boardHolder"><div class="empty-hint">위 설정을 입력하고 "표 생성"을 누르세요.</div></div>
+
+    <div id="autosaveNote" style="font-size:11px;color:#94a3b8;text-align:right;margin-top:10px;font-weight:600;"></div>
+
+    <div class="toolbar" id="toolbar" style="display:none;">
+      <button type="button" class="secondary" onclick="window.print()">인쇄 / PDF 저장</button>
+      <button type="button" class="danger" onclick="resetAll()">초기화</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+// ====== Firebase 실시간 데이터베이스 설정 ======
+const firebaseConfig = {
+  apiKey: "AIzaSyBaGmIgVoIzrQ1WRdn8BwrO0fPOECNl-mQ",
+  authDomain: "apartment-fire-board-bydy.firebaseapp.com",
+  databaseURL: "https://apartment-fire-board-bydy-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "apartment-fire-board-bydy",
+  storageBucket: "apartment-fire-board-bydy.firebasestorage.app",
+  messagingSenderId: "389632256658",
+  appId: "1:389632256658:web:3add30eae087876437d44b"
+};
+
+// 앱 초기화
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const db = firebase.database();
+const dbRef = db.ref('apt_evac_board_v1'); // 데이터베이스 저장 경로
+
+let floors = []; 
+let lastSavedData = ""; 
+
+function showBoardScreen(){
+  document.getElementById('setupScreen').style.display='none';
+  document.getElementById('boardScreen').style.display='block';
+  window.scrollTo(0,0);
+}
+function showSetupScreen(){
+  document.getElementById('setupScreen').style.display='block';
+  document.getElementById('boardScreen').style.display='none';
+  window.scrollTo(0,0);
+}
+
+function saveState(){
+  try{
+    const state = {
+      bldgName: document.getElementById('bldgName').value,
+      topFloor: document.getElementById('topFloor').value,
+      botFloor: document.getElementById('botFloor').value,
+      unitPattern: document.getElementById('unitPattern').value,
+      unitsCount: document.getElementById('unitsCount').value,
+      floors: floors,
+      savedAt: new Date().toISOString()
+    };
+    
+    const stateStr = JSON.stringify(state);
+    if(lastSavedData === stateStr) return; 
+    
+    lastSavedData = stateStr;
+    dbRef.set(state); 
+    
+    const note = document.getElementById('autosaveNote');
+    if(note){
+      const t = new Date();
+      const hh = String(t.getHours()).padStart(2,'0');
+      const mm = String(t.getMinutes()).padStart(2,'0');
+      const ss = String(t.getSeconds()).padStart(2,'0');
+      note.textContent = `서버 동기화됨 · ${hh}:${mm}:${ss}`;
+    }
+  }catch(e){
+    console.error('저장 실패', e);
+  }
+}
+
+// 실시간 리스너
+dbRef.on('value', (snapshot) => {
+  const state = snapshot.val();
+  if(!state) return;
+  
+  const stateStr = JSON.stringify(state);
+  if(lastSavedData === stateStr) return; 
+  lastSavedData = stateStr;
+  
+  document.getElementById('bldgName').value = state.bldgName || '';
+  document.getElementById('topFloor').value = state.topFloor || 12;
+  document.getElementById('botFloor').value = state.botFloor || 1;
+  document.getElementById('unitPattern').value = state.unitPattern || '01,02,03,04';
+  document.getElementById('unitsCount').value = state.unitsCount || 4;
+  floors = state.floors || [];
+  
+  document.getElementById('backToBoardBtn').style.display='inline-block';
+  
+  if(floors.length > 0) {
+    render();
+    if(document.getElementById('setupScreen').style.display !== 'none') {
+      showBoardScreen();
+    }
+  }
+});
+
+function resetAll(){
+  if(!confirm('저장된 대피현황 데이터를 모두 지우고 서버에서 초기화할까요?')) return;
+  dbRef.remove().then(() => {
+    location.reload();
+  });
+}
+
+function adjustUnitsCount(delta){
+  const el = document.getElementById('unitsCount');
+  let v = (parseInt(el.value)||1) + delta;
+  if(v < 1) v = 1;
+  el.value = v;
+  const width = v > 99 ? 3 : 2;
+  const arr = [];
+  for(let n=1; n<=v; n++) arr.push(String(n).padStart(width,'0'));
+  document.getElementById('unitPattern').value = arr.join(',');
+}
+function syncUnitsCountFromPattern(){
+  const pattern = document.getElementById('unitPattern').value.split(',').map(s=>s.trim()).filter(Boolean);
+  document.getElementById('unitsCount').value = pattern.length || 1;
+}
+
+const STATUS_LABEL = {
+  normal: '이상없음',
+  evac: '자력대피',
+  rescue: '구조',
+  locked: '문잠김(미확인)'
+};
+
+const FIRE_ICON_SVG = `<svg class="fire-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path d="M12 2C12 2 7 7.5 7 12.5C7 16.09 9.69 19 13 19C16.31 19 19 16.5 19 13.2C19 10.6 17.3 9 17.3 9C17.3 9 17.6 11.2 16.1 12.3C16.6 9.5 15 6.8 12 2Z" fill="#fff2e0"/>
+  <path d="M12 6C12 6 9.2 10 9.2 13.2C9.2 15.5 10.9 17.2 13 17.2C15.1 17.2 16.8 15.5 16.8 13.2C16.8 11.5 15.7 10.3 15.7 10.3C15.7 10.3 15.8 11.8 14.9 12.4C15.2 10.6 14.2 8.7 12 6Z" fill="#c8280a"/>
+</svg>`;
+
+const SPREAD_ICON_SVG = `<svg class="fire-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path d="M7 4C7 4 4.5 8 4.5 11C4.5 13.2 6.1 15 8.2 15C10.3 15 11.8 13.3 11.8 11.2C11.8 9.8 11 8.8 11 8.8C11 8.8 11.1 9.9 10.4 10.4C10.6 8.9 9.8 7.2 7 4Z" fill="none" stroke="#fff" stroke-width="1.3"/>
+  <path d="M15.5 3C15.5 3 12 8.4 12 12.4C12 15.4 14.3 18 17.1 18C19.9 18 22 15.5 22 12.6C22 10.4 20.6 9 20.6 9C20.6 9 20.8 11 19.6 11.9C20 9.6 18.7 7.1 15.5 3Z" fill="none" stroke="#fff" stroke-width="1.5"/>
+</svg>`;
+
+const APT_FIRE_ICON_SVG = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <rect x="10" y="36" width="15" height="24" rx="1.5" fill="#e2e8f0"/>
+  <rect x="27" y="30" width="17" height="30" rx="1.5" fill="#cbd5e1"/>
+  <rect x="13" y="40" width="3" height="3" fill="#1e293b"/>
+  <rect x="19" y="40" width="3" height="3" fill="#1e293b"/>
+  <rect x="13" y="46" width="3" height="3" fill="#1e293b"/>
+  <rect x="19" y="46" width="3" height="3" fill="#1e293b"/>
+  <rect x="13" y="52" width="3" height="3" fill="#1e293b"/>
+  <rect x="19" y="52" width="3" height="3" fill="#1e293b"/>
+  <rect x="30" y="34" width="3" height="3" fill="#1e293b"/>
+  <rect x="37" y="34" width="3" height="3" fill="#1e293b"/>
+  <rect x="30" y="40" width="3" height="3" fill="#1e293b"/>
+  <rect x="37" y="40" width="3" height="3" fill="#1e293b"/>
+  <rect x="30" y="46" width="3" height="3" fill="#1e293b"/>
+  <rect x="37" y="46" width="3" height="3" fill="#1e293b"/>
+  <rect x="30" y="52" width="3" height="3" fill="#1e293b"/>
+  <rect x="37" y="52" width="3" height="3" fill="#1e293b"/>
+  <path d="M34 3C34 3 21 19 21 33C21 43 27 51 35 51C43 51 49 43 49 33C49 27 45 22 45 22C45 22 46 28 42 31C43 24 39 15 34 3Z" fill="#ea580c"/>
+  <path d="M34 15C34 15 27 25 27 33C27 39 31 44 35 44C40 44 44 39 44 33C44 29 41 26 41 26C41 26 41 29 39 31C40 26 38 21 34 15Z" fill="#f59e0b"/>
+</svg>`;
+
+function generateBoard(){
+  const top = parseInt(document.getElementById('topFloor').value);
+  const bot = parseInt(document.getElementById('botFloor').value);
+  const pattern = document.getElementById('unitPattern').value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(isNaN(top) || isNaN(bot) || top < bot){ alert('최고층/최저층을 확인하세요.'); return; }
+  if(pattern.length===0){ alert('호수 패턴을 입력하세요.'); return; }
+
+  const oldFloorByNum = {};
+  floors.forEach(fl => { oldFloorByNum[fl.floor] = fl; });
+
+  const newFloors = [];
+  for(let f = top; f >= bot; f--){
+    const oldFl = oldFloorByNum[f];
+    const oldUnitsByNo = {};
+    if(oldFl) oldFl.units.forEach(u => { oldUnitsByNo[u.no] = u; });
+    newFloors.push({
+      floor:f,
+      noIssue: oldFl ? oldFl.noIssue : false,
+      units: pattern.map(suf => {
+        const no = String(f)+suf;
+        return oldUnitsByNo[no] || {no, status:'normal', count:0, origin:false, spread:false, persons:[], evacDetails:[], rescueDetails:[]};
+      })
+    });
+  }
+  floors = newFloors;
+  render();
+  document.getElementById('backToBoardBtn').style.display='inline-block';
+  showBoardScreen();
+}
+
+function editUnits(floorIdx){
+  const cur = floors[floorIdx].units.map(u=>u.no.slice(String(floors[floorIdx].floor).length)).join(',');
+  const val = prompt(floors[floorIdx].floor+'층 호수(뒤 2자리, 콤마구분) 수정:', cur);
+  if(val===null) return;
+  const pattern = val.split(',').map(s=>s.trim()).filter(Boolean);
+  const f = floors[floorIdx].floor;
+  const oldByNo = {}; floors[floorIdx].units.forEach(u=>oldByNo[u.no]=u);
+  floors[floorIdx].units = pattern.map(suf=>{
+    const no = String(f)+suf;
+    return oldByNo[no] || {no, status:'normal', count:0, note:'', origin:false, spread:false};
+  });
+  render();
+}
+
+function toggleNoIssue(floorIdx){
+  floors[floorIdx].noIssue = !floors[floorIdx].noIssue;
+  render();
+}
+
+let editing = null;
+let editingDetails = [];
+let editingEvacDetails = [];
+let editingPersons = [];
+
+function openEditor(floorIdx, unitIdx){
+  editing = {floorIdx, unitIdx};
+  const u = floors[floorIdx].units[unitIdx];
+  editingDetails = (u.rescueDetails||[]).slice();
+  editingEvacDetails = (u.evacDetails||[]).slice();
+  editingPersons = (u.persons||[]).slice(0, u.count||0);
+  while(editingPersons.length < (u.count||0)) editingPersons.push({type:'none', otherText:''});
+  const overlay = document.createElement('div');
+  overlay.className='overlay';
+  overlay.id='editorOverlay';
+  overlay.innerHTML = `
+    <div class="modal">
+      <h3>${u.no}호 상태 입력</h3>
+      <div class="mrow">
+        <label>상태</label>
+        <select id="m_status">
+          <option value="normal" ${u.status==='normal'?'selected':''}>이상없음</option>
+          <option value="evac" ${u.status==='evac'?'selected':''}>자력대피</option>
+          <option value="rescue" ${u.status==='rescue'?'selected':''}>구조</option>
+          <option value="locked" ${u.status==='locked'?'selected':''}>문잠김(미확인)</option>
+        </select>
+      </div>
+      <div class="mrow" id="countRow" style="display:${(u.status==='evac'||u.status==='rescue')?'block':'none'}">
+        <label>인원수</label>
+        <div class="stepper-row">
+          <button type="button" class="step-btn" onclick="adjustCount(-1)">−</button>
+          <input type="number" id="m_count" min="0" value="${u.count||0}" oninput="onCountManualChange()">
+          <button type="button" class="step-btn" onclick="adjustCount(1)">+</button>
+        </div>
+      </div>
+      <div class="mrow" id="personsRow" style="display:${(u.status==='evac'||u.status==='rescue')?'block':'none'}">
+        <label>인원별 구분 (자동 집계에 사용)</label>
+        <div id="personsList"></div>
+      </div>
+      <div class="mrow" id="evacDetailsRow" style="display:${u.status==='evac'?'block':'none'}">
+        <label>자력대피 세부현황</label>
+        <div id="evacDetailsList"></div>
+        <div class="detail-add-row">
+          <input type="text" id="m_evacDetailInput" placeholder="예: 30대 여, 단순연기흡입, 자력이동 가능">
+          <button type="button" class="small" onclick="addEvacDetailLine()">추가</button>
+        </div>
+      </div>
+      <div class="mrow" id="detailsRow" style="display:${u.status==='rescue'?'block':'none'}">
+        <label>구조인원 세부현황</label>
+        <div id="detailsList"></div>
+        <div class="detail-add-row">
+          <input type="text" id="m_detailInput" placeholder="예: 30대 남, 중증도, OO병원 후송">
+          <button type="button" class="small" onclick="addDetailLine()">추가</button>
+        </div>
+      </div>
+      <div class="mrow checks">
+        <label><input type="checkbox" id="m_origin" ${u.origin?'checked':''}> 발화지점</label>
+        <label><input type="checkbox" id="m_spread" ${u.spread?'checked':''}> 연소확대</label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="secondary" onclick="closeEditor()">취소</button>
+        <button type="button" onclick="saveEditor()">저장</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  
+  document.getElementById('m_status').addEventListener('change', (e)=>{
+    const show = (e.target.value==='evac' || e.target.value==='rescue');
+    document.getElementById('countRow').style.display = show?'block':'none';
+    document.getElementById('personsRow').style.display = show?'block':'none';
+    document.getElementById('evacDetailsRow').style.display = (e.target.value==='evac')?'block':'none';
+    document.getElementById('detailsRow').style.display = (e.target.value==='rescue')?'block':'none';
+  });
+  document.getElementById('m_detailInput').addEventListener('keydown', (e)=>{
+    if(e.key==='Enter'){ e.preventDefault(); addDetailLine(); }
+  });
+  document.getElementById('m_evacDetailInput').addEventListener('keydown', (e)=>{
+    if(e.key==='Enter'){ e.preventDefault(); addEvacDetailLine(); }
+  });
+  
+  renderDetailsList();
+  renderEvacDetailsList();
+  renderPersonsList();
+}
+
+function adjustCount(delta){
+  const el = document.getElementById('m_count');
+  let v = (parseInt(el.value)||0) + delta;
+  if(v < 0) v = 0;
+  el.value = v;
+  syncPersonsToCount(v);
+}
+function onCountManualChange(){
+  const v = Math.max(0, parseInt(document.getElementById('m_count').value)||0);
+  syncPersonsToCount(v);
+}
+function syncPersonsToCount(count){
+  while(editingPersons.length < count) editingPersons.push({type:'none', otherText:''});
+  editingPersons.length = count;
+  renderPersonsList();
+}
+function renderPersonsList(){
+  const box = document.getElementById('personsList');
+  if(!box) return;
+  if(editingPersons.length===0){
+    box.innerHTML = '<div style="font-size:12.5px;color:#94a3b8;">인원수를 먼저 입력하세요</div>';
+    return;
+  }
+  box.innerHTML = editingPersons.map((p,idx)=>`
+    <div class="person-row">
+      <span class="person-idx">${idx+1}번</span>
+      <select onchange="setPersonType(${idx}, this.value)">
+        <option value="none" ${p.type==='none'?'selected':''}>해당없음</option>
+        <option value="hospital" ${p.type==='hospital'?'selected':''}>병원이송</option>
+        <option value="smoke" ${p.type==='smoke'?'selected':''}>단순연기흡입</option>
+        <option value="other" ${p.type==='other'?'selected':''}>기타</option>
+      </select>
+      ${p.type==='other' ? `<input type="text" class="person-other" value="${p.otherText||''}" placeholder="기타 내용" oninput="setPersonOther(${idx}, this.value)">` : ''}
+    </div>
+  `).join('');
+}
+function setPersonType(idx, val){
+  editingPersons[idx].type = val;
+  if(val!=='other') editingPersons[idx].otherText='';
+  renderPersonsList();
+}
+function setPersonOther(idx, val){
+  editingPersons[idx].otherText = val;
+}
+function renderDetailsList(){
+  const box = document.getElementById('detailsList');
+  if(!box) return;
+  if(editingDetails.length===0){
+    box.innerHTML = '<div style="font-size:12.5px;color:#94a3b8;">등록된 세부현황 없음</div>';
+    return;
+  }
+  box.innerHTML = editingDetails.map((d,idx)=>`
+    <div class="detail-item">
+      <span>${idx+1}. ${d}</span>
+      <button type="button" class="small secondary" onclick="removeDetailLine(${idx})">삭제</button>
+    </div>
+  `).join('');
+}
+function addDetailLine(){
+  const input = document.getElementById('m_detailInput');
+  const val = input.value.trim();
+  if(!val) return;
+  editingDetails.push(val);
+  input.value='';
+  renderDetailsList();
+}
+function removeDetailLine(idx){
+  editingDetails.splice(idx,1);
+  renderDetailsList();
+}
+function renderEvacDetailsList(){
+  const box = document.getElementById('evacDetailsList');
+  if(!box) return;
+  if(editingEvacDetails.length===0){
+    box.innerHTML = '<div style="font-size:12.5px;color:#94a3b8;">등록된 세부현황 없음</div>';
+    return;
+  }
+  box.innerHTML = editingEvacDetails.map((d,idx)=>`
+    <div class="detail-item">
+      <span>${idx+1}. ${d}</span>
+      <button type="button" class="small secondary" onclick="removeEvacDetailLine(${idx})">삭제</button>
+    </div>
+  `).join('');
+}
+function addEvacDetailLine(){
+  const input = document.getElementById('m_evacDetailInput');
+  const val = input.value.trim();
+  if(!val) return;
+  editingEvacDetails.push(val);
+  input.value='';
+  renderEvacDetailsList();
+}
+function removeEvacDetailLine(idx){
+  editingEvacDetails.splice(idx,1);
+  renderEvacDetailsList();
+}
+function closeEditor(){
+  const o = document.getElementById('editorOverlay');
+  if(o) o.remove();
+  editing = null;
+  editingDetails = [];
+  editingEvacDetails = [];
+  editingPersons = [];
+}
+function saveEditor(){
+  const {floorIdx, unitIdx} = editing;
+  const u = floors[floorIdx].units[unitIdx];
+  u.status = document.getElementById('m_status').value;
+  u.count = parseInt(document.getElementById('m_count').value)||0;
+  u.persons = editingPersons.slice(0, u.count);
+  u.origin = document.getElementById('m_origin').checked;
+  u.spread = document.getElementById('m_spread').checked;
+  u.evacDetails = (u.status==='evac') ? editingEvacDetails.slice() : [];
+  u.rescueDetails = (u.status==='rescue') ? editingDetails.slice() : [];
+  if(u.status==='normal' || u.status==='locked'){ u.count=0; u.persons=[]; u.evacDetails=[]; u.rescueDetails=[]; }
+  closeEditor();
+  render();
+}
+
+window.__cellClick = function(td){
+  const fi = parseInt(td.getAttribute('data-fi'));
+  const ui = parseInt(td.getAttribute('data-ui'));
+  openEditor(fi, ui);
+};
+
+function render(){
+  document.getElementById('toolbar').style.display='flex';
+  document.getElementById('legendFireIcon').innerHTML = FIRE_ICON_SVG;
+  document.getElementById('legendSpreadIcon').innerHTML = SPREAD_ICON_SVG;
+  document.getElementById('iconBadge').innerHTML = APT_FIRE_ICON_SVG;
+  const name = document.getElementById('bldgName').value.trim();
+  document.getElementById('titleLine').textContent = name || '';
+
+  let evacTotal=0, rescueTotal=0, evacSelfTotal=0, hospitalCount=0, smokeCount=0, otherCount=0;
+  const evacDetail = [];
+  const rescueDetail = [];
+  
+  function tallyPersons(u){
+    const list = u.persons || [];
+    let h=0, s=0, o=0;
+    list.forEach(p=>{
+      if(p.type==='hospital') h++;
+      else if(p.type==='smoke') s++;
+      else if(p.type==='other') o++;
+    });
+    return {h,s,o};
+  }
+  
+  floors.forEach(fl=>{
+    fl.units.forEach(u=>{
+      if(u.status==='evac'){
+        evacTotal += u.count; evacSelfTotal += u.count;
+        let eline = u.no+'호 '+u.count+'명';
+        if(u.evacDetails && u.evacDetails.length){
+          eline += ' ['+u.evacDetails.join('; ')+']';
+        }
+        evacDetail.push(eline);
+        const t = tallyPersons(u);
+        hospitalCount += t.h; smokeCount += t.s; otherCount += t.o;
+      } else if(u.status==='rescue'){
+        rescueTotal += u.count; evacTotal += u.count;
+        let line = u.no+'호 '+u.count+'명';
+        if(u.rescueDetails && u.rescueDetails.length){
+          line += ' ['+u.rescueDetails.join('; ')+']';
+        }
+        rescueDetail.push(line);
+        const t = tallyPersons(u);
+        hospitalCount += t.h; smokeCount += t.s; otherCount += t.o;
+      }
+    });
+  });
+  
+  document.getElementById('summaryCards').innerHTML = `
+    <div class="stat-card total">
+      <div class="num">${evacTotal}</div>
+      <div class="label">총 대피(명)</div>
+    </div>
+    <div class="stat-card rescue">
+      <div class="num">${rescueTotal}</div>
+      <div class="label">구조(명)</div>
+    </div>
+    <div class="stat-card evac">
+      <div class="num">${evacSelfTotal}</div>
+      <div class="label">자력대피(명)</div>
+    </div>
+  `;
+
+  function unitSuffix(u, floorNum){ return u.no.slice(String(floorNum).length); }
+  const suffixSet = new Set();
+  floors.forEach(fl=> fl.units.forEach(u=> suffixSet.add(unitSuffix(u, fl.floor))));
+  const columns = Array.from(suffixSet).sort((a,b)=> a.localeCompare(b, undefined, {numeric:true}));
+  const maxUnits = columns.length || 1;
+  const totalCols = maxUnits + 1; 
+  let sizeTier, layoutMode;
+  if(totalCols <= 5){ sizeTier='tier-lg'; layoutMode='fit-table'; }
+  else if(totalCols <= 7){ sizeTier='tier-md'; layoutMode='fit-table'; }
+  else if(totalCols <= 10){ sizeTier='tier-sm'; layoutMode='fit-table'; }
+  else if(totalCols <= 14){ sizeTier='tier-xs'; layoutMode='fit-table'; }
+  else { sizeTier='tier-xs'; layoutMode='scroll-table'; }
+  const floorWeight = 1.4, unitWeight = 1;
+  const totalWeight = floorWeight + maxUnits*unitWeight;
+  const floorPct = (floorWeight/totalWeight*100).toFixed(2);
+  const unitPct = (unitWeight/totalWeight*100).toFixed(2);
+  let colgroupHtml = '<colgroup>';
+  if(layoutMode==='fit-table'){
+    colgroupHtml += `<col style="width:${floorPct}%">`;
+    for(let c=0;c<maxUnits;c++) colgroupHtml += `<col style="width:${unitPct}%">`;
+  }
+  colgroupHtml += '</colgroup>';
+  let html = `<table class="board ${sizeTier} ${layoutMode}">${colgroupHtml}<tbody>`;
+  let i=0;
+  
+  while(i < floors.length){
+    const fl = floors[i];
+    if(fl.noIssue){
+      let j=i;
+      while(j+1<floors.length && floors[j+1].noIssue) j++;
+      const label = (j>i) ? `${floors[i].floor}층~${floors[j].floor}층` : `${fl.floor}층`;
+      html += `<tr class="noissue-row">
+        <td class="floor-cell">${label}
+          <div class="floor-controls"><button type="button" class="small secondary" onclick="toggleNoIssue(${i})">해제</button></div>
+        </td>
+        <td colspan="20">특이사항 없음</td>
+      </tr>`;
+      i = j+1;
+      continue;
+    }
+    html += `<tr>
+      <td class="floor-cell">${fl.floor}층
+        <div class="floor-controls">
+          <button type="button" class="small secondary" onclick="editUnits(${i})">세대수정</button>
+          <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">특이없음</button>
+        </div>
+      </td>`;
+    columns.forEach(suf=>{
+      const ui = fl.units.findIndex(x=> unitSuffix(x, fl.floor)===suf);
+      if(ui===-1){
+        html += `<td class="unit-cell empty-cell"></td>`;
+        return;
+      }
+      const u = fl.units[ui];
+      let bg = u.origin ? 'var(--origin)' : (u.spread ? 'var(--spread)' : (u.status==='locked' ? 'var(--locked)' : ''));
+      let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (u.status==='locked' ? ' is-locked' : '')));
+      let bodyHtml = '';
+      if(u.status==='normal'){
+        bodyHtml = `<div class="status-normal">이상없음</div>`;
+      } else if(u.status==='locked'){
+        bodyHtml = `<div class="status-locked">🔒 문잠김(미확인)</div>`;
+      } else {
+        const cls2 = u.status==='evac' ? 'status-evac' : 'status-rescue';
+        const t = (function(){
+          const list = u.persons || [];
+          let h=0, s=0, o=0;
+          list.forEach(p=>{ if(p.type==='hospital') h++; else if(p.type==='smoke') s++; else if(p.type==='other') o++; });
+          return {h,s,o};
+        })();
+        const tagParts = [];
+        if(t.h) tagParts.push('병원이송 '+t.h+'명');
+        if(t.s) tagParts.push('단순연기흡입 '+t.s+'명');
+        if(t.o) tagParts.push('기타 '+t.o+'명');
+        bodyHtml = `<div class="${cls2}">${STATUS_LABEL[u.status]} ${u.count||0}명</div>` +
+                   (tagParts.length ? `<div class="status-note">(${tagParts.join(', ')})</div>` : '') +
+                   ((u.status==='evac' && u.evacDetails && u.evacDetails.length) ?
+                     `<div class="status-note">${u.evacDetails.map(d=>'· '+d).join('<br>')}</div>` : '') +
+                   ((u.status==='rescue' && u.rescueDetails && u.rescueDetails.length) ?
+                     `<div class="status-note">${u.rescueDetails.map(d=>'· '+d).join('<br>')}</div>` : '');
+      }
+      const originTag = u.origin ? `<div class="origin-tag">${FIRE_ICON_SVG}발화지점</div>` : '';
+      const spreadTag = (!u.origin && u.spread) ? `<div class="spread-tag">${SPREAD_ICON_SVG}연소확대</div>` : '';
+      html += `<td class="${cellCls}" data-fi="${i}" data-ui="${ui}" onclick="__cellClick(this)" style="${bg?('background:'+bg+';'):''}">
+        <div class="unit-no">${u.no}호</div>
+        <div class="unit-status">${bodyHtml}${originTag}${spreadTag}</div>
+      </td>`;
+    });
+    html += `</tr>`;
+    i++;
+  }
+  html += '</tbody></table>';
+  document.getElementById('boardHolder').innerHTML = html;
+
+  let fn = '';
+  if(evacSelfTotal>0) fn += `<div class="fn-line">※ 자력대피 ${evacSelfTotal}명: ${evacDetail.join(', ')}</div>`;
+  if(rescueTotal>0) fn += `<div class="fn-line">※ 구조 ${rescueTotal}명: ${rescueDetail.join(', ')}</div>`;
+  if(hospitalCount>0 || smokeCount>0 || otherCount>0){
+    let parts = [];
+    parts.push('병원이송 '+hospitalCount+'명');
+    parts.push('단순연기흡입 '+smokeCount+'명');
+    if(otherCount>0) parts.push('기타 '+otherCount+'명');
+    fn += `<div class="fn-line">※ ${parts.join(' / ')}</div>`;
+  }
+  document.getElementById('footNotes').innerHTML = fn;
+  saveState();
+}
+</script>
+</body>
+</html>
