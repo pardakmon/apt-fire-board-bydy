@@ -36,9 +36,18 @@
     z-index: 0;
   }
 
-  body::before {
+  /* 📷 캡처될 알맹이 구역 (배경 워터마크 포함) */
+  #captureTarget {
+    position: relative;
+    background: #f1f5f9;
+    padding: 10px; 
+    border-radius: 12px;
+    overflow: hidden; 
+  }
+  
+  #captureTarget::before {
     content: "";
-    position: fixed;
+    position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     
     /* ======== 바로 이 부분에 기존 Base64 코드를 넣으세요 ======== */
@@ -49,22 +58,16 @@
     background-position: center center;
     background-size: 60vmin; 
     opacity: 0.08; 
-    z-index: -1; 
+    z-index: 0; 
     pointer-events: none; 
   }
-
-  /* 캡처될 알맹이 구역 */
-  #captureArea {
+  
+  #captureTarget > * {
     position: relative;
-    background: #f1f5f9;
-    padding: 10px; 
-    border-radius: 12px;
-    overflow: hidden;
-    margin: 0 auto;
-    max-width: 1100px;
     z-index: 1;
   }
 
+  .wrap{max-width:1100px;margin:0 auto;}
   h1{font-size:20px;margin:0 0 16px;color:var(--navy);}
   .panel{
     background:var(--panel-bg);
@@ -86,7 +89,6 @@
   .field input:focus, .field select:focus{border-color:var(--accent);}
   .field input.wide{width:260px;}
   
-  /* 하단 툴바 버튼 공통 스타일 */
   button{
     padding:10px 16px;border:none;border-radius:8px;background:var(--accent);
     color:#fff;font-size:13px;cursor:pointer;font-weight:700;
@@ -98,7 +100,6 @@
   button.small{padding:6px 10px;font-size:11.5px;}
   button:hover{filter:brightness(0.95);}
   
-  /* 교통사고 현황판 스타일 적용 */
   button.success-outline{
     background:#fff;color:var(--clear-bg);border:1px solid #6ee7b7;box-shadow:none;
     display:flex;align-items:center;justify-content:center;gap:4px;
@@ -295,7 +296,7 @@
     body{background:#fff;padding:0;margin:0;}
     body::before {display:none !important;} 
     .panel, .toolbar, .board-topbar, #setupScreen, .floor-controls button, #autosaveNote{display:none !important;}
-    #captureArea{max-width:100%; margin:0; padding:0;}
+    #captureTarget{max-width:100%; margin:0; padding:0;}
     .board-header{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:none;border-radius:0;margin-bottom:10px;}
     .stat-card{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:none;break-inside:avoid;}
     table.board{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
@@ -304,7 +305,7 @@
 </style>
 </head>
 <body>
-<div id="captureArea">
+<div class="wrap" id="mainWrap">
   <div id="setupScreen">
     <h1>아파트 화재 세대별 대피현황판 생성기</h1>
     <div class="panel" id="setupPanel">
@@ -346,29 +347,32 @@
     <div class="board-topbar">
       <button type="button" class="secondary" onclick="showSetupScreen()">← 설정으로 돌아가기</button>
     </div>
-    <div class="board-header">
-      <div class="icon-badge" id="iconBadge"></div>
-      <div class="board-header-text">
-        <div id="titleLine" class="board-title"></div>
-        <div class="board-subtitle">아파트 화재 세대별 대피현황판</div>
+    
+    <!-- 📷 캡처될 내용물이 쏙 들어가는 알맹이 구역 -->
+    <div id="captureTarget">
+      <div class="board-header">
+        <div class="icon-badge" id="iconBadge"></div>
+        <div class="board-header-text">
+          <div id="titleLine" class="board-title"></div>
+          <div class="board-subtitle">아파트 화재 세대별 대피현황판</div>
+        </div>
       </div>
+      <div id="summaryCards" class="stat-cards"></div>
+      <div class="legend">
+        <span><span class="swatch origin-sw"></span><span id="legendFireIcon"></span>발화지점</span>
+        <span><span class="swatch spread-sw"></span><span id="legendSpreadIcon"></span>연소확대</span>
+        <span><span class="swatch clear-sw"></span>✅ 안전대기(이상없음)</span>
+        <span><span class="swatch locked-sw"></span>🔒 문잠김(미확인)</span>
+      </div>
+
+      <div id="boardHolder"><div class="empty-hint">위 설정을 입력하고 "표 생성"을 누르세요.</div></div>
+
+      <div id="footNotes"></div>
+      <div id="autosaveNote" style="font-size:11px;color:#94a3b8;text-align:right;margin-top:10px;font-weight:600;"></div>
     </div>
-    <div id="summaryCards" class="stat-cards"></div>
-    <div class="legend">
-      <span><span class="swatch origin-sw"></span><span id="legendFireIcon"></span>발화지점</span>
-      <span><span class="swatch spread-sw"></span><span id="legendSpreadIcon"></span>연소확대</span>
-      <span><span class="swatch clear-sw"></span>✅ 안전대기(이상없음)</span>
-      <span><span class="swatch locked-sw"></span>🔒 문잠김(미확인)</span>
-    </div>
-
-    <div id="footNotes"></div>
-
-    <div id="boardHolder"><div class="empty-hint">위 설정을 입력하고 "표 생성"을 누르세요.</div></div>
-
-    <div id="autosaveNote" style="font-size:11px;color:#94a3b8;text-align:right;margin-top:10px;font-weight:600;"></div>
 
     <div class="toolbar" id="toolbar" style="display:none; flex-wrap: wrap;">
-      <button type="button" class="success-outline" onclick="captureScreen()">📷 전체 화면 캡처</button>
+      <button type="button" class="success-outline" onclick="captureBoard()">📷 전체 화면 캡처</button>
       <button type="button" class="secondary" onclick="window.print()">인쇄 / PDF 저장</button>
       <button type="button" class="danger" onclick="resetAll()">초기화 (DB 삭제)</button>
     </div>
@@ -411,64 +415,57 @@ function showSetupScreen(){
   window.scrollTo(0,0);
 }
 
-// 📷 교통사고 현황판에서 완벽히 성공했던 모달+꾹 눌러 저장 방식 캡처 로직
-function captureScreen() {
-  const captureTarget = document.getElementById('captureArea');
+// 📷 교통사고 현황판에서 100% 동일하게 가져온 모달 팝업 + 꾹 눌러 저장 방식 캡처 로직
+function captureBoard() {
+  const captureTarget = document.getElementById('captureTarget');
   const boardHolder = document.getElementById('boardHolder');
+  const mainWrap = document.getElementById('mainWrap');
   const toolbar = document.getElementById('toolbar');
   const topbar = document.querySelector('.board-topbar');
-  const autosaveNote = document.getElementById('autosaveNote');
-  
-  // 스크롤을 맨 위로 (잘림 방지)
-  window.scrollTo(0, 0);
 
-  // 불필요한 영역 임시 숨김
+  // 1. 캡처 시 불필요한 영역 임시 숨김
   toolbar.style.display = 'none';
   topbar.style.display = 'none';
-  autosaveNote.style.display = 'none';
 
-  // 가로로 길어졌을 때 가려지는 표까지 다 나오게끔 레이아웃 확장
+  // 2. 가로로 긴 표가 잘리지 않도록 임시로 레이아웃 확장
   const origOverflow = boardHolder.style.overflow;
-  const origMaxWidth = captureTarget.style.maxWidth;
+  const origMaxWidth = mainWrap.style.maxWidth;
   const origWidth = captureTarget.style.width;
 
   boardHolder.style.overflow = 'visible';
-  captureTarget.style.maxWidth = 'none';
+  mainWrap.style.maxWidth = 'none'; 
   captureTarget.style.width = 'max-content';
 
-  // 약간의 지연 후 캡처 실행 (화면이 커지는 시간 벌기)
+  // 약간의 지연 후 캡처 실행 (화면 렌더링 시간 벌기)
   setTimeout(() => {
-    html2canvas(captureTarget, { 
-      scale: 2, // 고화질
-      useCORS: true,
+    html2canvas(captureTarget, {
+      scale: 2, // 선명한 고화질
       backgroundColor: "#f1f5f9",
       width: captureTarget.scrollWidth,
       height: captureTarget.scrollHeight
     }).then(canvas => {
-      // 캡처 후 원상복구
+      // 3. 캡처 후 화면 원상복구
       boardHolder.style.overflow = origOverflow;
-      captureTarget.style.maxWidth = origMaxWidth;
+      mainWrap.style.maxWidth = origMaxWidth;
       captureTarget.style.width = origWidth;
-      
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
-      autosaveNote.style.display = 'block';
 
       const imgData = canvas.toDataURL('image/png');
 
-      // 모달창 띄워서 사용자에게 '꾹 눌러 저장' 유도
+      // 4. 모달창을 띄워 사용자에게 '꾹 눌러 저장' 유도
       const overlay = document.createElement('div');
       overlay.className = 'overlay';
       overlay.id = 'captureOverlay';
       overlay.innerHTML = `
-        <div class="modal" style="max-width:95vw; max-height:95vh; display:flex; flex-direction:column; align-items:center; padding:16px; z-index:10000;">
-          <h3 style="margin-bottom:8px; font-size:16px; color:var(--clear-bg);">📷 현황판 캡처 완료</h3>
+        <div class="modal" style="max-width:95vw; max-height:95vh; display:flex; flex-direction:column; align-items:center; padding:16px;">
+          <h3 style="margin-bottom:8px; font-size:16px; color:#10b981;">📷 맞춤 캡처 완료</h3>
           <p style="font-size:13px; color:#475569; text-align:center; margin-bottom:12px; line-height:1.4;">
-            설정 버튼을 제외하고 알맹이만 깔끔하게 잘렸습니다.<br>
+            세대수에 맞춰 알맹이만 깔끔하게 잘렸습니다.<br>
             아래 사진을 <strong>꾹 누른 후 '사진 앱에 저장'</strong>을 누르세요.
           </p>
           <div style="overflow:auto; max-height:60vh; border:1px solid #cbd5e1; border-radius:8px; width:100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <img src="${imgData}" style="width:100%; display:block;">
+            <img src="${imgData}" style="width:100%; display:block; user-select: auto; -webkit-touch-callout: default;">
           </div>
           <button type="button" class="secondary" style="margin-top:16px; width:100%;" onclick="document.getElementById('captureOverlay').remove()">닫기</button>
         </div>
@@ -476,17 +473,15 @@ function captureScreen() {
       document.body.appendChild(overlay);
 
     }).catch(err => {
-      console.error("캡처 오류:", err);
-      // 에러 시 원상복구
+      // 오류 발생 시 원상복구
       boardHolder.style.overflow = origOverflow;
-      captureTarget.style.maxWidth = origMaxWidth;
+      mainWrap.style.maxWidth = origMaxWidth;
       captureTarget.style.width = origWidth;
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
-      autosaveNote.style.display = 'block';
-      alert("화면 캡처 중 오류가 발생했습니다.");
+      alert('캡처 도중 오류가 발생했습니다.');
     });
-  }, 100);
+  }, 100); 
 }
 
 function saveState(){
@@ -688,7 +683,7 @@ function openEditor(floorIdx, unitIdx){
   overlay.id='editorOverlay';
   
   overlay.innerHTML = `
-    <div class="modal">
+    <div class="modal" style="z-index:100;">
       <h3>${u.no}호 현황 입력</h3>
       
       <div class="mrow checks" style="margin-top:0; margin-bottom:12px;">
