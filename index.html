@@ -372,7 +372,7 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.database();
-const dbRef = db.ref('apt_evac_board_v1'); // 데이터베이스 저장 경로
+const dbRef = db.ref('apt_evac_board_v1'); 
 
 let floors = []; 
 let lastSavedData = ""; 
@@ -531,6 +531,7 @@ function generateBoard(){
   }
   floors = newFloors;
   render();
+  saveState(); 
   document.getElementById('backToBoardBtn').style.display='inline-block';
   showBoardScreen();
 }
@@ -547,11 +548,13 @@ function editUnits(floorIdx){
     return oldByNo[no] || {no, status:'normal', count:0, note:'', origin:false, spread:false};
   });
   render();
+  saveState(); 
 }
 
 function toggleNoIssue(floorIdx){
   floors[floorIdx].noIssue = !floors[floorIdx].noIssue;
   render();
+  saveState(); 
 }
 
 let editing = null;
@@ -757,6 +760,7 @@ function saveEditor(){
   if(u.status==='normal' || u.status==='locked'){ u.count=0; u.persons=[]; u.evacDetails=[]; u.rescueDetails=[]; }
   closeEditor();
   render();
+  saveState(); 
 }
 
 window.__cellClick = function(td){
@@ -931,7 +935,6 @@ function render(){
     fn += `<div class="fn-line">※ ${parts.join(' / ')}</div>`;
   }
   document.getElementById('footNotes').innerHTML = fn;
-  saveState();
 }
 </script>
 </body>
