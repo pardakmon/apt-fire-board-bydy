@@ -13,7 +13,7 @@
     --spread:#ea580c;      
     --evac:#16a34a;        
     --rescue:#e11d48;      
-    --locked:#64748b;      /* 문잠김 차분한 슬레이트 회색으로 변경 */
+    --locked:#64748b;      
     --clear-bg:#10b981;    /* 이상없음 초록색 배경 */
     --normal:#334155;
     --panel-bg:#ffffff;
@@ -171,8 +171,8 @@
     cursor:default;
   }
   
-  /* 카테고리별 태그 디자인 */
-  .tag-clear { background: #f1f5f9; color: #475569; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #cbd5e1; }
+  /* 태그 디자인 */
+  .tag-clear { background: #f1f5f9; color: #047857; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #a7f3d0; }
   .tag-locked { background: #f1f5f9; color: var(--locked); font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #cbd5e1; }
   .tag-evac { background: #dcfce7; color: #15803d; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #86efac; }
   .tag-rescue { background: #ffe4e6; color: #e11d48; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #fda4af; }
@@ -270,13 +270,17 @@
     .toolbar{justify-content:stretch;flex-wrap:wrap;}
     .toolbar button{flex:1;}
   }
+
+  /* 인쇄 / 캡처 최적화 스타일 (여백 및 불필요한 요소 숨김) */
   @media print{
-    body{background:#fff;padding:0;}
+    body{background:#fff;padding:0;margin:0;}
     body::before {display:none !important;} 
-    .panel, .toolbar, .board-topbar, #setupScreen{display:none !important;}
-    .wrap{max-width:100%;}
-    .board-header{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:none;}
+    .panel, .toolbar, .board-topbar, #setupScreen, .floor-controls button{display:none !important;}
+    .wrap{max-width:100%; margin:0; padding:0;}
+    .board-header{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:none;border-radius:0;margin-bottom:10px;}
     .stat-card{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:none;break-inside:avoid;}
+    table.board{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    td.unit-cell{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   }
 </style>
 </head>
@@ -317,7 +321,7 @@
       </div>
       <div style="font-size:12px;color:#64748b;margin-top:6px;line-height:1.5;">
         예: 세대가 01,02,04,05호로 구성(03호 없음)이면 "01,02,04,05"로 입력. 표 생성 후 각 층마다 별도로 호수 목록을 수정할 수 있습니다.<br>
-        ※ "표 생성"을 다시 누르면 층수·호수 구성이 새로 적용되지만, 기존에 입력해둔 층·호수의 상태값은 그대로 유지됩니다. 층수·호수 범위에서 빠진 세대만 데이터가 사라집니다.
+        ※ "표 생성"을 다시 누르면 층수·호수 구성이 새로 적용되지만, 기존에 입력해둔 층·호수의 상태값은 그대로 유지됩니다.
       </div>
     </div>
     <div class="credit-line">제작 영등포소방서 화재조사팀</div>
@@ -338,7 +342,7 @@
     <div class="legend">
       <span><span class="swatch origin-sw"></span><span id="legendFireIcon"></span>발화지점</span>
       <span><span class="swatch spread-sw"></span><span id="legendSpreadIcon"></span>연소확대</span>
-      <span><span class="swatch clear-sw"></span>✅ 이상없음</span>
+      <span><span class="swatch clear-sw"></span>✅ 안전대기(이상없음)</span>
       <span><span class="swatch locked-sw"></span>🔒 문잠김(미확인)</span>
     </div>
 
@@ -349,7 +353,7 @@
     <div id="autosaveNote" style="font-size:11px;color:#94a3b8;text-align:right;margin-top:10px;font-weight:600;"></div>
 
     <div class="toolbar" id="toolbar" style="display:none;">
-      <button type="button" class="secondary" onclick="window.print()">인쇄 / PDF 저장</button>
+      <button type="button" class="secondary" onclick="window.print()">보고서 인쇄 / 이미지 저장</button>
       <button type="button" class="danger" onclick="resetAll()">초기화 (DB 전체삭제)</button>
     </div>
   </div>
@@ -371,7 +375,6 @@ const firebaseConfig = {
   appId: "1:389632256658:web:3add30eae087876437d44b"
 };
 
-// 앱 초기화
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
@@ -424,7 +427,6 @@ function saveState(){
   }
 }
 
-// 실시간 리스너
 dbRef.on('value', (snapshot) => {
   const state = snapshot.val();
   if(!state) return;
@@ -517,7 +519,7 @@ function generateBoard(){
 
   const newFloors = [];
   for(let f = top; f >= bot; f--){
-    if(f === 4 && skipOption === 'skip') continue; // 4층 건너뛰기
+    if(f === 4 && skipOption === 'skip') continue;
 
     let floorName = String(f);
     let floorPrefix = String(f);
@@ -537,7 +539,6 @@ function generateBoard(){
         const no = floorPrefix + suf;
         return oldUnitsByNo[no] || {
           no, 
-          isClear: false, 
           isLocked: false, 
           clearCount: 0,
           evacCount: 0, 
@@ -566,7 +567,7 @@ function editUnits(floorIdx){
   const oldByNo = {}; floors[floorIdx].units.forEach(u=>oldByNo[u.no]=u);
   floors[floorIdx].units = pattern.map(suf=>{
     const no = fName + suf;
-    return oldByNo[no] || {no, isClear: false, isLocked: false, clearCount: 0, evacCount: 0, rescueCount: 0, origin: false, spread: false, evacDetails: [], rescueDetails: []};
+    return oldByNo[no] || {no, isLocked: false, clearCount: 0, evacCount: 0, rescueCount: 0, origin: false, spread: false, evacDetails: [], rescueDetails: []};
   });
   render();
   saveState(); 
@@ -597,12 +598,11 @@ function openEditor(floorIdx, unitIdx){
       <h3>${u.no}호 현황 입력</h3>
       
       <div class="mrow checks" style="margin-top:0; margin-bottom:12px;">
-        <label><input type="checkbox" id="m_isClear" ${u.isClear?'checked':''}> ✅ 이상없음(수색완료)</label>
         <label><input type="checkbox" id="m_isLocked" ${u.isLocked?'checked':''}> 🔒 문잠김(미확인)</label>
       </div>
       
       <div class="mrow">
-        <label style="color:var(--clear-bg);">✅ 이상없음(자택 대기) 인원</label>
+        <label style="color:var(--clear-bg);">✅ 안전 대기(이상없음) 인원</label>
         <div class="stepper-row">
           <button type="button" class="step-btn" onclick="adjustNewCount('m_clearCount', -1)">−</button>
           <input type="number" id="m_clearCount" min="0" value="${u.clearCount||0}">
@@ -732,7 +732,6 @@ function saveEditor(){
   const {floorIdx, unitIdx} = editing;
   const u = floors[floorIdx].units[unitIdx];
   
-  u.isClear = document.getElementById('m_isClear').checked;
   u.isLocked = document.getElementById('m_isLocked').checked;
   u.clearCount = parseInt(document.getElementById('m_clearCount').value)||0;
   u.evacCount = parseInt(document.getElementById('m_evacCount').value)||0;
@@ -769,7 +768,7 @@ function render(){
   floors.forEach(fl=>{
     fl.units.forEach(u=>{
       const cc = u.clearCount || 0;
-      if(u.isClear && cc > 0) clearTotal += cc;
+      if(cc > 0) clearTotal += cc;
       
       const ec = u.evacCount || (u.status==='evac'? u.count : 0) || 0;
       const rc = u.rescueCount || (u.status==='rescue'? u.count : 0) || 0;
@@ -863,14 +862,16 @@ function render(){
       }
       const u = fl.units[ui];
       
-      // 배경색 우선순위: 발화지점 > 연소확대 > 이상없음 > 문잠김(회색)
-      let bg = u.origin ? 'var(--origin)' : (u.spread ? 'var(--spread)' : (u.isClear ? 'var(--clear-bg)' : (u.isLocked ? 'var(--locked)' : '')));
-      let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (u.isClear ? ' is-clear' : (u.isLocked ? ' is-locked' : ''))));
+      const cc = u.clearCount || 0;
+      const isClearActive = cc > 0; // 안전 대기 인원이 있으면 초록색 활성화
+
+      // 배경색 우선순위: 발화지점 > 연소확대 > 이상없음(안전대기) > 문잠김(회색)
+      let bg = u.origin ? 'var(--origin)' : (u.spread ? 'var(--spread)' : (isClearActive ? 'var(--clear-bg)' : (u.isLocked ? 'var(--locked)' : '')));
+      let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (isClearActive ? ' is-clear' : (u.isLocked ? ' is-locked' : ''))));
       
       let bodyHtml = '';
       
-      const cc = u.clearCount || 0;
-      if(u.isClear) bodyHtml += `<div class="tag-clear">✅ 이상없음 ${cc > 0 ? cc+'명' : ''}</div>`;
+      if(isClearActive) bodyHtml += `<div class="tag-clear">✅ 이상없음 ${cc}명</div>`;
       if(u.isLocked) bodyHtml += `<div class="tag-locked">🔒 문잠김</div>`;
       
       const ec = u.evacCount || (u.status==='evac'? u.count : 0) || 0;
