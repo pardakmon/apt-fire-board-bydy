@@ -411,6 +411,7 @@ const dbRef = db.ref('apt_evac_board_v1');
 
 let floors = []; 
 let lastSavedData = ""; 
+let isInitialLoad = true; // 🌟 새로고침 시 한 번만 현황판으로 넘어가도록 제어하는 변수
 
 function showBoardScreen(){
   document.getElementById('setupScreen').style.display='none';
@@ -549,10 +550,12 @@ dbRef.on('value', (snapshot) => {
   
   if(floors.length > 0) {
     render();
-    if(document.getElementById('setupScreen').style.display !== 'none') {
+    // 🌟 초기 접속(새로고침) 시에만 설정창에서 현황판으로 자동 전환하도록 수정
+    if(isInitialLoad && document.getElementById('setupScreen').style.display !== 'none') {
       showBoardScreen();
     }
   }
+  isInitialLoad = false;
 });
 
 function resetAll(){
@@ -971,7 +974,6 @@ function render(){
       if(rc > 0) bodyHtml += `<div class="tag-rescue">구조 ${rc}명</div>`;
       if(u.rescueDetails && u.rescueDetails.length) bodyHtml += `<div class="status-note">${u.rescueDetails.map(d=>'· '+d).join('<br>')}</div>`;
 
-      // 🌟 셀 내부 태그도 텍스트 이모티콘으로 수정 완료
       const originTag = u.origin ? `<div class="origin-tag">🔥 발화지점</div>` : '';
       const spreadTag = (!u.origin && u.spread) ? `<div class="spread-tag">💥 연소확대</div>` : '';
       
