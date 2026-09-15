@@ -13,7 +13,8 @@
     --spread:#ea580c;      
     --evac:#16a34a;        
     --rescue:#e11d48;      
-    --locked:#8b5cf6;      
+    --locked:#8b5cf6;
+    --clear-bg:#10b981;    /* 이상없음 초록색 배경 */
     --normal:#334155;
     --panel-bg:#ffffff;
     --panel-border:#e2e8f0;
@@ -93,10 +94,10 @@
     color:#fff;
   }
   .stat-cards{
-    display:flex;gap:12px;margin:4px 0 16px;
+    display:flex;gap:12px;margin:4px 0 16px; flex-wrap: wrap;
   }
   .stat-card{
-    flex:1;text-align:center;border-radius:12px;padding:18px 10px 15px;
+    flex:1; min-width:100px; text-align:center;border-radius:12px;padding:18px 10px 15px;
     background:rgba(255, 255, 255, 0.9);
     border:1px solid var(--panel-border);
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
@@ -104,13 +105,15 @@
   .stat-card .num{
     font-size:36px;font-weight:900;line-height:1;
   }
-  .stat-card .label{font-size:13.5px;color:#64748b;margin-top:8px;font-weight:700;}
+  .stat-card .label{font-size:13px;color:#64748b;margin-top:8px;font-weight:700;}
   .stat-card.total .num{color:var(--navy);}
   .stat-card.rescue .num{color:var(--rescue);}
   .stat-card.evac .num{color:var(--evac);}
+  .stat-card.clear .num{color:var(--clear-bg);}
   .stat-card.total{border-top:4px solid var(--navy);}
   .stat-card.rescue{border-top:4px solid var(--rescue);}
   .stat-card.evac{border-top:4px solid var(--evac);}
+  .stat-card.clear{border-top:4px solid var(--clear-bg);}
   .board-header{
     display:flex;align-items:center;gap:16px;margin-bottom:14px;
     background:linear-gradient(135deg, var(--navy), #334155);
@@ -127,7 +130,7 @@
   .board-header-text{text-align:left;}
   .board-title{font-size:22px;font-weight:800;color:#fff;min-height:24px;}
   .board-subtitle{font-size:13px;color:#cbd5e1;margin-top:4px;font-weight:600;letter-spacing:0.5px;}
-  .legend{display:flex;justify-content:flex-end;gap:16px;margin-bottom:8px;font-size:12px;font-weight:600;}
+  .legend{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:8px;font-size:12px;font-weight:600;}
   .legend span{display:inline-flex;align-items:center;gap:6px;}
   .swatch{width:16px;height:16px;display:inline-block;border-radius:4px;}
   #boardHolder{
@@ -178,14 +181,20 @@
   .spread-tag{color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;gap:4px;margin-top:4px;font-size:11.5px;background:rgba(0,0,0,0.15);border-radius:6px;padding:2px 6px;}
   .noissue-row td{background:#f8fafc;font-size:13.5px;color:#475569;padding:10px;font-weight:600;}
   
-  /* 배경색 반전 시 텍스트 처리 */
-  td.unit-cell.is-origin .unit-no, td.unit-cell.is-origin .status-note{color:#fff;}
-  td.unit-cell.is-locked .unit-no, td.unit-cell.is-locked .status-note{color:#fff;}
-  td.unit-cell.is-origin .tag-clear, td.unit-cell.is-origin .tag-locked, td.unit-cell.is-origin .tag-evac, td.unit-cell.is-origin .tag-rescue {border-color: transparent;}
+  /* 배경색 반전 시 텍스트 및 태그 처리 */
+  td.unit-cell.is-origin .unit-no, td.unit-cell.is-origin .status-note,
+  td.unit-cell.is-spread .unit-no, td.unit-cell.is-spread .status-note,
+  td.unit-cell.is-locked .unit-no, td.unit-cell.is-locked .status-note,
+  td.unit-cell.is-clear .unit-no, td.unit-cell.is-clear .status-note {color:#fff;}
+  
+  td.unit-cell.is-origin .tag-clear, td.unit-cell.is-origin .tag-locked, td.unit-cell.is-origin .tag-evac, td.unit-cell.is-origin .tag-rescue,
+  td.unit-cell.is-spread .tag-clear, td.unit-cell.is-spread .tag-locked, td.unit-cell.is-spread .tag-evac, td.unit-cell.is-spread .tag-rescue,
+  td.unit-cell.is-clear .tag-clear, td.unit-cell.is-clear .tag-locked, td.unit-cell.is-clear .tag-evac, td.unit-cell.is-clear .tag-rescue { background: rgba(255,255,255,0.2); color: #fff; border-color: transparent; }
   
   .fire-icon{display:inline-block;vertical-align:middle;width:20px;height:20px;margin-right:4px;}
   .legend .swatch.origin-sw{background:var(--origin);}
   .legend .swatch.spread-sw{background:var(--spread);}
+  .legend .swatch.clear-sw{background:var(--clear-bg);}
   .legend .swatch.locked-sw{background:var(--locked);}
   .floor-controls{display:flex;justify-content:center;gap:6px;margin-top:6px;}
   #footNotes{margin-top:16px;font-size:13px;line-height:1.7;color:#475569;font-weight:500;}
@@ -255,9 +264,6 @@
     .setup-stepper input{width:auto;}
     .board-header{flex-wrap:wrap;gap:12px;padding:16px;}
     .board-title{font-size:18px;}
-    .stat-cards{flex-wrap:wrap;}
-    .stat-card{min-width:100px;flex:1 1 28%; padding:14px 10px 12px;}
-    .legend{justify-content:flex-start;flex-wrap:wrap;}
     .modal{width:92vw;max-width:360px;max-height:88vh;overflow-y:auto;padding:20px;}
     .toolbar{justify-content:stretch;flex-wrap:wrap;}
     .toolbar button{flex:1;}
@@ -322,6 +328,7 @@
     <div class="legend">
       <span><span class="swatch origin-sw"></span><span id="legendFireIcon"></span>발화지점</span>
       <span><span class="swatch spread-sw"></span><span id="legendSpreadIcon"></span>연소확대</span>
+      <span><span class="swatch clear-sw"></span>✅ 이상없음</span>
       <span><span class="swatch locked-sw"></span>🔒 문잠김(미확인)</span>
     </div>
 
@@ -510,6 +517,7 @@ function generateBoard(){
           no, 
           isClear: false, 
           isLocked: false, 
+          clearCount: 0,
           evacCount: 0, 
           rescueCount: 0, 
           origin: false, 
@@ -536,7 +544,7 @@ function editUnits(floorIdx){
   const oldByNo = {}; floors[floorIdx].units.forEach(u=>oldByNo[u.no]=u);
   floors[floorIdx].units = pattern.map(suf=>{
     const no = String(f)+suf;
-    return oldByNo[no] || {no, isClear: false, isLocked: false, evacCount: 0, rescueCount: 0, origin: false, spread: false, evacDetails: [], rescueDetails: []};
+    return oldByNo[no] || {no, isClear: false, isLocked: false, clearCount: 0, evacCount: 0, rescueCount: 0, origin: false, spread: false, evacDetails: [], rescueDetails: []};
   });
   render();
   saveState(); 
@@ -566,11 +574,22 @@ function openEditor(floorIdx, unitIdx){
     <div class="modal">
       <h3>${u.no}호 현황 입력</h3>
       
-      <div class="mrow checks" style="margin-top:0; margin-bottom:20px;">
+      <div class="mrow checks" style="margin-top:0; margin-bottom:12px;">
         <label><input type="checkbox" id="m_isClear" ${u.isClear?'checked':''}> ✅ 이상없음(수색완료)</label>
         <label><input type="checkbox" id="m_isLocked" ${u.isLocked?'checked':''}> 🔒 문잠김(미확인)</label>
       </div>
       
+      <div class="mrow">
+        <label style="color:var(--clear-bg);">✅ 이상없음(자택 대기) 인원</label>
+        <div class="stepper-row">
+          <button type="button" class="step-btn" onclick="adjustNewCount('m_clearCount', -1)">−</button>
+          <input type="number" id="m_clearCount" min="0" value="${u.clearCount||0}">
+          <button type="button" class="step-btn" onclick="adjustNewCount('m_clearCount', 1)">+</button>
+        </div>
+      </div>
+      
+      <hr style="border:0; border-top:1px solid #e2e8f0; margin:16px 0;">
+
       <div class="mrow">
         <label style="color:var(--evac);">🏃 자력대피 인원</label>
         <div class="stepper-row">
@@ -693,6 +712,7 @@ function saveEditor(){
   
   u.isClear = document.getElementById('m_isClear').checked;
   u.isLocked = document.getElementById('m_isLocked').checked;
+  u.clearCount = parseInt(document.getElementById('m_clearCount').value)||0;
   u.evacCount = parseInt(document.getElementById('m_evacCount').value)||0;
   u.rescueCount = parseInt(document.getElementById('m_rescueCount').value)||0;
   u.origin = document.getElementById('m_origin').checked;
@@ -720,13 +740,15 @@ function render(){
   const name = document.getElementById('bldgName').value.trim();
   document.getElementById('titleLine').textContent = name || '';
 
-  let evacTotal=0, rescueTotal=0, evacSelfTotal=0;
+  let evacTotal=0, rescueTotal=0, evacSelfTotal=0, clearTotal=0;
   const evacDetail = [];
   const rescueDetail = [];
   
   floors.forEach(fl=>{
     fl.units.forEach(u=>{
-      // 이전 버전 데이터 호환성 처리를 위해
+      const cc = u.clearCount || 0;
+      if(u.isClear && cc > 0) clearTotal += cc;
+      
       const ec = u.evacCount || (u.status==='evac'? u.count : 0) || 0;
       const rc = u.rescueCount || (u.status==='rescue'? u.count : 0) || 0;
       
@@ -757,6 +779,10 @@ function render(){
     <div class="stat-card evac">
       <div class="num">${evacSelfTotal}</div>
       <div class="label">자력대피(명)</div>
+    </div>
+    <div class="stat-card clear">
+      <div class="num">${clearTotal}</div>
+      <div class="label">안전 대기(명)</div>
     </div>
   `;
 
@@ -815,13 +841,14 @@ function render(){
       }
       const u = fl.units[ui];
       
-      let bg = u.origin ? 'var(--origin)' : (u.spread ? 'var(--spread)' : (u.isLocked ? 'var(--locked)' : ''));
-      let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (u.isLocked ? ' is-locked' : '')));
+      // 배경색 우선순위: 발화지점 > 연소확대 > 이상없음 > 문잠김
+      let bg = u.origin ? 'var(--origin)' : (u.spread ? 'var(--spread)' : (u.isClear ? 'var(--clear-bg)' : (u.isLocked ? 'var(--locked)' : '')));
+      let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (u.isClear ? ' is-clear' : (u.isLocked ? ' is-locked' : ''))));
       
       let bodyHtml = '';
       
-      // 태그 렌더링
-      if(u.isClear) bodyHtml += `<div class="tag-clear">✅ 이상없음</div>`;
+      const cc = u.clearCount || 0;
+      if(u.isClear) bodyHtml += `<div class="tag-clear">✅ 이상없음 ${cc > 0 ? cc+'명' : ''}</div>`;
       if(u.isLocked) bodyHtml += `<div class="tag-locked">🔒 문잠김</div>`;
       
       const ec = u.evacCount || (u.status==='evac'? u.count : 0) || 0;
