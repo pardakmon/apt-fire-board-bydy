@@ -36,6 +36,24 @@
     z-index: 0;
   }
 
+  /* 로그인 화면 스타일 */
+  #loginScreen {
+    position: fixed; inset: 0; background: var(--navy); 
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 20000;
+  }
+  .login-box {
+    background: #fff; padding: 30px; border-radius: 12px; width: 90vw; max-width: 340px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center;
+  }
+  .login-box h2 { margin: 0 0 20px; color: var(--navy); font-weight:800; font-size: 22px; }
+  .login-box .field { margin-bottom: 15px; text-align: left;}
+  .login-box .field label { font-size:12px; color:#64748b; font-weight:700; display:block; margin-bottom:6px; }
+  .login-box .field input { width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; outline:none; transition:border-color 0.2s; box-sizing:border-box; }
+  .login-box .field input:focus { border-color:var(--accent); }
+  .login-box button { width: 100%; padding: 12px; font-size: 14.5px; margin-top: 10px; }
+  .login-error { color: var(--rescue); font-size: 12.5px; margin-top: 10px; display: none; font-weight: 700; background:#fff1f2; padding:8px; border-radius:6px;}
+
   /* 📷 캡처될 알맹이 구역 (배경 워터마크 포함) */
   #captureTarget {
     position: relative;
@@ -145,6 +163,7 @@
   .stat-card.rescue{border-top:4px solid var(--rescue);}
   .stat-card.evac{border-top:4px solid var(--evac);}
   .stat-card.clear{border-top:4px solid var(--clear-bg);}
+  
   .board-header{
     display:flex;align-items:center;gap:16px;margin-bottom:14px;
     background:linear-gradient(135deg, var(--navy), #334155);
@@ -164,6 +183,7 @@
   .legend{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:8px;font-size:12px;font-weight:600;}
   .legend span{display:inline-flex;align-items:center;gap:6px;}
   .swatch{width:16px;height:16px;display:inline-block;border-radius:4px;}
+  
   #boardHolder{
     overflow-x:auto;-webkit-overflow-scrolling:touch;
     border-radius:12px;
@@ -231,7 +251,10 @@
   .toolbar{display:flex;gap:10px;margin-top:18px;justify-content:flex-end;}
   .empty-hint{color:#94a3b8;font-size:14px;text-align:center;padding:40px 0;font-weight:600;}
   .credit-line{text-align:center;font-size:12px;color:#94a3b8;margin:20px 0 10px;letter-spacing:0.5px;font-weight:600;}
-  .board-topbar{display:flex;justify-content:flex-start;margin-bottom:14px;}
+  
+  .board-topbar{
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;
+  }
 
   /* modal */
   .overlay{
@@ -301,7 +324,7 @@
   @media print{
     body{background:#fff;padding:0;margin:0;}
     body::before {display:none !important;} 
-    .panel, .toolbar, .board-topbar, #setupScreen, .floor-controls button, #autosaveNote{display:none !important;}
+    .panel, .toolbar, .board-topbar, #setupScreen, .floor-controls button, #autosaveNote, #loginScreen{display:none !important;}
     #captureTarget{max-width:100%; margin:0; padding:0;}
     .board-header{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:none;border-radius:0;margin-bottom:10px;}
     .stat-card{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:none;break-inside:avoid;}
@@ -311,7 +334,32 @@
 </style>
 </head>
 <body>
-<div class="wrap" id="mainWrap">
+
+<!-- 🔒 로그인 화면 추가 -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h2>현황판 접속</h2>
+    <div class="field">
+      <label>이메일 아이디</label>
+      <input type="email" id="loginEmail" placeholder="team@fire.com">
+    </div>
+    <div class="field">
+      <label>비밀번호</label>
+      <input type="password" id="loginPwd" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <div id="loginError" class="login-error">아이디 또는 비밀번호를 확인해주세요.</div>
+    <button type="button" onclick="doLogin()">관리자 로그인 (작성/수정)</button>
+    
+    <div style="margin-top:20px; border-top:1px solid #e2e8f0; padding-top:20px;">
+      <button type="button" class="secondary" style="width:100%; background:#f8fafc;" onclick="enterViewMode()">👀 실시간 관전 모드 (조회 전용)</button>
+      <div style="font-size:11.5px; color:#64748b; margin-top:8px; line-height:1.4;">
+        관전 모드에서는 로그인 없이 실시간 현황을 <br>조회하고 캡처할 수 있습니다.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="mainWrap" style="display:none;">
   <div id="setupScreen">
     <h1>아파트 화재 세대별 대피현황판 생성기</h1>
     <div class="panel" id="setupPanel">
@@ -351,7 +399,10 @@
 
   <div id="boardScreen" style="display:none;">
     <div class="board-topbar">
-      <button type="button" class="secondary" onclick="showSetupScreen()">← 설정으로 돌아가기</button>
+      <button type="button" class="secondary" id="btnBackToSetup" onclick="showSetupScreen()">← 설정으로 돌아가기</button>
+      <div style="flex:1;"></div>
+      <button type="button" class="secondary" id="btnLoginFromView" onclick="location.reload()" style="display:none; color:var(--navy); border-color:#cbd5e1;">관리자 로그인</button>
+      <button type="button" class="secondary" id="btnLogout" onclick="doLogout()" style="display:none; color:var(--rescue); border-color:#fecdd3;">로그아웃</button>
     </div>
     
     <!-- 📷 캡처될 내용물이 쏙 들어가는 알맹이 구역 -->
@@ -365,7 +416,6 @@
       </div>
       <div id="summaryCards" class="stat-cards"></div>
       
-      <!-- 🌟 범례 이모티콘 텍스트로 수정 -->
       <div class="legend">
         <span><span class="swatch origin-sw"></span>🔥 발화지점</span>
         <span><span class="swatch spread-sw"></span>💥 연소확대</span>
@@ -382,13 +432,14 @@
     <div class="toolbar" id="toolbar" style="display:none; flex-wrap: wrap;">
       <button type="button" class="success-outline" onclick="captureBoard()">📷 전체 화면 캡처</button>
       <button type="button" class="secondary" onclick="window.print()">인쇄 / PDF 저장</button>
-      <button type="button" class="danger" onclick="resetAll()">초기화 (DB 삭제)</button>
+      <button type="button" class="danger" id="btnResetDB" onclick="resetAll()">초기화 (DB 삭제)</button>
     </div>
   </div>
 </div>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
@@ -406,25 +457,96 @@ const firebaseConfig = {
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
+const auth = firebase.auth();
 const db = firebase.database();
 const dbRef = db.ref('apt_evac_board_v1'); 
 
 let floors = []; 
 let lastSavedData = ""; 
-let isInitialLoad = true; // 🌟 새로고침 시 한 번만 현황판으로 넘어가도록 제어하는 변수
+let isInitialLoad = true; 
+let isReadOnly = false; // 🌟 읽기 전용 상태인지 확인하는 변수
+let isListening = false;
+
+// 🌟 로그인 및 인증 상태 감지 로직
+auth.onAuthStateChanged(user => {
+  if (user) {
+    // 관리자 로그인 성공 시
+    isReadOnly = false;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainWrap').style.display = 'block';
+    
+    // UI 버튼 상태 세팅
+    document.getElementById('btnLogout').style.display = 'inline-block';
+    document.getElementById('btnLoginFromView').style.display = 'none';
+    document.getElementById('btnBackToSetup').style.display = 'inline-block';
+    document.getElementById('btnResetDB').style.display = 'inline-block';
+    
+    startDatabaseListener();
+  } else {
+    // 로그아웃 상태일 때, 관전모드가 아니면 로그인 화면 표시
+    if(!isReadOnly) {
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('mainWrap').style.display = 'none';
+    }
+  }
+});
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const pwd = document.getElementById('loginPwd').value;
+  document.getElementById('loginError').style.display = 'none';
+  
+  if(!email || !pwd) {
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+  
+  auth.signInWithEmailAndPassword(email, pwd)
+    .catch(error => {
+      document.getElementById('loginError').style.display = 'block';
+    });
+}
+
+function doLogout() {
+  if(confirm("로그아웃 하시겠습니까?")) {
+    auth.signOut().then(() => {
+      location.reload();
+    });
+  }
+}
+
+// 🌟 실시간 관전 모드 진입 로직
+function enterViewMode() {
+  isReadOnly = true;
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainWrap').style.display = 'block';
+  
+  // 관전 모드 UI 세팅 (설정창 숨기고 현황판만 표시)
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('boardScreen').style.display = 'block';
+  
+  // 관리자 기능 숨기기
+  document.getElementById('btnLogout').style.display = 'none';
+  document.getElementById('btnLoginFromView').style.display = 'inline-block';
+  document.getElementById('btnBackToSetup').style.display = 'none';
+  document.getElementById('btnResetDB').style.display = 'none';
+  
+  startDatabaseListener();
+}
 
 function showBoardScreen(){
+  if(isReadOnly) return;
   document.getElementById('setupScreen').style.display='none';
   document.getElementById('boardScreen').style.display='block';
   window.scrollTo(0,0);
 }
 function showSetupScreen(){
+  if(isReadOnly) return;
   document.getElementById('setupScreen').style.display='block';
   document.getElementById('boardScreen').style.display='none';
   window.scrollTo(0,0);
 }
 
-// 📷 모달 팝업 + 꾹 눌러 저장 방식 캡처 로직 (메모리 최적화 3중 적용)
 function captureBoard() {
   const captureTarget = document.getElementById('captureTarget');
   const boardHolder = document.getElementById('boardHolder');
@@ -493,12 +615,13 @@ function captureBoard() {
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
       autosaveNote.style.display = 'block';
-      alert("거대한 표를 처리하기에 기기 메모리가 부족합니다. 브라우저의 기본 화면 캡처 기능을 이용해주세요.");
+      alert("기기 메모리가 부족합니다. 브라우저의 기본 화면 캡처 기능을 이용해주세요.");
     });
   }, 300);
 }
 
 function saveState(){
+  if(isReadOnly) return; // 관전 모드에서는 저장 차단
   try{
     const state = {
       bldgName: document.getElementById('bldgName').value,
@@ -530,35 +653,48 @@ function saveState(){
   }
 }
 
-dbRef.on('value', (snapshot) => {
-  const state = snapshot.val();
-  if(!state) return;
+// 🌟 데이터 수신 리스너 (권한에 따라 다르게 처리)
+function startDatabaseListener() {
+  if(isListening) return;
+  isListening = true;
   
-  const stateStr = JSON.stringify(state);
-  if(lastSavedData === stateStr) return; 
-  lastSavedData = stateStr;
-  
-  document.getElementById('bldgName').value = state.bldgName || '';
-  document.getElementById('topFloor').value = state.topFloor || 12;
-  document.getElementById('botFloor').value = state.botFloor || 1;
-  document.getElementById('skip4Floor').value = state.skip4Floor || 'none';
-  document.getElementById('unitPattern').value = state.unitPattern || '01,02,03,04';
-  document.getElementById('unitsCount').value = state.unitsCount || 4;
-  floors = state.floors || [];
-  
-  document.getElementById('backToBoardBtn').style.display='inline-block';
-  
-  if(floors.length > 0) {
-    render();
-    // 🌟 초기 접속(새로고침) 시에만 설정창에서 현황판으로 자동 전환하도록 수정
-    if(isInitialLoad && document.getElementById('setupScreen').style.display !== 'none') {
-      showBoardScreen();
+  dbRef.on('value', (snapshot) => {
+    const state = snapshot.val();
+    
+    // 데이터가 아예 없을 때의 처리
+    if(!state) {
+      if(isReadOnly) {
+        document.getElementById('boardHolder').innerHTML = '<div class="empty-hint">아직 관리자가 현황판을 생성하지 않았습니다.</div>';
+      }
+      return;
     }
-  }
-  isInitialLoad = false;
-});
+    
+    const stateStr = JSON.stringify(state);
+    if(lastSavedData === stateStr) return; 
+    lastSavedData = stateStr;
+    
+    document.getElementById('bldgName').value = state.bldgName || '';
+    document.getElementById('topFloor').value = state.topFloor || 12;
+    document.getElementById('botFloor').value = state.botFloor || 1;
+    document.getElementById('skip4Floor').value = state.skip4Floor || 'none';
+    document.getElementById('unitPattern').value = state.unitPattern || '01,02,03,04';
+    document.getElementById('unitsCount').value = state.unitsCount || 4;
+    floors = state.floors || [];
+    
+    document.getElementById('backToBoardBtn').style.display = isReadOnly ? 'none' : 'inline-block';
+    
+    if(floors.length > 0) {
+      render();
+      if(isInitialLoad && !isReadOnly && document.getElementById('setupScreen').style.display !== 'none') {
+        showBoardScreen();
+      }
+    }
+    isInitialLoad = false;
+  });
+}
 
 function resetAll(){
+  if(isReadOnly) return;
   if(!confirm('저장된 대피현황 데이터를 모두 지우고 서버에서 초기화할까요?')) return;
   dbRef.remove().then(() => {
     location.reload();
@@ -566,6 +702,7 @@ function resetAll(){
 }
 
 function adjustUnitsCount(delta){
+  if(isReadOnly) return;
   const el = document.getElementById('unitsCount');
   let v = (parseInt(el.value)||1) + delta;
   if(v < 1) v = 1;
@@ -576,6 +713,7 @@ function adjustUnitsCount(delta){
   document.getElementById('unitPattern').value = arr.join(',');
 }
 function syncUnitsCountFromPattern(){
+  if(isReadOnly) return;
   const pattern = document.getElementById('unitPattern').value.split(',').map(s=>s.trim()).filter(Boolean);
   document.getElementById('unitsCount').value = pattern.length || 1;
 }
@@ -602,6 +740,7 @@ const APT_FIRE_ICON_SVG = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/200
 </svg>`;
 
 function generateBoard(){
+  if(isReadOnly) return;
   const top = parseInt(document.getElementById('topFloor').value);
   const bot = parseInt(document.getElementById('botFloor').value);
   const skipOption = document.getElementById('skip4Floor').value;
@@ -654,6 +793,7 @@ function generateBoard(){
 }
 
 function editUnits(floorIdx){
+  if(isReadOnly) return;
   const fName = String(floors[floorIdx].floor);
   const cur = floors[floorIdx].units.map(u=>u.no.slice(fName.length)).join(',');
   const val = prompt(fName+'층 호수(뒤 2자리, 콤마구분) 수정:', cur);
@@ -669,6 +809,7 @@ function editUnits(floorIdx){
 }
 
 function toggleNoIssue(floorIdx){
+  if(isReadOnly) return;
   floors[floorIdx].noIssue = !floors[floorIdx].noIssue;
   render();
   saveState(); 
@@ -679,6 +820,10 @@ let editingDetails = [];
 let editingEvacDetails = [];
 
 function openEditor(floorIdx, unitIdx){
+  if(isReadOnly) {
+    alert("👀 관전 모드(읽기 전용)에서는 현황을 수정할 수 없습니다.\n수정하려면 우측 상단의 '관리자 로그인'을 진행해주세요.");
+    return;
+  }
   editing = {floorIdx, unitIdx};
   const u = floors[floorIdx].units[unitIdx];
   editingDetails = (u.rescueDetails||[]).slice();
@@ -931,22 +1076,32 @@ function render(){
       let j=i;
       while(j+1<floors.length && floors[j+1].noIssue) j++;
       const label = (j>i) ? `${floors[i].floor}층~${floors[j].floor}층` : `${fl.floor}층`;
+      
+      // 🌟 관전 모드일 때 특이사항 해제 버튼 숨김
+      const releaseBtnHtml = isReadOnly ? '' : `<div class="floor-controls"><button type="button" class="small secondary" onclick="toggleNoIssue(${i})">해제</button></div>`;
+      
       html += `<tr class="noissue-row">
         <td class="floor-cell">${label}
-          <div class="floor-controls"><button type="button" class="small secondary" onclick="toggleNoIssue(${i})">해제</button></div>
+          ${releaseBtnHtml}
         </td>
         <td colspan="20">특이사항 없음</td>
       </tr>`;
       i = j+1;
       continue;
     }
+    
+    // 🌟 관전 모드일 때 세대수정 및 특이없음 버튼 숨김
+    const editControlsHtml = isReadOnly ? '' : `
+      <div class="floor-controls">
+        <button type="button" class="small secondary" onclick="editUnits(${i})">세대수정</button>
+        <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">특이없음</button>
+      </div>`;
+      
     html += `<tr>
       <td class="floor-cell">${fl.floor}층
-        <div class="floor-controls">
-          <button type="button" class="small secondary" onclick="editUnits(${i})">세대수정</button>
-          <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">특이없음</button>
-        </div>
+        ${editControlsHtml}
       </td>`;
+      
     columns.forEach(suf=>{
       const ui = fl.units.findIndex(x=> unitSuffix(x, fl.floor)===suf);
       if(ui===-1){
