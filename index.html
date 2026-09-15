@@ -9,16 +9,16 @@
     --ink:#0f172a;
     --line:#cbd5e1;
     --line-soft:#94a3b8;
-    --origin:#dc2626;      /* 발화지점 더 선명한 빨강 */
-    --spread:#ea580c;      /* 연소확대 주황 */
-    --evac:#16a34a;        /* 자력대피 초록 */
-    --rescue:#e11d48;      /* 구조 텍스트 장미색 */
-    --locked:#8b5cf6;      /* 문잠김 보라 */
+    --origin:#dc2626;      
+    --spread:#ea580c;      
+    --evac:#16a34a;        
+    --rescue:#e11d48;      
+    --locked:#8b5cf6;      
     --normal:#334155;
     --panel-bg:#ffffff;
     --panel-border:#e2e8f0;
-    --accent:#ea580c;      /* 오렌지 계열 포인트 */
-    --navy:#1e293b;        /* 짙은 슬레이트 네이비 */
+    --accent:#ea580c;      
+    --navy:#1e293b;        
     --gold:#f59e0b;
   }
   *{box-sizing:border-box;}
@@ -156,7 +156,7 @@
     font-weight:800;font-size:15px;background:#f8fafc;width:70px;
     color:var(--navy);
   }
-  td.unit-no{font-weight:800;font-size:14.5px;padding-top:10px;color:var(--navy);}
+  td.unit-no{font-weight:800;font-size:14.5px;padding-top:10px;color:var(--navy); margin-bottom: 6px;}
   td.unit-status{
     padding-bottom:10px;cursor:pointer;min-height:40px;
   }
@@ -166,28 +166,24 @@
     background:repeating-linear-gradient(135deg, rgba(248,250,252,0.9), rgba(248,250,252,0.9) 8px, rgba(241,245,249,0.9) 8px, rgba(241,245,249,0.9) 16px);
     cursor:default;
   }
-  td.unit-cell.empty-cell:hover{background:repeating-linear-gradient(135deg, rgba(248,250,252,0.9), rgba(248,250,252,0.9) 8px, rgba(241,245,249,0.9) 8px, rgba(241,245,249,0.9) 16px);}
-  .status-normal{color:#64748b;font-size:13px;}
-  .status-evac{color:var(--evac);font-weight:800;}
-  .status-rescue{color:var(--rescue);font-weight:800;}
-  .status-locked{color:var(--locked);font-weight:800;}
+  
+  /* 카테고리별 태그 디자인 */
+  .tag-clear { background: #f1f5f9; color: #475569; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #cbd5e1; }
+  .tag-locked { background: #f3e8ff; color: #7e22ce; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #d8b4fe; }
+  .tag-evac { background: #dcfce7; color: #15803d; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #86efac; }
+  .tag-rescue { background: #ffe4e6; color: #e11d48; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #fda4af; }
+  
   .status-note{font-size:11px;color:#475569;font-weight:500;margin-top:2px;}
-  .origin-tag{color:var(--rescue);font-weight:800;}
-  .noissue-row td{background:#f8fafc;font-size:13.5px;color:#475569;padding:10px;font-weight:600;}
-  td.unit-cell.is-origin .unit-no,
-  td.unit-cell.is-origin .status-normal,
-  td.unit-cell.is-origin .status-evac,
-  td.unit-cell.is-origin .status-rescue,
-  td.unit-cell.is-origin .status-locked,
-  td.unit-cell.is-origin .status-note{color:#fff;}
-  td.unit-cell.is-origin .status-evac,
-  td.unit-cell.is-origin .status-rescue{color:#fff;}
-  td.unit-cell.is-locked .unit-no,
-  td.unit-cell.is-locked .status-locked,
-  td.unit-cell.is-locked .status-note{color:#fff;}
-  .fire-icon{display:inline-block;vertical-align:middle;width:20px;height:20px;margin-right:4px;}
   .origin-tag{color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;gap:4px;background:rgba(0,0,0,0.25);border-radius:6px;padding:2px 6px;margin-top:4px;}
   .spread-tag{color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;gap:4px;margin-top:4px;font-size:11.5px;background:rgba(0,0,0,0.15);border-radius:6px;padding:2px 6px;}
+  .noissue-row td{background:#f8fafc;font-size:13.5px;color:#475569;padding:10px;font-weight:600;}
+  
+  /* 배경색 반전 시 텍스트 처리 */
+  td.unit-cell.is-origin .unit-no, td.unit-cell.is-origin .status-note{color:#fff;}
+  td.unit-cell.is-locked .unit-no, td.unit-cell.is-locked .status-note{color:#fff;}
+  td.unit-cell.is-origin .tag-clear, td.unit-cell.is-origin .tag-locked, td.unit-cell.is-origin .tag-evac, td.unit-cell.is-origin .tag-rescue {border-color: transparent;}
+  
+  .fire-icon{display:inline-block;vertical-align:middle;width:20px;height:20px;margin-right:4px;}
   .legend .swatch.origin-sw{background:var(--origin);}
   .legend .swatch.spread-sw{background:var(--spread);}
   .legend .swatch.locked-sw{background:var(--locked);}
@@ -212,12 +208,12 @@
   .modal h3{margin:0 0 16px;font-size:16px;color:var(--navy);font-weight:800;}
   .modal .mrow{margin-bottom:12px;}
   .modal label{font-size:12.5px;color:#475569;display:block;margin-bottom:6px;font-weight:700;}
-  .modal select, .modal input[type=text], .modal input[type=number]{
+  .modal input[type=text], .modal input[type=number]{
     width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13.5px;
     outline:none; transition:border-color 0.2s;
   }
-  .modal select:focus, .modal input:focus{border-color:var(--accent);}
-  .modal .checks{display:flex;gap:16px;font-size:13px;align-items:center;margin-top:16px;}
+  .modal input:focus{border-color:var(--accent);}
+  .modal .checks{display:flex;gap:16px;font-size:13px;align-items:center;}
   .modal .checks label{display:flex;align-items:center;gap:6px;margin:0;font-weight:600;cursor:pointer;}
   .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
   .stepper-row{display:flex;align-items:center;gap:8px;}
@@ -228,23 +224,14 @@
     width:36px;height:36px;padding:0;font-size:18px;line-height:1;border-radius:8px;
     background:var(--navy);color:#fff;flex-shrink:0;
   }
-  #detailsList{max-height:120px;overflow-y:auto;margin-bottom:8px;}
+  #detailsList, #evacDetailsList{max-height:80px;overflow-y:auto;margin-bottom:4px;}
   .detail-item{
     display:flex;justify-content:space-between;align-items:center;gap:8px;
-    font-size:12.5px;padding:6px 8px;background:#f8fafc;border-radius:6px;margin-bottom:6px;
+    font-size:12px;padding:4px 8px;background:#f8fafc;border-radius:6px;margin-bottom:4px;
     border:1px solid #e2e8f0;
   }
   .detail-add-row{display:flex;gap:8px;}
   .detail-add-row input{flex:1;}
-  #personsList{max-height:160px;overflow-y:auto;margin-bottom:8px;}
-  .person-row{
-    display:flex;align-items:center;gap:8px;
-    font-size:12.5px;padding:6px 8px;background:#f8fafc;border-radius:6px;margin-bottom:6px;
-    border:1px solid #e2e8f0;
-  }
-  .person-row .person-idx{flex-shrink:0;width:36px;color:#64748b;font-weight:700;}
-  .person-row select{flex:1;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;}
-  .person-row .person-other{flex:1;padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12.5px;}
 
   @media (min-width: 641px){
     .board-header{padding:20px 24px;}
@@ -314,7 +301,7 @@
       </div>
       <div style="font-size:12px;color:#64748b;margin-top:6px;line-height:1.5;">
         예: 세대가 01,02,04,05호로 구성(03호 없음)이면 "01,02,04,05"로 입력. 표 생성 후 각 층마다 별도로 호수 목록을 수정할 수 있습니다.<br>
-        ※ "표 생성"을 다시 누르면 층수·호수 구성이 새로 적용되지만, 기존에 입력해둔 층·호수의 상태값(이상없음/자력대피/구조 등)은 그대로 유지됩니다. 층수·호수 범위에서 빠진 세대만 데이터가 사라집니다.
+        ※ "표 생성"을 다시 누르면 층수·호수 구성이 새로 적용되지만, 기존에 입력해둔 층·호수의 상태값은 그대로 유지됩니다. 층수·호수 범위에서 빠진 세대만 데이터가 사라집니다.
       </div>
     </div>
     <div class="credit-line">제작 영등포소방서 화재조사팀</div>
@@ -346,7 +333,7 @@
 
     <div class="toolbar" id="toolbar" style="display:none;">
       <button type="button" class="secondary" onclick="window.print()">인쇄 / PDF 저장</button>
-      <button type="button" class="danger" onclick="resetAll()">초기화</button>
+      <button type="button" class="danger" onclick="resetAll()">초기화 (DB 전체삭제)</button>
     </div>
   </div>
 </div>
@@ -467,13 +454,6 @@ function syncUnitsCountFromPattern(){
   document.getElementById('unitsCount').value = pattern.length || 1;
 }
 
-const STATUS_LABEL = {
-  normal: '이상없음',
-  evac: '자력대피',
-  rescue: '구조',
-  locked: '문잠김(미확인)'
-};
-
 const FIRE_ICON_SVG = `<svg class="fire-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
   <path d="M12 2C12 2 7 7.5 7 12.5C7 16.09 9.69 19 13 19C16.31 19 19 16.5 19 13.2C19 10.6 17.3 9 17.3 9C17.3 9 17.6 11.2 16.1 12.3C16.6 9.5 15 6.8 12 2Z" fill="#fff2e0"/>
   <path d="M12 6C12 6 9.2 10 9.2 13.2C9.2 15.5 10.9 17.2 13 17.2C15.1 17.2 16.8 15.5 16.8 13.2C16.8 11.5 15.7 10.3 15.7 10.3C15.7 10.3 15.8 11.8 14.9 12.4C15.2 10.6 14.2 8.7 12 6Z" fill="#c8280a"/>
@@ -525,7 +505,18 @@ function generateBoard(){
       noIssue: oldFl ? oldFl.noIssue : false,
       units: pattern.map(suf => {
         const no = String(f)+suf;
-        return oldUnitsByNo[no] || {no, status:'normal', count:0, origin:false, spread:false, persons:[], evacDetails:[], rescueDetails:[]};
+        // 새로운 구조 데이터 적용
+        return oldUnitsByNo[no] || {
+          no, 
+          isClear: false, 
+          isLocked: false, 
+          evacCount: 0, 
+          rescueCount: 0, 
+          origin: false, 
+          spread: false, 
+          evacDetails: [], 
+          rescueDetails: []
+        };
       })
     });
   }
@@ -545,7 +536,7 @@ function editUnits(floorIdx){
   const oldByNo = {}; floors[floorIdx].units.forEach(u=>oldByNo[u.no]=u);
   floors[floorIdx].units = pattern.map(suf=>{
     const no = String(f)+suf;
-    return oldByNo[no] || {no, status:'normal', count:0, note:'', origin:false, spread:false};
+    return oldByNo[no] || {no, isClear: false, isLocked: false, evacCount: 0, rescueCount: 0, origin: false, spread: false, evacDetails: [], rescueDetails: []};
   });
   render();
   saveState(); 
@@ -560,59 +551,59 @@ function toggleNoIssue(floorIdx){
 let editing = null;
 let editingDetails = [];
 let editingEvacDetails = [];
-let editingPersons = [];
 
 function openEditor(floorIdx, unitIdx){
   editing = {floorIdx, unitIdx};
   const u = floors[floorIdx].units[unitIdx];
   editingDetails = (u.rescueDetails||[]).slice();
   editingEvacDetails = (u.evacDetails||[]).slice();
-  editingPersons = (u.persons||[]).slice(0, u.count||0);
-  while(editingPersons.length < (u.count||0)) editingPersons.push({type:'none', otherText:''});
+  
   const overlay = document.createElement('div');
   overlay.className='overlay';
   overlay.id='editorOverlay';
+  
   overlay.innerHTML = `
     <div class="modal">
-      <h3>${u.no}호 상태 입력</h3>
+      <h3>${u.no}호 현황 입력</h3>
+      
+      <div class="mrow checks" style="margin-top:0; margin-bottom:20px;">
+        <label><input type="checkbox" id="m_isClear" ${u.isClear?'checked':''}> ✅ 이상없음(수색완료)</label>
+        <label><input type="checkbox" id="m_isLocked" ${u.isLocked?'checked':''}> 🔒 문잠김(미확인)</label>
+      </div>
+      
       <div class="mrow">
-        <label>상태</label>
-        <select id="m_status">
-          <option value="normal" ${u.status==='normal'?'selected':''}>이상없음</option>
-          <option value="evac" ${u.status==='evac'?'selected':''}>자력대피</option>
-          <option value="rescue" ${u.status==='rescue'?'selected':''}>구조</option>
-          <option value="locked" ${u.status==='locked'?'selected':''}>문잠김(미확인)</option>
-        </select>
-      </div>
-      <div class="mrow" id="countRow" style="display:${(u.status==='evac'||u.status==='rescue')?'block':'none'}">
-        <label>인원수</label>
+        <label style="color:var(--evac);">🏃 자력대피 인원</label>
         <div class="stepper-row">
-          <button type="button" class="step-btn" onclick="adjustCount(-1)">−</button>
-          <input type="number" id="m_count" min="0" value="${u.count||0}" oninput="onCountManualChange()">
-          <button type="button" class="step-btn" onclick="adjustCount(1)">+</button>
+          <button type="button" class="step-btn" onclick="adjustNewCount('m_evacCount', -1)">−</button>
+          <input type="number" id="m_evacCount" min="0" value="${u.evacCount||0}">
+          <button type="button" class="step-btn" onclick="adjustNewCount('m_evacCount', 1)">+</button>
         </div>
-      </div>
-      <div class="mrow" id="personsRow" style="display:${(u.status==='evac'||u.status==='rescue')?'block':'none'}">
-        <label>인원별 구분 (자동 집계에 사용)</label>
-        <div id="personsList"></div>
-      </div>
-      <div class="mrow" id="evacDetailsRow" style="display:${u.status==='evac'?'block':'none'}">
-        <label>자력대피 세부현황</label>
-        <div id="evacDetailsList"></div>
-        <div class="detail-add-row">
-          <input type="text" id="m_evacDetailInput" placeholder="예: 30대 여, 단순연기흡입, 자력이동 가능">
+        <div id="evacDetailsList" style="margin-top:8px;"></div>
+        <div class="detail-add-row" style="margin-top:4px;">
+          <input type="text" id="m_evacDetailInput" placeholder="메모 (예: 30대 남, 단순연기흡입)">
           <button type="button" class="small" onclick="addEvacDetailLine()">추가</button>
         </div>
       </div>
-      <div class="mrow" id="detailsRow" style="display:${u.status==='rescue'?'block':'none'}">
-        <label>구조인원 세부현황</label>
-        <div id="detailsList"></div>
-        <div class="detail-add-row">
-          <input type="text" id="m_detailInput" placeholder="예: 30대 남, 중증도, OO병원 후송">
+      
+      <hr style="border:0; border-top:1px solid #e2e8f0; margin:16px 0;">
+      
+      <div class="mrow">
+        <label style="color:var(--rescue);">🚁 구조 인원</label>
+        <div class="stepper-row">
+          <button type="button" class="step-btn" onclick="adjustNewCount('m_rescueCount', -1)">−</button>
+          <input type="number" id="m_rescueCount" min="0" value="${u.rescueCount||0}">
+          <button type="button" class="step-btn" onclick="adjustNewCount('m_rescueCount', 1)">+</button>
+        </div>
+        <div id="detailsList" style="margin-top:8px;"></div>
+        <div class="detail-add-row" style="margin-top:4px;">
+          <input type="text" id="m_detailInput" placeholder="메모 (예: 50대 여, OO병원 이송)">
           <button type="button" class="small" onclick="addDetailLine()">추가</button>
         </div>
       </div>
-      <div class="mrow checks">
+      
+      <hr style="border:0; border-top:1px solid #e2e8f0; margin:16px 0;">
+      
+      <div class="mrow checks" style="margin-top:0;">
         <label><input type="checkbox" id="m_origin" ${u.origin?'checked':''}> 발화지점</label>
         <label><input type="checkbox" id="m_spread" ${u.spread?'checked':''}> 연소확대</label>
       </div>
@@ -624,13 +615,6 @@ function openEditor(floorIdx, unitIdx){
   `;
   document.body.appendChild(overlay);
   
-  document.getElementById('m_status').addEventListener('change', (e)=>{
-    const show = (e.target.value==='evac' || e.target.value==='rescue');
-    document.getElementById('countRow').style.display = show?'block':'none';
-    document.getElementById('personsRow').style.display = show?'block':'none';
-    document.getElementById('evacDetailsRow').style.display = (e.target.value==='evac')?'block':'none';
-    document.getElementById('detailsRow').style.display = (e.target.value==='rescue')?'block':'none';
-  });
   document.getElementById('m_detailInput').addEventListener('keydown', (e)=>{
     if(e.key==='Enter'){ e.preventDefault(); addDetailLine(); }
   });
@@ -640,60 +624,18 @@ function openEditor(floorIdx, unitIdx){
   
   renderDetailsList();
   renderEvacDetailsList();
-  renderPersonsList();
 }
 
-function adjustCount(delta){
-  const el = document.getElementById('m_count');
+function adjustNewCount(id, delta){
+  const el = document.getElementById(id);
   let v = (parseInt(el.value)||0) + delta;
   if(v < 0) v = 0;
   el.value = v;
-  syncPersonsToCount(v);
 }
-function onCountManualChange(){
-  const v = Math.max(0, parseInt(document.getElementById('m_count').value)||0);
-  syncPersonsToCount(v);
-}
-function syncPersonsToCount(count){
-  while(editingPersons.length < count) editingPersons.push({type:'none', otherText:''});
-  editingPersons.length = count;
-  renderPersonsList();
-}
-function renderPersonsList(){
-  const box = document.getElementById('personsList');
-  if(!box) return;
-  if(editingPersons.length===0){
-    box.innerHTML = '<div style="font-size:12.5px;color:#94a3b8;">인원수를 먼저 입력하세요</div>';
-    return;
-  }
-  box.innerHTML = editingPersons.map((p,idx)=>`
-    <div class="person-row">
-      <span class="person-idx">${idx+1}번</span>
-      <select onchange="setPersonType(${idx}, this.value)">
-        <option value="none" ${p.type==='none'?'selected':''}>해당없음</option>
-        <option value="hospital" ${p.type==='hospital'?'selected':''}>병원이송</option>
-        <option value="smoke" ${p.type==='smoke'?'selected':''}>단순연기흡입</option>
-        <option value="other" ${p.type==='other'?'selected':''}>기타</option>
-      </select>
-      ${p.type==='other' ? `<input type="text" class="person-other" value="${p.otherText||''}" placeholder="기타 내용" oninput="setPersonOther(${idx}, this.value)">` : ''}
-    </div>
-  `).join('');
-}
-function setPersonType(idx, val){
-  editingPersons[idx].type = val;
-  if(val!=='other') editingPersons[idx].otherText='';
-  renderPersonsList();
-}
-function setPersonOther(idx, val){
-  editingPersons[idx].otherText = val;
-}
+
 function renderDetailsList(){
   const box = document.getElementById('detailsList');
   if(!box) return;
-  if(editingDetails.length===0){
-    box.innerHTML = '<div style="font-size:12.5px;color:#94a3b8;">등록된 세부현황 없음</div>';
-    return;
-  }
   box.innerHTML = editingDetails.map((d,idx)=>`
     <div class="detail-item">
       <span>${idx+1}. ${d}</span>
@@ -713,13 +655,10 @@ function removeDetailLine(idx){
   editingDetails.splice(idx,1);
   renderDetailsList();
 }
+
 function renderEvacDetailsList(){
   const box = document.getElementById('evacDetailsList');
   if(!box) return;
-  if(editingEvacDetails.length===0){
-    box.innerHTML = '<div style="font-size:12.5px;color:#94a3b8;">등록된 세부현황 없음</div>';
-    return;
-  }
   box.innerHTML = editingEvacDetails.map((d,idx)=>`
     <div class="detail-item">
       <span>${idx+1}. ${d}</span>
@@ -739,25 +678,29 @@ function removeEvacDetailLine(idx){
   editingEvacDetails.splice(idx,1);
   renderEvacDetailsList();
 }
+
 function closeEditor(){
   const o = document.getElementById('editorOverlay');
   if(o) o.remove();
   editing = null;
   editingDetails = [];
   editingEvacDetails = [];
-  editingPersons = [];
 }
+
 function saveEditor(){
   const {floorIdx, unitIdx} = editing;
   const u = floors[floorIdx].units[unitIdx];
-  u.status = document.getElementById('m_status').value;
-  u.count = parseInt(document.getElementById('m_count').value)||0;
-  u.persons = editingPersons.slice(0, u.count);
+  
+  u.isClear = document.getElementById('m_isClear').checked;
+  u.isLocked = document.getElementById('m_isLocked').checked;
+  u.evacCount = parseInt(document.getElementById('m_evacCount').value)||0;
+  u.rescueCount = parseInt(document.getElementById('m_rescueCount').value)||0;
   u.origin = document.getElementById('m_origin').checked;
   u.spread = document.getElementById('m_spread').checked;
-  u.evacDetails = (u.status==='evac') ? editingEvacDetails.slice() : [];
-  u.rescueDetails = (u.status==='rescue') ? editingDetails.slice() : [];
-  if(u.status==='normal' || u.status==='locked'){ u.count=0; u.persons=[]; u.evacDetails=[]; u.rescueDetails=[]; }
+  
+  u.evacDetails = editingEvacDetails.slice();
+  u.rescueDetails = editingDetails.slice();
+  
   closeEditor();
   render();
   saveState(); 
@@ -777,41 +720,27 @@ function render(){
   const name = document.getElementById('bldgName').value.trim();
   document.getElementById('titleLine').textContent = name || '';
 
-  let evacTotal=0, rescueTotal=0, evacSelfTotal=0, hospitalCount=0, smokeCount=0, otherCount=0;
+  let evacTotal=0, rescueTotal=0, evacSelfTotal=0;
   const evacDetail = [];
   const rescueDetail = [];
   
-  function tallyPersons(u){
-    const list = u.persons || [];
-    let h=0, s=0, o=0;
-    list.forEach(p=>{
-      if(p.type==='hospital') h++;
-      else if(p.type==='smoke') s++;
-      else if(p.type==='other') o++;
-    });
-    return {h,s,o};
-  }
-  
   floors.forEach(fl=>{
     fl.units.forEach(u=>{
-      if(u.status==='evac'){
-        evacTotal += u.count; evacSelfTotal += u.count;
-        let eline = u.no+'호 '+u.count+'명';
-        if(u.evacDetails && u.evacDetails.length){
-          eline += ' ['+u.evacDetails.join('; ')+']';
-        }
+      // 이전 버전 데이터 호환성 처리를 위해
+      const ec = u.evacCount || (u.status==='evac'? u.count : 0) || 0;
+      const rc = u.rescueCount || (u.status==='rescue'? u.count : 0) || 0;
+      
+      if(ec > 0){
+        evacTotal += ec; evacSelfTotal += ec;
+        let eline = u.no+'호 '+ec+'명';
+        if(u.evacDetails && u.evacDetails.length) eline += ' ['+u.evacDetails.join('; ')+']';
         evacDetail.push(eline);
-        const t = tallyPersons(u);
-        hospitalCount += t.h; smokeCount += t.s; otherCount += t.o;
-      } else if(u.status==='rescue'){
-        rescueTotal += u.count; evacTotal += u.count;
-        let line = u.no+'호 '+u.count+'명';
-        if(u.rescueDetails && u.rescueDetails.length){
-          line += ' ['+u.rescueDetails.join('; ')+']';
-        }
+      }
+      if(rc > 0){
+        rescueTotal += rc; evacTotal += rc;
+        let line = u.no+'호 '+rc+'명';
+        if(u.rescueDetails && u.rescueDetails.length) line += ' ['+u.rescueDetails.join('; ')+']';
         rescueDetail.push(line);
-        const t = tallyPersons(u);
-        hospitalCount += t.h; smokeCount += t.s; otherCount += t.o;
       }
     });
   });
@@ -885,34 +814,27 @@ function render(){
         return;
       }
       const u = fl.units[ui];
-      let bg = u.origin ? 'var(--origin)' : (u.spread ? 'var(--spread)' : (u.status==='locked' ? 'var(--locked)' : ''));
-      let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (u.status==='locked' ? ' is-locked' : '')));
+      
+      let bg = u.origin ? 'var(--origin)' : (u.spread ? 'var(--spread)' : (u.isLocked ? 'var(--locked)' : ''));
+      let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (u.isLocked ? ' is-locked' : '')));
+      
       let bodyHtml = '';
-      if(u.status==='normal'){
-        bodyHtml = `<div class="status-normal">이상없음</div>`;
-      } else if(u.status==='locked'){
-        bodyHtml = `<div class="status-locked">🔒 문잠김(미확인)</div>`;
-      } else {
-        const cls2 = u.status==='evac' ? 'status-evac' : 'status-rescue';
-        const t = (function(){
-          const list = u.persons || [];
-          let h=0, s=0, o=0;
-          list.forEach(p=>{ if(p.type==='hospital') h++; else if(p.type==='smoke') s++; else if(p.type==='other') o++; });
-          return {h,s,o};
-        })();
-        const tagParts = [];
-        if(t.h) tagParts.push('병원이송 '+t.h+'명');
-        if(t.s) tagParts.push('단순연기흡입 '+t.s+'명');
-        if(t.o) tagParts.push('기타 '+t.o+'명');
-        bodyHtml = `<div class="${cls2}">${STATUS_LABEL[u.status]} ${u.count||0}명</div>` +
-                   (tagParts.length ? `<div class="status-note">(${tagParts.join(', ')})</div>` : '') +
-                   ((u.status==='evac' && u.evacDetails && u.evacDetails.length) ?
-                     `<div class="status-note">${u.evacDetails.map(d=>'· '+d).join('<br>')}</div>` : '') +
-                   ((u.status==='rescue' && u.rescueDetails && u.rescueDetails.length) ?
-                     `<div class="status-note">${u.rescueDetails.map(d=>'· '+d).join('<br>')}</div>` : '');
-      }
+      
+      // 태그 렌더링
+      if(u.isClear) bodyHtml += `<div class="tag-clear">✅ 이상없음</div>`;
+      if(u.isLocked) bodyHtml += `<div class="tag-locked">🔒 문잠김</div>`;
+      
+      const ec = u.evacCount || (u.status==='evac'? u.count : 0) || 0;
+      if(ec > 0) bodyHtml += `<div class="tag-evac">자력대피 ${ec}명</div>`;
+      if(u.evacDetails && u.evacDetails.length) bodyHtml += `<div class="status-note">${u.evacDetails.map(d=>'· '+d).join('<br>')}</div>`;
+      
+      const rc = u.rescueCount || (u.status==='rescue'? u.count : 0) || 0;
+      if(rc > 0) bodyHtml += `<div class="tag-rescue">구조 ${rc}명</div>`;
+      if(u.rescueDetails && u.rescueDetails.length) bodyHtml += `<div class="status-note">${u.rescueDetails.map(d=>'· '+d).join('<br>')}</div>`;
+
       const originTag = u.origin ? `<div class="origin-tag">${FIRE_ICON_SVG}발화지점</div>` : '';
       const spreadTag = (!u.origin && u.spread) ? `<div class="spread-tag">${SPREAD_ICON_SVG}연소확대</div>` : '';
+      
       html += `<td class="${cellCls}" data-fi="${i}" data-ui="${ui}" onclick="__cellClick(this)" style="${bg?('background:'+bg+';'):''}">
         <div class="unit-no">${u.no}호</div>
         <div class="unit-status">${bodyHtml}${originTag}${spreadTag}</div>
@@ -927,13 +849,6 @@ function render(){
   let fn = '';
   if(evacSelfTotal>0) fn += `<div class="fn-line">※ 자력대피 ${evacSelfTotal}명: ${evacDetail.join(', ')}</div>`;
   if(rescueTotal>0) fn += `<div class="fn-line">※ 구조 ${rescueTotal}명: ${rescueDetail.join(', ')}</div>`;
-  if(hospitalCount>0 || smokeCount>0 || otherCount>0){
-    let parts = [];
-    parts.push('병원이송 '+hospitalCount+'명');
-    parts.push('단순연기흡입 '+smokeCount+'명');
-    if(otherCount>0) parts.push('기타 '+otherCount+'명');
-    fn += `<div class="fn-line">※ ${parts.join(' / ')}</div>`;
-  }
   document.getElementById('footNotes').innerHTML = fn;
 }
 </script>
