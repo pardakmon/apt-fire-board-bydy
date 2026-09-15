@@ -32,8 +32,6 @@
     margin:0;
     padding:24px;
     color:var(--ink);
-    position: relative;
-    z-index: 0;
   }
 
   /* 📷 캡처될 알맹이 구역 (배경 워터마크 포함) */
@@ -50,7 +48,7 @@
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     
-    /* ======== 바로 이 부분에 기존 Base64 코드를 넣으세요 ======== */
+    /* ======== 👇 여기에 기존 Base64 코드를 넣으세요 👇 ======== */
     background-image: url('여기에_기존_Base64_코드를_넣어주세요'); 
     /* ========================================================= */
 
@@ -62,12 +60,13 @@
     pointer-events: none; 
   }
   
+  /* 알맹이 구역 안의 요소들은 워터마크보다 위로 올라오게 설정 */
   #captureTarget > * {
     position: relative;
     z-index: 1;
   }
 
-  .wrap{max-width:1100px;margin:0 auto;}
+  .wrap{max-width:1100px;margin:0 auto; position: relative; z-index: 1;}
   h1{font-size:20px;margin:0 0 16px;color:var(--navy);}
   .panel{
     background:var(--panel-bg);
@@ -138,6 +137,7 @@
   .stat-card.rescue{border-top:4px solid var(--rescue);}
   .stat-card.evac{border-top:4px solid var(--evac);}
   .stat-card.clear{border-top:4px solid var(--clear-bg);}
+  
   .board-header{
     display:flex;align-items:center;gap:16px;margin-bottom:14px;
     background:linear-gradient(135deg, var(--navy), #334155);
@@ -157,6 +157,7 @@
   .legend{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:8px;font-size:12px;font-weight:600;}
   .legend span{display:inline-flex;align-items:center;gap:6px;}
   .swatch{width:16px;height:16px;display:inline-block;border-radius:4px;}
+  
   #boardHolder{
     overflow-x:auto;-webkit-overflow-scrolling:touch;
     border-radius:12px;
@@ -415,7 +416,7 @@ function showSetupScreen(){
   window.scrollTo(0,0);
 }
 
-// 📷 교통사고 현황판에서 100% 동일하게 가져온 모달 팝업 + 꾹 눌러 저장 방식 캡처 로직
+// 📷 모달 팝업 + 꾹 눌러 저장 방식 캡처 로직 (메모리 최적화 적용)
 function captureBoard() {
   const captureTarget = document.getElementById('captureTarget');
   const boardHolder = document.getElementById('boardHolder');
@@ -439,7 +440,8 @@ function captureBoard() {
   // 약간의 지연 후 캡처 실행 (화면 렌더링 시간 벌기)
   setTimeout(() => {
     html2canvas(captureTarget, {
-      scale: 2, // 선명한 고화질
+      scale: 1, // 🌟 핵심: 거대한 아파트 표를 스마트폰에서 처리할 수 있도록 배율을 1로 최적화
+      useCORS: true,
       backgroundColor: "#f1f5f9",
       width: captureTarget.scrollWidth,
       height: captureTarget.scrollHeight
@@ -453,15 +455,15 @@ function captureBoard() {
 
       const imgData = canvas.toDataURL('image/png');
 
-      // 4. 모달창을 띄워 사용자에게 '꾹 눌러 저장' 유도
+      // 4. 모달창을 띄워 사용자에게 '꾹 눌러 저장' 유도 (교통사고 현황판과 동일)
       const overlay = document.createElement('div');
       overlay.className = 'overlay';
       overlay.id = 'captureOverlay';
       overlay.innerHTML = `
-        <div class="modal" style="max-width:95vw; max-height:95vh; display:flex; flex-direction:column; align-items:center; padding:16px;">
+        <div class="modal" style="max-width:95vw; max-height:95vh; display:flex; flex-direction:column; align-items:center; padding:16px; z-index:10000;">
           <h3 style="margin-bottom:8px; font-size:16px; color:#10b981;">📷 맞춤 캡처 완료</h3>
           <p style="font-size:13px; color:#475569; text-align:center; margin-bottom:12px; line-height:1.4;">
-            세대수에 맞춰 알맹이만 깔끔하게 잘렸습니다.<br>
+            전체 세대가 깔끔하게 잘렸습니다.<br>
             아래 사진을 <strong>꾹 누른 후 '사진 앱에 저장'</strong>을 누르세요.
           </p>
           <div style="overflow:auto; max-height:60vh; border:1px solid #cbd5e1; border-radius:8px; width:100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
@@ -473,15 +475,15 @@ function captureBoard() {
       document.body.appendChild(overlay);
 
     }).catch(err => {
-      // 오류 발생 시 원상복구
+      console.error("캡처 오류:", err);
       boardHolder.style.overflow = origOverflow;
       mainWrap.style.maxWidth = origMaxWidth;
       captureTarget.style.width = origWidth;
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
-      alert('캡처 도중 오류가 발생했습니다.');
+      alert("화면 캡처 중 기기 메모리 초과 오류가 발생했습니다.");
     });
-  }, 100); 
+  }, 150); 
 }
 
 function saveState(){
@@ -954,7 +956,6 @@ function render(){
       const cc = u.clearCount || 0;
       const isClearActive = cc > 0; 
 
-      // 배경색 우선순위: 발화지점 > 연소확대 > 이상없음(안전대기) > 문잠김(회색)
       let bg = u.origin ? 'var(--origin)' : (u.spread ? 'var(--spread)' : (isClearActive ? 'var(--clear-bg)' : (u.isLocked ? 'var(--locked)' : '')));
       let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (isClearActive ? ' is-clear' : (u.isLocked ? ' is-locked' : ''))));
       
