@@ -75,7 +75,6 @@
   .field input:focus, .field select:focus{border-color:var(--accent);}
   .field input.wide{width:260px;}
   
-  /* 하단 툴바 버튼 공통 스타일 */
   button{
     padding:10px 16px;border:none;border-radius:8px;background:var(--accent);
     color:#fff;font-size:13px;cursor:pointer;font-weight:700;
@@ -87,7 +86,6 @@
   button.small{padding:6px 10px;font-size:11.5px;}
   button:hover{filter:brightness(0.95);}
   
-  /* 툴바 커스텀 버튼 (교통사고 현황판 스타일 반영) */
   button.success-outline{
     background:#fff;color:var(--clear-bg);border:1px solid #6ee7b7;box-shadow:none;
     display:flex;align-items:center;justify-content:center;gap:4px;
@@ -182,7 +180,6 @@
     cursor:default;
   }
   
-  /* 태그 디자인 */
   .tag-clear { background: #f1f5f9; color: #047857; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #a7f3d0; }
   .tag-locked { background: #f1f5f9; color: var(--locked); font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #cbd5e1; }
   .tag-evac { background: #dcfce7; color: #15803d; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #86efac; }
@@ -193,7 +190,6 @@
   .spread-tag{color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;gap:4px;margin-top:4px;font-size:11.5px;background:rgba(0,0,0,0.15);border-radius:6px;padding:2px 6px;}
   .noissue-row td{background:#f8fafc;font-size:13.5px;color:#475569;padding:10px;font-weight:600;}
   
-  /* 배경색 반전 시 텍스트 및 태그 처리 */
   td.unit-cell.is-origin .unit-no, td.unit-cell.is-origin .status-note,
   td.unit-cell.is-spread .unit-no, td.unit-cell.is-spread .status-note,
   td.unit-cell.is-locked .unit-no, td.unit-cell.is-locked .status-note,
@@ -282,7 +278,6 @@
     .toolbar button{flex:1;}
   }
 
-  /* 인쇄 최적화 스타일 */
   @media print{
     body{background:#fff;padding:0;margin:0;}
     body::before {display:none !important;} 
@@ -296,7 +291,7 @@
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap" id="captureArea">
   <div id="setupScreen">
     <h1>아파트 화재 세대별 대피현황판 생성기</h1>
     <div class="panel" id="setupPanel">
@@ -330,10 +325,6 @@
         <button type="button" onclick="generateBoard()">표 생성 (현황판으로 이동)</button>
         <button type="button" class="secondary" id="backToBoardBtn" style="display:none;" onclick="showBoardScreen()">← 현황판으로 돌아가기(재생성 없이)</button>
       </div>
-      <div style="font-size:12px;color:#64748b;margin-top:6px;line-height:1.5;">
-        예: 세대가 01,02,04,05호로 구성(03호 없음)이면 "01,02,04,05"로 입력. 표 생성 후 각 층마다 별도로 호수 목록을 수정할 수 있습니다.<br>
-        ※ "표 생성"을 다시 누르면 층수·호수 구성이 새로 적용되지만, 기존에 입력해둔 층·호수의 상태값은 그대로 유지됩니다.
-      </div>
     </div>
     <div class="credit-line">제작 영등포소방서 화재조사팀</div>
   </div>
@@ -364,10 +355,9 @@
     <div id="autosaveNote" style="font-size:11px;color:#94a3b8;text-align:right;margin-top:10px;font-weight:600;"></div>
 
     <div class="toolbar" id="toolbar" style="display:none;">
-      <!-- 교통사고 현황판 스타일 적용 및 전체 화면 캡처 추가 -->
       <button type="button" class="success-outline" onclick="captureScreen()">📷 전체 화면 캡처</button>
       <button type="button" class="secondary" onclick="window.print()">인쇄 / PDF 저장</button>
-      <button type="button" class="danger" onclick="resetAll()">초기화</button>
+      <button type="button" class="danger" onclick="resetAll()">초기화 (DB 전체삭제)</button>
     </div>
   </div>
 </div>
@@ -408,42 +398,83 @@ function showSetupScreen(){
   window.scrollTo(0,0);
 }
 
-// 화면 캡처 기능
+// 화면 캡처 및 모바일 공유 기능
 function captureScreen() {
   const toolbar = document.getElementById('toolbar');
   const topbar = document.querySelector('.board-topbar');
   const autosaveNote = document.getElementById('autosaveNote');
   
-  // 캡처 시 불필요한 영역 임시 숨김
+  // 스크롤 맨 위로 올리기 (잘림 방지)
+  window.scrollTo(0, 0);
+
+  // 불필요한 버튼 숨김
   toolbar.style.display = 'none';
   topbar.style.display = 'none';
   autosaveNote.style.display = 'none';
   
-  html2canvas(document.body, { 
-    scale: window.devicePixelRatio || 2, 
-    useCORS: true,
-    backgroundColor: "#f1f5f9"
-  }).then(canvas => {
-    // 숨겼던 영역 원상복구
-    toolbar.style.display = 'flex';
-    topbar.style.display = 'flex';
-    autosaveNote.style.display = 'block';
-    
-    // 파일명 생성 및 다운로드 실행
-    const link = document.createElement('a');
-    const now = new Date();
-    const timeStr = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + "_" + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0');
-    
-    link.download = '아파트대피현황판_' + timeStr + '.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  }).catch(err => {
-    console.error("캡처 오류:", err);
-    alert("화면 캡처 중 오류가 발생했습니다.");
-    toolbar.style.display = 'flex';
-    topbar.style.display = 'flex';
-    autosaveNote.style.display = 'block';
-  });
+  // 렌더링 지연 방지 (0.1초 후 캡처 실행)
+  setTimeout(() => {
+    const targetElement = document.getElementById('captureArea');
+    html2canvas(targetElement, { 
+      scale: window.devicePixelRatio || 2, 
+      useCORS: true,
+      backgroundColor: "#f1f5f9"
+    }).then(canvas => {
+      
+      // 버튼 다시 보이기
+      toolbar.style.display = 'flex';
+      topbar.style.display = 'flex';
+      autosaveNote.style.display = 'block';
+      
+      canvas.toBlob(function(blob) {
+        if (!blob) {
+          alert("이미지 생성에 실패했습니다.");
+          return;
+        }
+        
+        const now = new Date();
+        const timeStr = now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + "_" + String(now.getHours()).padStart(2,'0') + String(now.getMinutes()).padStart(2,'0');
+        const fileName = '아파트대피현황판_' + timeStr + '.png';
+
+        // 1. 모바일 Web Share API 지원 (카카오톡, 앨범 등 기본 메뉴 열기)
+        if (navigator.share) {
+          const file = new File([blob], fileName, { type: 'image/png' });
+          navigator.share({
+            title: '대피현황판 캡처',
+            files: [file]
+          }).catch(err => {
+            console.log("공유 메뉴 취소됨. 브라우저 기본 다운로드를 시도합니다.");
+            fallbackDownload(blob, fileName);
+          });
+        } else {
+          // 2. 지원하지 않는 경우 일반 브라우저 다운로드
+          fallbackDownload(blob, fileName);
+        }
+      }, 'image/png');
+      
+    }).catch(err => {
+      console.error("캡처 오류:", err);
+      alert("화면 캡처 중 오류가 발생했습니다.");
+      toolbar.style.display = 'flex';
+      topbar.style.display = 'flex';
+      autosaveNote.style.display = 'block';
+    });
+  }, 100);
+}
+
+// 브라우저 기본 다운로드 폴백 함수
+function fallbackDownload(blob, fileName) {
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.style.display = 'none';
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(() => {
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }, 100);
 }
 
 function saveState(){
