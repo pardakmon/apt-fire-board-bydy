@@ -32,6 +32,8 @@
     margin:0;
     padding:24px;
     color:var(--ink);
+    position: relative;
+    z-index: 0;
   }
 
   /* 📷 캡처될 알맹이 구역 (배경 워터마크 포함) */
@@ -48,7 +50,7 @@
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     
-    /* ======== 👇 여기에 기존 Base64 코드를 넣으세요 👇 ======== */
+    /* ======== 바로 이 부분에 기존 Base64 코드를 넣으세요 ======== */
     background-image: url('여기에_기존_Base64_코드를_넣어주세요'); 
     /* ========================================================= */
 
@@ -60,13 +62,19 @@
     pointer-events: none; 
   }
   
+  /* 메모리 최적화를 위해 캡처 시 워터마크 강제 숨김 클래스 */
+  #captureTarget.hide-watermark::before {
+    display: none !important;
+    background-image: none !important;
+  }
+
   /* 알맹이 구역 안의 요소들은 워터마크보다 위로 올라오게 설정 */
   #captureTarget > * {
     position: relative;
     z-index: 1;
   }
 
-  .wrap{max-width:1100px;margin:0 auto; position: relative; z-index: 1;}
+  .wrap{max-width:1100px;margin:0 auto;}
   h1{font-size:20px;margin:0 0 16px;color:var(--navy);}
   .panel{
     background:var(--panel-bg);
@@ -137,7 +145,6 @@
   .stat-card.rescue{border-top:4px solid var(--rescue);}
   .stat-card.evac{border-top:4px solid var(--evac);}
   .stat-card.clear{border-top:4px solid var(--clear-bg);}
-  
   .board-header{
     display:flex;align-items:center;gap:16px;margin-bottom:14px;
     background:linear-gradient(135deg, var(--navy), #334155);
@@ -157,7 +164,6 @@
   .legend{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:8px;font-size:12px;font-weight:600;}
   .legend span{display:inline-flex;align-items:center;gap:6px;}
   .swatch{width:16px;height:16px;display:inline-block;border-radius:4px;}
-  
   #boardHolder{
     overflow-x:auto;-webkit-overflow-scrolling:touch;
     border-radius:12px;
@@ -416,54 +422,64 @@ function showSetupScreen(){
   window.scrollTo(0,0);
 }
 
-// 📷 모달 팝업 + 꾹 눌러 저장 방식 캡처 로직 (메모리 최적화 적용)
+// 📷 모달 팝업 + 꾹 눌러 저장 방식 캡처 로직 (메모리 최적화 3중 적용)
 function captureBoard() {
   const captureTarget = document.getElementById('captureTarget');
   const boardHolder = document.getElementById('boardHolder');
   const mainWrap = document.getElementById('mainWrap');
   const toolbar = document.getElementById('toolbar');
   const topbar = document.querySelector('.board-topbar');
+  const autosaveNote = document.getElementById('autosaveNote');
 
-  // 1. 캡처 시 불필요한 영역 임시 숨김
+  // 스크롤 맨 위로 올림
+  window.scrollTo(0, 0);
+
+  // [최적화 1] 메모리 폭발 주범인 워터마크 임시 강제 숨김
+  captureTarget.classList.add('hide-watermark');
+
+  // 불필요 UI 숨김
   toolbar.style.display = 'none';
   topbar.style.display = 'none';
+  autosaveNote.style.display = 'none';
 
-  // 2. 가로로 긴 표가 잘리지 않도록 임시로 레이아웃 확장
+  // [최적화 2] 레이아웃 확장 (무한정 넓어지지 않도록 정확한 픽셀 고정)
   const origOverflow = boardHolder.style.overflow;
   const origMaxWidth = mainWrap.style.maxWidth;
   const origWidth = captureTarget.style.width;
 
   boardHolder.style.overflow = 'visible';
-  mainWrap.style.maxWidth = 'none'; 
-  captureTarget.style.width = 'max-content';
+  mainWrap.style.maxWidth = 'none';
+  captureTarget.style.width = Math.max(captureTarget.offsetWidth, boardHolder.scrollWidth) + 'px';
 
-  // 약간의 지연 후 캡처 실행 (화면 렌더링 시간 벌기)
+  // 렌더링 여유 시간 확보
   setTimeout(() => {
     html2canvas(captureTarget, {
-      scale: 1, // 🌟 핵심: 거대한 아파트 표를 스마트폰에서 처리할 수 있도록 배율을 1로 최적화
+      scale: 1.5, // 화질과 메모리 타협점 1.5
       useCORS: true,
-      backgroundColor: "#f1f5f9",
-      width: captureTarget.scrollWidth,
-      height: captureTarget.scrollHeight
+      logging: false, // 찌꺼기 메모리 생성 방지
+      backgroundColor: "#f1f5f9"
     }).then(canvas => {
-      // 3. 캡처 후 화면 원상복구
+      // 화면 원상복구
+      captureTarget.classList.remove('hide-watermark');
       boardHolder.style.overflow = origOverflow;
       mainWrap.style.maxWidth = origMaxWidth;
       captureTarget.style.width = origWidth;
+      
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
+      autosaveNote.style.display = 'block';
 
-      const imgData = canvas.toDataURL('image/png');
+      // [최적화 3] 모바일 메모리 킬러인 무손실 PNG 대신 가벼운 JPEG 포맷으로 변환
+      const imgData = canvas.toDataURL('image/jpeg', 0.9);
 
-      // 4. 모달창을 띄워 사용자에게 '꾹 눌러 저장' 유도 (교통사고 현황판과 동일)
+      // 모달창 띄우기
       const overlay = document.createElement('div');
       overlay.className = 'overlay';
       overlay.id = 'captureOverlay';
       overlay.innerHTML = `
         <div class="modal" style="max-width:95vw; max-height:95vh; display:flex; flex-direction:column; align-items:center; padding:16px; z-index:10000;">
-          <h3 style="margin-bottom:8px; font-size:16px; color:#10b981;">📷 맞춤 캡처 완료</h3>
+          <h3 style="margin-bottom:8px; font-size:16px; color:#10b981;">📷 캡처 완료 (최적화 모드)</h3>
           <p style="font-size:13px; color:#475569; text-align:center; margin-bottom:12px; line-height:1.4;">
-            전체 세대가 깔끔하게 잘렸습니다.<br>
             아래 사진을 <strong>꾹 누른 후 '사진 앱에 저장'</strong>을 누르세요.
           </p>
           <div style="overflow:auto; max-height:60vh; border:1px solid #cbd5e1; border-radius:8px; width:100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
@@ -476,14 +492,16 @@ function captureBoard() {
 
     }).catch(err => {
       console.error("캡처 오류:", err);
+      captureTarget.classList.remove('hide-watermark');
       boardHolder.style.overflow = origOverflow;
       mainWrap.style.maxWidth = origMaxWidth;
       captureTarget.style.width = origWidth;
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
-      alert("화면 캡처 중 기기 메모리 초과 오류가 발생했습니다.");
+      autosaveNote.style.display = 'block';
+      alert("거대한 표를 처리하기에 기기 메모리가 부족합니다. 브라우저의 기본 화면 캡처 기능을 이용해주세요.");
     });
-  }, 150); 
+  }, 300);
 }
 
 function saveState(){
