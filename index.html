@@ -54,7 +54,7 @@
   .login-box button { width: 100%; padding: 12px; font-size: 14.5px; margin-top: 10px; }
   .login-error { color: var(--rescue); font-size: 12.5px; margin-top: 10px; display: none; font-weight: 700; background:#fff1f2; padding:8px; border-radius:6px;}
 
-  /* 📷 캡처될 알맹이 구역 (배경 워터마크 포함) */
+  /* 📷 캡처될 알맹이 구역 */
   #captureTarget {
     position: relative;
     background: #f1f5f9;
@@ -80,80 +80,38 @@
     pointer-events: none; 
   }
   
-  /* 메모리 최적화를 위해 캡처 시 워터마크 강제 숨김 클래스 */
   #captureTarget.hide-watermark::before {
     display: none !important;
     background-image: none !important;
   }
-
-  /* 알맹이 구역 안의 요소들은 워터마크보다 위로 올라오게 설정 */
-  #captureTarget > * {
-    position: relative;
-    z-index: 1;
-  }
-
+  #captureTarget > * { position: relative; z-index: 1; }
   .wrap{max-width:1100px;margin:0 auto; position: relative; z-index: 1;}
   h1{font-size:20px;margin:0 0 16px;color:var(--navy);}
-  .panel{
-    background:var(--panel-bg);
-    border:1px solid var(--panel-border);
-    border-radius:12px;
-    padding:18px 20px;
-    margin-bottom:18px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  }
+  .panel{ background:var(--panel-bg); border:1px solid var(--panel-border); border-radius:12px; padding:18px 20px; margin-bottom:18px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
   .panel h2{font-size:15px;margin:0 0 12px;color:var(--accent);}
   .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:12px;}
   .field{display:flex;flex-direction:column;gap:6px;}
   .field label{font-size:12px;color:#64748b;font-weight:600;}
-  .field input, .field select{
-    padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;width:140px;
-    outline:none; transition:border-color 0.2s; background:#fff;
-  }
+  .field input, .field select{ padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;width:140px; outline:none; transition:border-color 0.2s; background:#fff; }
   .field select{width:160px;}
   .field input:focus, .field select:focus{border-color:var(--accent);}
   .field input.wide{width:260px;}
   
-  button{
-    padding:10px 16px;border:none;border-radius:8px;background:var(--accent);
-    color:#fff;font-size:13px;cursor:pointer;font-weight:700;
-    transition:background 0.2s, transform 0.1s;
-    box-shadow: 0 2px 4px rgba(234,88,12,0.2);
-    -webkit-tap-highlight-color: transparent; 
-  }
+  button{ padding:10px 16px;border:none;border-radius:8px;background:var(--accent); color:#fff;font-size:13px;cursor:pointer;font-weight:700; transition:background 0.2s, transform 0.1s; box-shadow: 0 2px 4px rgba(234,88,12,0.2); -webkit-tap-highlight-color: transparent;  }
   button:active{transform:scale(0.98);}
   button.small{padding:6px 10px;font-size:11.5px;}
   button:hover{filter:brightness(0.95);}
-  
-  button.success-outline{
-    background:#fff;color:var(--clear-bg);border:1px solid #6ee7b7;box-shadow:none;
-    display:flex;align-items:center;justify-content:center;gap:4px;
-  }
+  button.success-outline{ background:#fff;color:var(--clear-bg);border:1px solid #6ee7b7;box-shadow:none; display:flex;align-items:center;justify-content:center;gap:4px; }
   button.success-outline:hover{background:#ecfdf5;border-color:var(--clear-bg);filter:none;}
-  button.secondary{
-    background:#fff;color:var(--navy);border:1px solid #cbd5e1;box-shadow:none;
-  }
+  button.secondary{ background:#fff;color:var(--navy);border:1px solid #cbd5e1;box-shadow:none; }
   button.secondary:hover{background:#f8fafc;border-color:#94a3b8;filter:none;}
-  button.danger{
-    background:#fff1f2;color:var(--rescue);border:1px solid #fecdd3;box-shadow:none;
-  }
+  button.danger{ background:#fff1f2;color:var(--rescue);border:1px solid #fecdd3;box-shadow:none; }
   button.danger:hover{background:#ffe4e6;border-color:#fda4af;filter:none;}
 
-  #titleLine{
-    color:#fff;
-  }
-  .stat-cards{
-    display:flex;gap:12px;margin:4px 0 16px; flex-wrap: wrap;
-  }
-  .stat-card{
-    flex:1; min-width:100px; text-align:center;border-radius:12px;padding:18px 10px 15px;
-    background:rgba(255, 255, 255, 0.9);
-    border:1px solid var(--panel-border);
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-  }
-  .stat-card .num{
-    font-size:36px;font-weight:900;line-height:1;
-  }
+  #titleLine{ color:#fff; }
+  .stat-cards{ display:flex;gap:12px;margin:4px 0 16px; flex-wrap: wrap; }
+  .stat-card{ flex:1; min-width:100px; text-align:center;border-radius:12px;padding:18px 10px 15px; background:rgba(255, 255, 255, 0.9); border:1px solid var(--panel-border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); }
+  .stat-card .num{ font-size:36px;font-weight:900;line-height:1; }
   .stat-card .label{font-size:13px;color:#64748b;margin-top:8px;font-weight:700;}
   .stat-card.total .num{color:var(--navy);}
   .stat-card.rescue .num{color:var(--rescue);}
@@ -164,18 +122,8 @@
   .stat-card.evac{border-top:4px solid var(--evac);}
   .stat-card.clear{border-top:4px solid var(--clear-bg);}
   
-  .board-header{
-    display:flex;align-items:center;gap:16px;margin-bottom:14px;
-    background:linear-gradient(135deg, var(--navy), #334155);
-    padding:16px 20px;border-radius:14px;
-    box-shadow:0 4px 12px rgba(15,23,42,0.2);
-  }
-  .board-header .icon-badge{
-    width:60px;height:60px;border-radius:50%;flex-shrink:0;
-    background:rgba(255,255,255,0.1);
-    border:2px solid rgba(255,255,255,0.2);
-    display:flex;align-items:center;justify-content:center;
-  }
+  .board-header{ display:flex;align-items:center;gap:16px;margin-bottom:14px; background:linear-gradient(135deg, var(--navy), #334155); padding:16px 20px;border-radius:14px; box-shadow:0 4px 12px rgba(15,23,42,0.2); }
+  .board-header .icon-badge{ width:60px;height:60px;border-radius:50%;flex-shrink:0; background:rgba(255,255,255,0.1); border:2px solid rgba(255,255,255,0.2); display:flex;align-items:center;justify-content:center; }
   .board-header .icon-badge svg{width:40px;height:40px;}
   .board-header-text{text-align:left;}
   .board-title{font-size:22px;font-weight:800;color:#fff;min-height:24px;}
@@ -184,20 +132,11 @@
   .legend span{display:inline-flex;align-items:center;gap:6px;}
   .swatch{width:16px;height:16px;display:inline-block;border-radius:4px;}
   
-  #boardHolder{
-    overflow-x:auto;-webkit-overflow-scrolling:touch;
-    border-radius:12px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-  }
-  table.board{
-    border-collapse:collapse;background:rgba(255, 255, 255, 0.95);
-  }
+  #boardHolder{ overflow-x:auto;-webkit-overflow-scrolling:touch; border-radius:12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+  table.board{ border-collapse:collapse;background:rgba(255, 255, 255, 0.95); }
   table.board.fit-table{width:100%;table-layout:fixed;}
   table.board.scroll-table{width:max-content;min-width:560px;table-layout:auto;}
-  table.board td, table.board th{
-    border:1px solid var(--line);text-align:center;vertical-align:middle;
-    padding:10px 8px;font-size:13.5px;overflow-wrap:break-word;
-  }
+  table.board td, table.board th{ border:1px solid var(--line);text-align:center;vertical-align:middle; padding:10px 8px;font-size:13.5px;overflow-wrap:break-word; }
   table.board.tier-lg td, table.board.tier-lg th{padding:12px 10px;font-size:15px;}
   table.board.tier-md td, table.board.tier-md th{padding:10px 8px;font-size:13.5px;}
   table.board.tier-sm td, table.board.tier-sm th{padding:8px 6px;font-size:12px;}
@@ -206,20 +145,12 @@
   table.board.tier-md td.floor-cell{width:60px;font-size:14px;}
   table.board.tier-sm td.floor-cell{width:50px;font-size:13px;}
   table.board.tier-xs td.floor-cell{width:42px;font-size:11.5px;}
-  td.floor-cell{
-    font-weight:800;font-size:15px;background:#f8fafc;width:70px;
-    color:var(--navy);
-  }
+  td.floor-cell{ font-weight:800;font-size:15px;background:#f8fafc;width:70px; color:var(--navy); }
   td.unit-no{font-weight:800;font-size:14.5px;padding-top:10px;color:var(--navy); margin-bottom: 6px;}
-  td.unit-status{
-    padding-bottom:10px;cursor:pointer;min-height:40px;
-  }
+  td.unit-status{ padding-bottom:10px;cursor:pointer;min-height:40px; }
   td.unit-cell{cursor:pointer; transition: background 0.15s;}
   td.unit-cell:hover{background:#f1f5f9;}
-  td.unit-cell.empty-cell{
-    background:repeating-linear-gradient(135deg, rgba(248,250,252,0.9), rgba(248,250,252,0.9) 8px, rgba(241,245,249,0.9) 8px, rgba(241,245,249,0.9) 16px);
-    cursor:default;
-  }
+  td.unit-cell.empty-cell{ background:repeating-linear-gradient(135deg, rgba(248,250,252,0.9), rgba(248,250,252,0.9) 8px, rgba(241,245,249,0.9) 8px, rgba(241,245,249,0.9) 16px); cursor:default; }
   
   .tag-clear { background: #f1f5f9; color: #047857; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #a7f3d0; }
   .tag-locked { background: #f1f5f9; color: var(--locked); font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #cbd5e1; }
@@ -251,29 +182,15 @@
   .toolbar{display:flex;gap:10px;margin-top:18px;justify-content:flex-end;}
   .empty-hint{color:#94a3b8;font-size:14px;text-align:center;padding:40px 0;font-weight:600;}
   .credit-line{text-align:center;font-size:12px;color:#94a3b8;margin:20px 0 10px;letter-spacing:0.5px;font-weight:600;}
-  
-  .board-topbar{
-    display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;
-  }
+  .board-topbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px; }
 
   /* modal */
-  .overlay{
-    position:fixed;inset:0;background:rgba(15,23,42,0.6);
-    display:flex;align-items:center;justify-content:center;z-index:10000;
-    backdrop-filter: blur(2px);
-  }
-  .modal{
-    background:#fff;border-radius:14px;padding:24px;width:95vw; max-width:420px;
-    box-shadow:0 20px 25px -5px rgba(0,0,0,0.1);
-    max-height: 90vh; overflow-y: auto;
-  }
+  .overlay{ position:fixed;inset:0;background:rgba(15,23,42,0.6); display:flex;align-items:center;justify-content:center;z-index:10000; backdrop-filter: blur(2px); }
+  .modal{ background:#fff;border-radius:14px;padding:24px;width:95vw; max-width:420px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; }
   .modal h3{margin:0 0 16px;font-size:16px;color:var(--navy);font-weight:800;}
   .modal .mrow{margin-bottom:12px;}
   .modal label{font-size:12.5px;color:#475569;display:block;margin-bottom:6px;font-weight:700;}
-  .modal input[type=text], .modal input[type=number]{
-    width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13.5px;
-    outline:none; transition:border-color 0.2s;
-  }
+  .modal input[type=text], .modal input[type=number]{ width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13.5px; outline:none; transition:border-color 0.2s; }
   .modal input:focus{border-color:var(--accent);}
   .modal .checks{display:flex;gap:16px;font-size:13px;align-items:center;}
   .modal .checks label{display:flex;align-items:center;gap:6px;margin:0;font-weight:600;cursor:pointer;}
@@ -282,24 +199,22 @@
   .stepper-row input{text-align:center;flex:1;}
   .setup-stepper{width:150px;}
   .setup-stepper input{width:60px;flex:none; pointer-events:none; background-color:#f8fafc;}
-  .step-btn{
-    width:36px;height:36px;padding:0;font-size:18px;line-height:1;border-radius:8px;
-    background:var(--navy);color:#fff;flex-shrink:0;
-  }
+  .step-btn{ width:36px;height:36px;padding:0;font-size:18px;line-height:1;border-radius:8px; background:var(--navy);color:#fff;flex-shrink:0; }
   #detailsList, #evacDetailsList{max-height:80px;overflow-y:auto;margin-bottom:4px;}
-  .detail-item{
-    display:flex;justify-content:space-between;align-items:center;gap:8px;
-    font-size:12px;padding:4px 8px;background:#f8fafc;border-radius:6px;margin-bottom:4px;
-    border:1px solid #e2e8f0;
-  }
+  .detail-item{ display:flex;justify-content:space-between;align-items:center;gap:8px; font-size:12px;padding:4px 8px;background:#f8fafc;border-radius:6px;margin-bottom:4px; border:1px solid #e2e8f0; }
   .detail-add-row{display:flex;gap:8px;}
   .detail-add-row input{flex:1;}
 
+  /* 🌟 타임스탬프 스타일 */
+  .update-info { font-size: 10.5px; color: #94a3b8; font-weight: 600; margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 3px; }
+  td.unit-cell.is-origin .update-info,
+  td.unit-cell.is-spread .update-info,
+  td.unit-cell.is-locked .update-info,
+  td.unit-cell.is-clear .update-info { color: rgba(255, 255, 255, 0.75); }
+
   @media (min-width: 641px){
     .board-header{padding:20px 24px;}
-    .board-header-text{
-      display:flex;align-items:baseline;flex-wrap:wrap;column-gap:18px;row-gap:4px;
-    }
+    .board-header-text{ display:flex;align-items:baseline;flex-wrap:wrap;column-gap:18px;row-gap:4px; }
     .board-title{font-size:32px;min-height:auto;}
     .board-subtitle{margin-top:0;font-size:15px;}
     .icon-badge{width:64px;height:64px;}
@@ -335,14 +250,17 @@
 </head>
 <body>
 
-<!-- 🔒 로그인 화면 추가 -->
+<!-- 🔒 로그인 화면 -->
 <div id="loginScreen">
   <div class="login-box">
     <h2>현황판 접속</h2>
+    
+    <!-- 🌟 추가된 직위 입력칸 -->
     <div class="field">
       <label>담당 직위(임무)</label>
       <input type="text" id="loginRole" placeholder="예: 팀장, 화재조사, 구조1팀">
     </div>
+    
     <div class="field">
       <label>이메일 아이디</label>
       <input type="email" id="loginEmail" placeholder="team@fire.com">
@@ -468,20 +386,19 @@ const dbRef = db.ref('apt_evac_board_v1');
 let floors = []; 
 let lastSavedData = ""; 
 let isInitialLoad = true; 
-let isReadOnly = false; // 🌟 읽기 전용 상태인지 확인하는 변수
-let isListening = false;
-let currentRole = "알수없음"; // ▼ 새롭게 추가된 변수 ▼
+let isReadOnly = false; 
 
-// 🌟 로그인 및 인증 상태 감지 로직
+// 🌟 로그인 로직 (직위 포함)
+let isListening = false;
+let currentRole = "알수없음";
+
 auth.onAuthStateChanged(user => {
   if (user) {
-    // 관리자 로그인 성공 시
     isReadOnly = false;
-    currentRole = localStorage.getItem('myRole') || '대원'; // ▼ 내 직위 불러오기 ▼
+    currentRole = localStorage.getItem('myRole') || '대원'; 
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('mainWrap').style.display = 'block';
     
-    // UI 버튼 상태 세팅
     document.getElementById('btnLogout').style.display = 'inline-block';
     document.getElementById('btnLoginFromView').style.display = 'none';
     document.getElementById('btnBackToSetup').style.display = 'inline-block';
@@ -489,7 +406,6 @@ auth.onAuthStateChanged(user => {
     
     startDatabaseListener();
   } else {
-    // 로그아웃 상태일 때, 관전모드가 아니면 로그인 화면 표시
     if(!isReadOnly) {
       document.getElementById('loginScreen').style.display = 'flex';
       document.getElementById('mainWrap').style.display = 'none';
@@ -500,7 +416,7 @@ auth.onAuthStateChanged(user => {
 function doLogin() {
   const email = document.getElementById('loginEmail').value;
   const pwd = document.getElementById('loginPwd').value;
-  const role = document.getElementById('loginRole').value.trim(); // ▼ 직위 입력값 가져오기 ▼
+  const role = document.getElementById('loginRole').value.trim();
   document.getElementById('loginError').style.display = 'none';
   
   if(!email || !pwd) {
@@ -508,7 +424,7 @@ function doLogin() {
     document.getElementById('loginError').style.display = 'block';
     return;
   }
-  if(!role) { // ▼ 직위 미입력 시 경고 ▼
+  if(!role) {
     document.getElementById('loginError').innerText = "담당 직위(임무)를 입력해주세요.";
     document.getElementById('loginError').style.display = 'block';
     return;
@@ -516,7 +432,7 @@ function doLogin() {
   
   auth.signInWithEmailAndPassword(email, pwd)
     .then(() => {
-      localStorage.setItem('myRole', role); // ▼ 직위를 내 기기에 임시 저장 ▼
+      localStorage.setItem('myRole', role);
       currentRole = role;
     })
     .catch(error => {
@@ -533,17 +449,14 @@ function doLogout() {
   }
 }
 
-// 🌟 실시간 관전 모드 진입 로직
 function enterViewMode() {
   isReadOnly = true;
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('mainWrap').style.display = 'block';
   
-  // 관전 모드 UI 세팅 (설정창 숨기고 현황판만 표시)
   document.getElementById('setupScreen').style.display = 'none';
   document.getElementById('boardScreen').style.display = 'block';
   
-  // 관리자 기능 숨기기
   document.getElementById('btnLogout').style.display = 'none';
   document.getElementById('btnLoginFromView').style.display = 'inline-block';
   document.getElementById('btnBackToSetup').style.display = 'none';
@@ -574,9 +487,7 @@ function captureBoard() {
   const autosaveNote = document.getElementById('autosaveNote');
 
   window.scrollTo(0, 0);
-
   captureTarget.classList.add('hide-watermark');
-
   toolbar.style.display = 'none';
   topbar.style.display = 'none';
   autosaveNote.style.display = 'none';
@@ -591,10 +502,7 @@ function captureBoard() {
 
   setTimeout(() => {
     html2canvas(captureTarget, {
-      scale: 1.5,
-      useCORS: true,
-      logging: false,
-      backgroundColor: "#f1f5f9"
+      scale: 1.5, useCORS: true, logging: false, backgroundColor: "#f1f5f9"
     }).then(canvas => {
       captureTarget.classList.remove('hide-watermark');
       boardHolder.style.overflow = origOverflow;
@@ -606,24 +514,20 @@ function captureBoard() {
       autosaveNote.style.display = 'block';
 
       const imgData = canvas.toDataURL('image/jpeg', 0.9);
-
       const overlay = document.createElement('div');
       overlay.className = 'overlay';
       overlay.id = 'captureOverlay';
       overlay.innerHTML = `
         <div class="modal" style="max-width:95vw; max-height:95vh; display:flex; flex-direction:column; align-items:center; padding:16px; z-index:10000;">
-          <h3 style="margin-bottom:8px; font-size:16px; color:#10b981;">📷 캡처 완료 (최적화 모드)</h3>
-          <p style="font-size:13px; color:#475569; text-align:center; margin-bottom:12px; line-height:1.4;">
-            아래 사진을 <strong>꾹 누른 후 '사진 앱에 저장'</strong>을 누르세요.
-          </p>
-          <div style="overflow:auto; max-height:60vh; border:1px solid #cbd5e1; border-radius:8px; width:100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <img src="${imgData}" style="width:100%; display:block; user-select: auto; -webkit-touch-callout: default;">
+          <h3 style="margin-bottom:8px; font-size:16px; color:#10b981;">📷 캡처 완료</h3>
+          <p style="font-size:13px; color:#475569; text-align:center; margin-bottom:12px;">사진을 <strong>꾹 누른 후 저장</strong>하세요.</p>
+          <div style="overflow:auto; max-height:60vh; border:1px solid #cbd5e1; border-radius:8px; width:100%;">
+            <img src="${imgData}" style="width:100%; display:block; user-select: auto;">
           </div>
           <button type="button" class="secondary" style="margin-top:16px; width:100%;" onclick="document.getElementById('captureOverlay').remove()">닫기</button>
         </div>
       `;
       document.body.appendChild(overlay);
-
     }).catch(err => {
       console.error("캡처 오류:", err);
       captureTarget.classList.remove('hide-watermark');
@@ -633,13 +537,13 @@ function captureBoard() {
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
       autosaveNote.style.display = 'block';
-      alert("기기 메모리가 부족합니다. 브라우저의 기본 화면 캡처 기능을 이용해주세요.");
+      alert("기기 메모리가 부족합니다. 기본 캡처 기능을 이용해주세요.");
     });
   }, 300);
 }
 
 function saveState(){
-  if(isReadOnly) return; // 관전 모드에서는 저장 차단
+  if(isReadOnly) return; 
   try{
     const state = {
       bldgName: document.getElementById('bldgName').value,
@@ -671,7 +575,6 @@ function saveState(){
   }
 }
 
-// 🌟 데이터 수신 리스너 (권한에 따라 다르게 처리)
 function startDatabaseListener() {
   if(isListening) return;
   isListening = true;
@@ -679,10 +582,9 @@ function startDatabaseListener() {
   dbRef.on('value', (snapshot) => {
     const state = snapshot.val();
     
-    // 데이터가 아예 없을 때의 처리
     if(!state) {
       if(isReadOnly) {
-        document.getElementById('boardHolder').innerHTML = '<div class="empty-hint">아직 관리자가 현황판을 생성하지 않았습니다.</div>';
+        document.getElementById('boardHolder').innerHTML = '<div class="empty-hint">아직 생성된 현황판이 없습니다.</div>';
       }
       return;
     }
@@ -713,10 +615,8 @@ function startDatabaseListener() {
 
 function resetAll(){
   if(isReadOnly) return;
-  if(!confirm('저장된 대피현황 데이터를 모두 지우고 서버에서 초기화할까요?')) return;
-  dbRef.remove().then(() => {
-    location.reload();
-  });
+  if(!confirm('데이터를 모두 지우고 초기화할까요?')) return;
+  dbRef.remove().then(() => { location.reload(); });
 }
 
 function adjustUnitsCount(delta){
@@ -772,13 +672,9 @@ function generateBoard(){
   const newFloors = [];
   for(let f = top; f >= bot; f--){
     if(f === 4 && skipOption === 'skip') continue;
-
     let floorName = String(f);
     let floorPrefix = String(f);
-    if(f === 4 && skipOption === 'f_floor'){
-      floorName = 'F';
-      floorPrefix = 'F';
-    }
+    if(f === 4 && skipOption === 'f_floor'){ floorName = 'F'; floorPrefix = 'F'; }
 
     const oldFl = oldFloorByName[floorName];
     const oldUnitsByNo = {};
@@ -790,15 +686,7 @@ function generateBoard(){
       units: pattern.map(suf => {
         const no = floorPrefix + suf;
         return oldUnitsByNo[no] || {
-          no, 
-          isLocked: false, 
-          clearCount: 0,
-          evacCount: 0, 
-          rescueCount: 0, 
-          origin: false, 
-          spread: false, 
-          evacDetails: [], 
-          rescueDetails: []
+          no, isLocked: false, clearCount: 0, evacCount: 0, rescueCount: 0, origin: false, spread: false, evacDetails: [], rescueDetails: []
         };
       })
     });
@@ -839,7 +727,7 @@ let editingEvacDetails = [];
 
 function openEditor(floorIdx, unitIdx){
   if(isReadOnly) {
-    alert("👀 관전 모드(읽기 전용)에서는 현황을 수정할 수 없습니다.\n수정하려면 우측 상단의 '관리자 로그인'을 진행해주세요.");
+    alert("👀 관전 모드(읽기 전용)에서는 현황을 수정할 수 없습니다.\n수정하려면 '관리자 로그인'을 진행해주세요.");
     return;
   }
   editing = {floorIdx, unitIdx};
@@ -854,11 +742,9 @@ function openEditor(floorIdx, unitIdx){
   overlay.innerHTML = `
     <div class="modal" style="z-index:100;">
       <h3>${u.no}호 현황 입력</h3>
-      
       <div class="mrow checks" style="margin-top:0; margin-bottom:12px;">
         <label><input type="checkbox" id="m_isLocked" ${u.isLocked?'checked':''}> 🔒 문잠김(미확인)</label>
       </div>
-      
       <div class="mrow">
         <label style="color:var(--clear-bg);">✅ 안전 대기(이상없음) 인원</label>
         <div class="stepper-row">
@@ -867,9 +753,7 @@ function openEditor(floorIdx, unitIdx){
           <button type="button" class="step-btn" onclick="adjustNewCount('m_clearCount', 1)">+</button>
         </div>
       </div>
-      
       <hr style="border:0; border-top:1px solid #e2e8f0; margin:16px 0;">
-
       <div class="mrow">
         <label style="color:var(--evac);">🏃 자력대피 인원</label>
         <div class="stepper-row">
@@ -879,13 +763,11 @@ function openEditor(floorIdx, unitIdx){
         </div>
         <div id="evacDetailsList" style="margin-top:8px;"></div>
         <div class="detail-add-row" style="margin-top:4px;">
-          <input type="text" id="m_evacDetailInput" placeholder="메모 (예: 30대 남, 단순연기흡입)">
+          <input type="text" id="m_evacDetailInput" placeholder="메모 (예: 단순연기흡입)">
           <button type="button" class="small" onclick="addEvacDetailLine()">추가</button>
         </div>
       </div>
-      
       <hr style="border:0; border-top:1px solid #e2e8f0; margin:16px 0;">
-      
       <div class="mrow">
         <label style="color:var(--rescue);">🚁 구조 인원</label>
         <div class="stepper-row">
@@ -895,13 +777,11 @@ function openEditor(floorIdx, unitIdx){
         </div>
         <div id="detailsList" style="margin-top:8px;"></div>
         <div class="detail-add-row" style="margin-top:4px;">
-          <input type="text" id="m_detailInput" placeholder="메모 (예: 50대 여, OO병원 이송)">
+          <input type="text" id="m_detailInput" placeholder="메모 (예: OO병원 이송)">
           <button type="button" class="small" onclick="addDetailLine()">추가</button>
         </div>
       </div>
-      
       <hr style="border:0; border-top:1px solid #e2e8f0; margin:16px 0;">
-      
       <div class="mrow checks" style="margin-top:0;">
         <label><input type="checkbox" id="m_origin" ${u.origin?'checked':''}> 🔥 발화지점</label>
         <label><input type="checkbox" id="m_spread" ${u.spread?'checked':''}> 💥 연소확대</label>
@@ -914,13 +794,8 @@ function openEditor(floorIdx, unitIdx){
   `;
   document.body.appendChild(overlay);
   
-  document.getElementById('m_detailInput').addEventListener('keydown', (e)=>{
-    if(e.key==='Enter'){ e.preventDefault(); addDetailLine(); }
-  });
-  document.getElementById('m_evacDetailInput').addEventListener('keydown', (e)=>{
-    if(e.key==='Enter'){ e.preventDefault(); addEvacDetailLine(); }
-  });
-  
+  document.getElementById('m_detailInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); addDetailLine(); } });
+  document.getElementById('m_evacDetailInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); addEvacDetailLine(); } });
   renderDetailsList();
   renderEvacDetailsList();
 }
@@ -931,61 +806,39 @@ function adjustNewCount(id, delta){
   if(v < 0) v = 0;
   el.value = v;
 }
-
 function renderDetailsList(){
   const box = document.getElementById('detailsList');
   if(!box) return;
-  box.innerHTML = editingDetails.map((d,idx)=>`
-    <div class="detail-item">
-      <span>${idx+1}. ${d}</span>
-      <button type="button" class="small secondary" onclick="removeDetailLine(${idx})">삭제</button>
-    </div>
-  `).join('');
+  box.innerHTML = editingDetails.map((d,idx)=>`<div class="detail-item"><span>${idx+1}. ${d}</span><button type="button" class="small secondary" onclick="removeDetailLine(${idx})">삭제</button></div>`).join('');
 }
 function addDetailLine(){
   const input = document.getElementById('m_detailInput');
   const val = input.value.trim();
   if(!val) return;
-  editingDetails.push(val);
-  input.value='';
-  renderDetailsList();
+  editingDetails.push(val); input.value=''; renderDetailsList();
 }
-function removeDetailLine(idx){
-  editingDetails.splice(idx,1);
-  renderDetailsList();
-}
+function removeDetailLine(idx){ editingDetails.splice(idx,1); renderDetailsList(); }
 
 function renderEvacDetailsList(){
   const box = document.getElementById('evacDetailsList');
   if(!box) return;
-  box.innerHTML = editingEvacDetails.map((d,idx)=>`
-    <div class="detail-item">
-      <span>${idx+1}. ${d}</span>
-      <button type="button" class="small secondary" onclick="removeEvacDetailLine(${idx})">삭제</button>
-    </div>
-  `).join('');
+  box.innerHTML = editingEvacDetails.map((d,idx)=>`<div class="detail-item"><span>${idx+1}. ${d}</span><button type="button" class="small secondary" onclick="removeEvacDetailLine(${idx})">삭제</button></div>`).join('');
 }
 function addEvacDetailLine(){
   const input = document.getElementById('m_evacDetailInput');
   const val = input.value.trim();
   if(!val) return;
-  editingEvacDetails.push(val);
-  input.value='';
-  renderEvacDetailsList();
+  editingEvacDetails.push(val); input.value=''; renderEvacDetailsList();
 }
-function removeEvacDetailLine(idx){
-  editingEvacDetails.splice(idx,1);
-  renderEvacDetailsList();
-}
+function removeEvacDetailLine(idx){ editingEvacDetails.splice(idx,1); renderEvacDetailsList(); }
 
 function closeEditor(){
   const o = document.getElementById('editorOverlay');
   if(o) o.remove();
-  editing = null;
-  editingDetails = [];
-  editingEvacDetails = [];
+  editing = null; editingDetails = []; editingEvacDetails = [];
 }
 
+// 🌟 부분 업데이트 (시간/직위 기록)
 function saveEditor(){
   const {floorIdx, unitIdx} = editing;
   const u = floors[floorIdx].units[unitIdx];
@@ -1000,7 +853,6 @@ function saveEditor(){
   u.evacDetails = editingEvacDetails.slice();
   u.rescueDetails = editingDetails.slice();
   
-  // ▼ 시간 및 직위 기록 추가 ▼
   const now = new Date();
   const hh = String(now.getHours()).padStart(2, '0');
   const mm = String(now.getMinutes()).padStart(2, '0');
@@ -1010,18 +862,24 @@ function saveEditor(){
   u.lastUpdatedBy = currentRole; 
   
   closeEditor();
-  render(); // 내 화면에 즉시 변경된 색상 표시
+  render(); 
   
-  // ▼ 전체 덮어쓰기(saveState) 대신 해당 호수만 서버로 부분 전송 ▼
   if(!isReadOnly) {
     dbRef.child('floors/' + floorIdx + '/units/' + unitIdx).update(u)
       .then(() => {
         const note = document.getElementById('autosaveNote');
         if(note) note.textContent = `부분 동기화 완료 · ${hh}:${mm}:${ss}`;
       })
-      .catch(e => console.error("부분 업데이트 실패", e));
+      .catch(e => console.error("업데이트 실패", e));
   }
 }
+
+// 🌟 전역 클릭 이벤트 등록 (안전 장치)
+window.__cellClick = function(td){
+  const fi = parseInt(td.getAttribute('data-fi'));
+  const ui = parseInt(td.getAttribute('data-ui'));
+  openEditor(fi, ui);
+};
 
 function render(){
   document.getElementById('toolbar').style.display='flex';
@@ -1057,22 +915,10 @@ function render(){
   });
   
   document.getElementById('summaryCards').innerHTML = `
-    <div class="stat-card total">
-      <div class="num">${evacTotal}</div>
-      <div class="label">총 대피(명)</div>
-    </div>
-    <div class="stat-card rescue">
-      <div class="num">${rescueTotal}</div>
-      <div class="label">구조(명)</div>
-    </div>
-    <div class="stat-card evac">
-      <div class="num">${evacSelfTotal}</div>
-      <div class="label">자력대피(명)</div>
-    </div>
-    <div class="stat-card clear">
-      <div class="num">${clearTotal}</div>
-      <div class="label">안전 대기(명)</div>
-    </div>
+    <div class="stat-card total"><div class="num">${evacTotal}</div><div class="label">총 대피(명)</div></div>
+    <div class="stat-card rescue"><div class="num">${rescueTotal}</div><div class="label">구조(명)</div></div>
+    <div class="stat-card evac"><div class="num">${evacSelfTotal}</div><div class="label">자력대피(명)</div></div>
+    <div class="stat-card clear"><div class="num">${clearTotal}</div><div class="label">안전 대기(명)</div></div>
   `;
 
   function unitSuffix(u, floorName){ return u.no.slice(String(floorName).length); }
@@ -1107,30 +953,23 @@ function render(){
       while(j+1<floors.length && floors[j+1].noIssue) j++;
       const label = (j>i) ? `${floors[i].floor}층~${floors[j].floor}층` : `${fl.floor}층`;
       
-      // 🌟 관전 모드일 때 특이사항 해제 버튼 숨김
       const releaseBtnHtml = isReadOnly ? '' : `<div class="floor-controls"><button type="button" class="small secondary" onclick="toggleNoIssue(${i})">해제</button></div>`;
       
       html += `<tr class="noissue-row">
-        <td class="floor-cell">${label}
-          ${releaseBtnHtml}
-        </td>
+        <td class="floor-cell">${label}${releaseBtnHtml}</td>
         <td colspan="20">특이사항 없음</td>
       </tr>`;
       i = j+1;
       continue;
     }
     
-    // 🌟 관전 모드일 때 세대수정 및 특이없음 버튼 숨김
     const editControlsHtml = isReadOnly ? '' : `
       <div class="floor-controls">
         <button type="button" class="small secondary" onclick="editUnits(${i})">세대수정</button>
         <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">특이없음</button>
       </div>`;
       
-    html += `<tr>
-      <td class="floor-cell">${fl.floor}층
-        ${editControlsHtml}
-      </td>`;
+    html += `<tr><td class="floor-cell">${fl.floor}층${editControlsHtml}</td>`;
       
     columns.forEach(suf=>{
       const ui = fl.units.findIndex(x=> unitSuffix(x, fl.floor)===suf);
@@ -1147,7 +986,6 @@ function render(){
       let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (isClearActive ? ' is-clear' : (u.isLocked ? ' is-locked' : ''))));
       
       let bodyHtml = '';
-      
       if(isClearActive) bodyHtml += `<div class="tag-clear">✅ 이상없음 ${cc}명</div>`;
       if(u.isLocked) bodyHtml += `<div class="tag-locked">🔒 문잠김</div>`;
       
@@ -1159,10 +997,10 @@ function render(){
       if(rc > 0) bodyHtml += `<div class="tag-rescue">구조 ${rc}명</div>`;
       if(u.rescueDetails && u.rescueDetails.length) bodyHtml += `<div class="status-note">${u.rescueDetails.map(d=>'· '+d).join('<br>')}</div>`;
 
-const originTag = u.origin ? `<div class="origin-tag">🔥 발화지점</div>` : '';
+      const originTag = u.origin ? `<div class="origin-tag">🔥 발화지점</div>` : '';
       const spreadTag = (!u.origin && u.spread) ? `<div class="spread-tag">💥 연소확대</div>` : '';
       
-      // ▼ 시간 및 직위 표시 태그 추가 ▼
+      // 🌟 타임스탬프 HTML
       const updateLog = u.lastUpdatedTime ? `<div style="font-size:10.5px; color:#fff; background:rgba(0,0,0,0.4); border-radius:4px; padding:2px 4px; margin-top:6px; font-weight:600; display:inline-block;">🕒 ${u.lastUpdatedTime} (${u.lastUpdatedBy})</div>` : '';
       
       html += `<td class="${cellCls}" data-fi="${i}" data-ui="${ui}" onclick="__cellClick(this)" style="${bg?('background:'+bg+';'):''}">
