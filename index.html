@@ -340,6 +340,10 @@
   <div class="login-box">
     <h2>현황판 접속</h2>
     <div class="field">
+      <label>담당 직위(임무)</label>
+      <input type="text" id="loginRole" placeholder="예: 팀장, 화재조사, 구조1팀">
+    </div>
+    <div class="field">
       <label>이메일 아이디</label>
       <input type="email" id="loginEmail" placeholder="team@fire.com">
     </div>
@@ -466,12 +470,14 @@ let lastSavedData = "";
 let isInitialLoad = true; 
 let isReadOnly = false; // 🌟 읽기 전용 상태인지 확인하는 변수
 let isListening = false;
+let currentRole = "알수없음"; // ▼ 새롭게 추가된 변수 ▼
 
 // 🌟 로그인 및 인증 상태 감지 로직
 auth.onAuthStateChanged(user => {
   if (user) {
     // 관리자 로그인 성공 시
     isReadOnly = false;
+    currentRole = localStorage.getItem('myRole') || '대원'; // ▼ 내 직위 불러오기 ▼
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('mainWrap').style.display = 'block';
     
@@ -494,15 +500,27 @@ auth.onAuthStateChanged(user => {
 function doLogin() {
   const email = document.getElementById('loginEmail').value;
   const pwd = document.getElementById('loginPwd').value;
+  const role = document.getElementById('loginRole').value.trim(); // ▼ 직위 입력값 가져오기 ▼
   document.getElementById('loginError').style.display = 'none';
   
   if(!email || !pwd) {
+    document.getElementById('loginError').innerText = "아이디 또는 비밀번호를 입력해주세요.";
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+  if(!role) { // ▼ 직위 미입력 시 경고 ▼
+    document.getElementById('loginError').innerText = "담당 직위(임무)를 입력해주세요.";
     document.getElementById('loginError').style.display = 'block';
     return;
   }
   
   auth.signInWithEmailAndPassword(email, pwd)
+    .then(() => {
+      localStorage.setItem('myRole', role); // ▼ 직위를 내 기기에 임시 저장 ▼
+      currentRole = role;
+    })
     .catch(error => {
+      document.getElementById('loginError').innerText = "아이디 또는 비밀번호를 확인해주세요.";
       document.getElementById('loginError').style.display = 'block';
     });
 }
@@ -982,16 +1000,28 @@ function saveEditor(){
   u.evacDetails = editingEvacDetails.slice();
   u.rescueDetails = editingDetails.slice();
   
+  // ▼ 시간 및 직위 기록 추가 ▼
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const ss = String(now.getSeconds()).padStart(2, '0');
+  
+  u.lastUpdatedTime = `${hh}:${mm}`;
+  u.lastUpdatedBy = currentRole; 
+  
   closeEditor();
-  render();
-  saveState(); 
+  render(); // 내 화면에 즉시 변경된 색상 표시
+  
+  // ▼ 전체 덮어쓰기(saveState) 대신 해당 호수만 서버로 부분 전송 ▼
+  if(!isReadOnly) {
+    dbRef.child('floors/' + floorIdx + '/units/' + unitIdx).update(u)
+      .then(() => {
+        const note = document.getElementById('autosaveNote');
+        if(note) note.textContent = `부분 동기화 완료 · ${hh}:${mm}:${ss}`;
+      })
+      .catch(e => console.error("부분 업데이트 실패", e));
+  }
 }
-
-window.__cellClick = function(td){
-  const fi = parseInt(td.getAttribute('data-fi'));
-  const ui = parseInt(td.getAttribute('data-ui'));
-  openEditor(fi, ui);
-};
 
 function render(){
   document.getElementById('toolbar').style.display='flex';
@@ -1129,12 +1159,15 @@ function render(){
       if(rc > 0) bodyHtml += `<div class="tag-rescue">구조 ${rc}명</div>`;
       if(u.rescueDetails && u.rescueDetails.length) bodyHtml += `<div class="status-note">${u.rescueDetails.map(d=>'· '+d).join('<br>')}</div>`;
 
-      const originTag = u.origin ? `<div class="origin-tag">🔥 발화지점</div>` : '';
+const originTag = u.origin ? `<div class="origin-tag">🔥 발화지점</div>` : '';
       const spreadTag = (!u.origin && u.spread) ? `<div class="spread-tag">💥 연소확대</div>` : '';
+      
+      // ▼ 시간 및 직위 표시 태그 추가 ▼
+      const updateLog = u.lastUpdatedTime ? `<div style="font-size:10.5px; color:#fff; background:rgba(0,0,0,0.4); border-radius:4px; padding:2px 4px; margin-top:6px; font-weight:600; display:inline-block;">🕒 ${u.lastUpdatedTime} (${u.lastUpdatedBy})</div>` : '';
       
       html += `<td class="${cellCls}" data-fi="${i}" data-ui="${ui}" onclick="__cellClick(this)" style="${bg?('background:'+bg+';'):''}">
         <div class="unit-no">${u.no}호</div>
-        <div class="unit-status">${bodyHtml}${originTag}${spreadTag}</div>
+        <div class="unit-status">${bodyHtml}${originTag}${spreadTag}<br>${updateLog}</div>
       </td>`;
     });
     html += `</tr>`;
