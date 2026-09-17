@@ -486,7 +486,6 @@ function captureBoard() {
   const autosaveNote = document.getElementById('autosaveNote');
 
   window.scrollTo(0, 0);
-  captureTarget.classList.add('hide-watermark');
   toolbar.style.display = 'none';
   topbar.style.display = 'none';
   autosaveNote.style.display = 'none';
@@ -503,7 +502,6 @@ function captureBoard() {
     html2canvas(captureTarget, {
       scale: 1.5, useCORS: true, logging: false, backgroundColor: "#f1f5f9"
     }).then(canvas => {
-      captureTarget.classList.remove('hide-watermark');
       boardHolder.style.overflow = origOverflow;
       mainWrap.style.maxWidth = origMaxWidth;
       captureTarget.style.width = origWidth;
@@ -529,7 +527,6 @@ function captureBoard() {
       document.body.appendChild(overlay);
     }).catch(err => {
       console.error("캡처 오류:", err);
-      captureTarget.classList.remove('hide-watermark');
       boardHolder.style.overflow = origOverflow;
       mainWrap.style.maxWidth = origMaxWidth;
       captureTarget.style.width = origWidth;
