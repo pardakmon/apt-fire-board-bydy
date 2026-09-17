@@ -86,28 +86,36 @@
   
   #captureTarget > * { position: relative; z-index: 1; }
   .wrap{max-width:1100px;margin:0 auto; position: relative; z-index: 1;}
-  h1{font-size:20px;margin:0 0 16px;color:var(--navy);}
-  .panel{ background:var(--panel-bg); border:1px solid var(--panel-border); border-radius:12px; padding:18px 20px; margin-bottom:18px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-  .panel h2{font-size:15px;margin:0 0 12px;color:var(--accent);}
-  .row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:12px;}
-  .field{display:flex;flex-direction:column;gap:6px;}
-  .field label{font-size:12px;color:#64748b;font-weight:600;}
-  .field input, .field select{ padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;width:140px; outline:none; transition:border-color 0.2s; background:#fff; }
-  .field select{width:160px;}
-  .field input:focus, .field select:focus{border-color:var(--accent);}
-  .field input.wide{width:260px;}
+  h1 { font-size:26px; font-weight:700; letter-spacing:-0.5px; margin:0 0 24px; color:#1d1d1f; }
   
-  button{ padding:10px 16px;border:none;border-radius:8px;background:var(--accent); color:#fff;font-size:13px;cursor:pointer;font-weight:700; transition:background 0.2s, transform 0.1s; box-shadow: 0 2px 4px rgba(234,88,12,0.2); -webkit-tap-highlight-color: transparent;  }
-  button:active{transform:scale(0.98);}
-  button.small{padding:6px 10px;font-size:11.5px;}
-  button:hover{filter:brightness(0.95);}
-  button.success-outline{ background:#fff;color:var(--clear-bg);border:1px solid #6ee7b7;box-shadow:none; display:flex;align-items:center;justify-content:center;gap:4px; }
-  button.success-outline:hover{background:#ecfdf5;border-color:var(--clear-bg);filter:none;}
-  button.secondary{ background:#fff;color:var(--navy);border:1px solid #cbd5e1;box-shadow:none; }
-  button.secondary:hover{background:#f8fafc;border-color:#94a3b8;filter:none;}
-  button.danger{ background:#fff1f2;color:var(--rescue);border:1px solid #fecdd3;box-shadow:none; }
-  button.danger:hover{background:#ffe4e6;border-color:#fda4af;filter:none;}
-
+  /* 부드러운 그림자와 넓은 여백의 패널 */
+  .panel { background:#ffffff; border:none; border-radius:20px; padding:32px 36px; margin-bottom:24px; box-shadow:0 4px 24px rgba(0,0,0,0.04); }
+  .panel h2 { font-size:18px; margin:0 0 24px; color:#1d1d1f; font-weight:700; letter-spacing:-0.3px; }
+  .row { display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; margin-bottom:20px; }
+  
+  /* 테두리 없이 면(Surface)으로 구분되는 입력칸 */
+  .field { display:flex; flex-direction:column; gap:8px; }
+  .field label { font-size:12px; color:#86868b; font-weight:600; }
+  .field input, .field select { padding:14px 16px; border:1px solid transparent; border-radius:12px; font-size:14.5px; width:140px; outline:none; transition:all 0.2s ease; background:#f5f5f7; color:#1d1d1f; font-weight:500; font-family:inherit; }
+  .field select { width:160px; cursor:pointer; }
+  
+  /* 포커스 시 애플 특유의 블루 링 효과 */
+  .field input:focus, .field select:focus { background:#ffffff; border-color:#0071e3; box-shadow:0 0 0 4px rgba(0, 113, 227, 0.1); }
+  .field input.wide { width:260px; }
+  
+  /* 모서리가 둥근 메인 버튼 (애플 블루) */
+  button { padding:14px 22px; border:none; border-radius:14px; background:#0071e3; color:#fff; font-size:14.5px; cursor:pointer; font-weight:600; letter-spacing:-0.2px; transition:all 0.2s; -webkit-tap-highlight-color: transparent; }
+  button:hover { background:#0077ed; }
+  button:active { transform:scale(0.97); }
+  button.small { padding:8px 14px; font-size:12.5px; border-radius:10px; }
+  
+  /* 서브 버튼들도 테두리 없이 배경색만으로 깔끔하게 처리 */
+  button.success-outline { background:#f5f5f7; color:#1d1d1f; border:none; box-shadow:none; display:flex; align-items:center; justify-content:center; gap:4px; }
+  button.success-outline:hover { background:#e8e8ed; color:#0071e3; }
+  button.secondary { background:#f5f5f7; color:#1d1d1f; border:none; box-shadow:none; }
+  button.secondary:hover { background:#e8e8ed; }
+  button.danger { background:#fef0f0; color:#d50000; border:none; box-shadow:none; }
+  button.danger:hover { background:#fee2e2; }
   #titleLine{ color:#fff; }
   .stat-cards{ display:flex;gap:12px;margin:4px 0 16px; flex-wrap: wrap; }
   .stat-card{ flex:1; min-width:100px; text-align:center;border-radius:12px;padding:18px 10px 15px; background:rgba(255, 255, 255, 0.9); border:1px solid var(--panel-border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); }
