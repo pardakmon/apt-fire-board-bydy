@@ -68,14 +68,13 @@
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     
-    /* ======== 👇 여기에 기존 Base64 코드를 넣으세요 👇 ======== */
-    background-image: url('여기에_기존_Base64_코드를_넣어주세요'); 
-    /* ========================================================= */
+    /* 🚨 방금 깃허브에 올리신 파일명으로 변경 */
+    background-image: url('seoulfire.png'); 
 
     background-repeat: no-repeat;
     background-position: center center;
     background-size: 60vmin; 
-    opacity: 0.08; 
+    opacity: 0.15; /* 💡 0.08은 워터마크가 너무 흐려서 0.15로 살짝 진하게 올렸습니다. 필요시 조절하세요. */
     z-index: 0; 
     pointer-events: none; 
   }
@@ -133,7 +132,7 @@
   .swatch{width:16px;height:16px;display:inline-block;border-radius:4px;}
   
   #boardHolder{ overflow-x:auto;-webkit-overflow-scrolling:touch; border-radius:12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-  table.board{ border-collapse:collapse;background:rgba(255, 255, 255, 0.95); }
+  table.board{ border-collapse:collapse;background:rgba(255, 255, 255, 0.5); }
   table.board.fit-table{width:100%;table-layout:fixed;}
   table.board.scroll-table{width:max-content;min-width:560px;table-layout:auto;}
   table.board td, table.board th{ border:1px solid var(--line);text-align:center;vertical-align:middle; padding:10px 8px;font-size:13.5px;overflow-wrap:break-word; }
@@ -145,12 +144,12 @@
   table.board.tier-md td.floor-cell{width:60px;font-size:14px;}
   table.board.tier-sm td.floor-cell{width:50px;font-size:13px;}
   table.board.tier-xs td.floor-cell{width:42px;font-size:11.5px;}
-  td.floor-cell{ font-weight:800;font-size:15px;background:#f8fafc;width:70px; color:var(--navy); }
+  td.floor-cell{ font-weight:800;font-size:15px;background:rgba(248, 250, 252, 0.6);width:70px; color:var(--navy); }
   td.unit-no{font-weight:800;font-size:14.5px;padding-top:10px;color:var(--navy); margin-bottom: 6px;}
   td.unit-status{ padding-bottom:10px;cursor:pointer;min-height:40px; }
   td.unit-cell{cursor:pointer; transition: background 0.15s;}
   td.unit-cell:hover{background:#f1f5f9;}
-  td.unit-cell.empty-cell{ background:repeating-linear-gradient(135deg, rgba(248,250,252,0.9), rgba(248,250,252,0.9) 8px, rgba(241,245,249,0.9) 8px, rgba(241,245,249,0.9) 16px); cursor:default; }
+  td.unit-cell.empty-cell{ background:repeating-linear-gradient(135deg, rgba(248,250,252,0.4), rgba(248,250,252,0.4) 8px, rgba(241,245,249,0.4) 8px, rgba(241,245,249,0.4) 16px); cursor:default; }
   
   .tag-clear { background: #f1f5f9; color: #047857; font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #a7f3d0; }
   .tag-locked { background: #f1f5f9; color: var(--locked); font-size: 12px; font-weight: 700; padding: 4px 6px; border-radius: 6px; margin-bottom: 4px; display: inline-block; border: 1px solid #cbd5e1; }
