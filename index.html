@@ -212,7 +212,10 @@
   .modal label{font-size:12.5px;color:#475569;display:block;margin-bottom:6px;font-weight:700;}
   .modal input[type=text], .modal input[type=number]{ width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13.5px; outline:none; transition:border-color 0.2s; }
   .modal input:focus{border-color:var(--accent);}
-  .modal .checks{display:flex;gap:16px;font-size:13px;align-items:center;}
+  
+  /* 🌟 수정된 체크박스 레이아웃 (줄바꿈 가능하게 flex-wrap 추가) */
+  .modal .checks{display:flex;gap:16px;font-size:13px;align-items:center; flex-wrap:wrap;}
+  
   .modal .checks label{display:flex;align-items:center;gap:6px;margin:0;font-weight:600;cursor:pointer;}
   .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
   .stepper-row{display:flex;align-items:center;gap:8px;}
@@ -815,10 +818,10 @@ function openEditor(floorIdx, unitIdx){
   overlay.innerHTML = `
     <div class="modal" style="z-index:100;">
       <h3>${u.no}호 현황 입력</h3>
-      <div class="mrow checks" style="margin-top:0; margin-bottom:12px;">
-        <label><input type="checkbox" id="m_isLocked" ${u.isLocked?'checked':''}> 🔒 문잠김(미확인)</label>
-      </div>
-      <div class="mrow">
+      
+      <!-- 🌟 기존 상단에 있던 '문잠김'을 제거하고 아래로 이동시켰습니다. -->
+      
+      <div class="mrow" style="margin-top:0;">
         <label style="color:var(--clear-bg);">✅ 자택대기(이상없음) 인원</label>
         <div class="stepper-row">
           <button type="button" class="step-btn" onclick="adjustNewCount('m_clearCount', -1)">−</button>
@@ -855,10 +858,14 @@ function openEditor(floorIdx, unitIdx){
         </div>
       </div>
       <hr style="border:0; border-top:1px solid #e2e8f0; margin:16px 0;">
-      <div class="mrow checks" style="margin-top:0;">
+      
+      <!-- 🌟 '문잠김' 체크박스를 하단 특이사항 영역으로 나란히 배치 완료! -->
+      <div class="mrow checks" style="margin-top:0; flex-wrap:wrap;">
         <label><input type="checkbox" id="m_origin" ${u.origin?'checked':''}> 🔥 발화지점</label>
         <label><input type="checkbox" id="m_spread" ${u.spread?'checked':''}> 💥 연소확대</label>
+        <label><input type="checkbox" id="m_isLocked" ${u.isLocked?'checked':''}> 🔒 문잠김(미확인)</label>
       </div>
+      
       <div class="modal-actions">
         <button type="button" class="secondary" onclick="closeEditor()">취소</button>
         <button type="button" onclick="saveEditor()">저장</button>
