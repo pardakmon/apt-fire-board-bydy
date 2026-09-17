@@ -122,12 +122,32 @@
   .stat-card.evac{border-top:4px solid var(--evac);}
   .stat-card.clear{border-top:4px solid var(--clear-bg);}
   
-  .board-header{ display:flex;align-items:center;gap:16px;margin-bottom:14px; background:linear-gradient(135deg, var(--navy), #334155); padding:16px 20px;border-radius:14px; box-shadow:0 4px 12px rgba(15,23,42,0.2); }
+  /* 🌟 상단바 구조 (좌측 아이콘/제목, 우측 신고접수일시 배치) */
+  .board-header { 
+    display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:14px; 
+    background:linear-gradient(135deg, var(--navy), #334155); padding:16px 20px; border-radius:14px; box-shadow:0 4px 12px rgba(15,23,42,0.2); 
+  }
+  .board-header-left { display:flex; align-items:center; gap:16px; }
   .board-header .icon-badge{ width:60px;height:60px;border-radius:50%;flex-shrink:0; background:rgba(255,255,255,0.1); border:2px solid rgba(255,255,255,0.2); display:flex;align-items:center;justify-content:center; }
   .board-header .icon-badge svg{width:40px;height:40px;}
   .board-header-text{text-align:left;}
   .board-title{font-size:22px;font-weight:800;color:#fff;min-height:24px;}
   .board-subtitle{font-size:13px;color:#cbd5e1;margin-top:4px;font-weight:600;letter-spacing:0.5px;}
+
+  /* 🌟 우측 상단 신고접수일시 표시 박스 스타일 */
+  .header-dispatch-info {
+    text-align: right;
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.35);
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+    font-size: 13px;
+  }
+  .header-dispatch-info .dispatch-label { color: #94a3b8; font-weight: 700; font-size: 11px; display: block; margin-bottom: 2px;}
+  .header-dispatch-info .dispatch-val { color: #38bdf8; font-weight: 700; font-size: 14px; }
+
   .legend{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:8px;font-size:12px;font-weight:600;}
   .legend span{display:inline-flex;align-items:center;gap:6px;}
   .swatch{width:16px;height:16px;display:inline-block;border-radius:4px;}
@@ -289,6 +309,15 @@
       <div class="row">
         <div class="field"><label>건물명 / 사건명</label><input type="text" id="bldgName" class="wide" placeholder="예) OO아파트 101동 화재" oninput="if(floors.length){ document.getElementById('titleLine').textContent=this.value; saveState(); }"></div>
       </div>
+      
+      <!-- 🌟 추가: 신고접수일시 입력 (페이지 열 때 자동 세팅) -->
+      <div class="row" style="margin-top:12px;">
+        <div class="field">
+          <label style="font-size:12px;color:#64748b;font-weight:600;">신고접수일시 (최근접 시간 자동입력)</label>
+          <input type="text" id="dispatchTime" class="wide" placeholder="예) 2026-09-17 13:44" oninput="if(floors.length){ saveState(); document.getElementById('viewDispatchTime').textContent=this.value; }">
+        </div>
+      </div>
+
       <div class="row">
         <div class="field"><label>최고층</label><input type="number" id="topFloor" value="12"></div>
         <div class="field"><label>최저층</label><input type="number" id="botFloor" value="1"></div>
@@ -337,13 +366,22 @@
         </div>
       </div>
 
+      <!-- 🌟 진한 상단바 (제목 영역 + 우측 신고접수일시) -->
       <div class="board-header">
-        <div class="icon-badge" id="iconBadge"></div>
-        <div class="board-header-text">
-          <div id="titleLine" class="board-title"></div>
-          <div class="board-subtitle">아파트 화재 세대별 대피현황판</div>
+        <div class="board-header-left">
+          <div class="icon-badge" id="iconBadge"></div>
+          <div class="board-header-text">
+            <div id="titleLine" class="board-title"></div>
+            <div class="board-subtitle">아파트 화재 세대별 대피현황판</div>
+          </div>
+        </div>
+        <!-- 우측 신고접수일시 박스 -->
+        <div class="header-dispatch-info">
+          <span class="dispatch-label">신고접수일시</span>
+          <span class="dispatch-val" id="viewDispatchTime">-</span>
         </div>
       </div>
+
       <div id="summaryCards" class="stat-cards"></div>
       
       <div class="legend">
@@ -399,6 +437,22 @@ let isReadOnly = false;
 // 🌟 로그인 로직 (직위 포함)
 let isListening = false;
 let currentRole = "알수없음";
+
+// --- [페이지 열릴 당시의 현재 시간을 신고접수일시에 자동 세팅] ---
+window.addEventListener('DOMContentLoaded', () => {
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const hh = String(now.getHours()).padStart(2, '0');
+  const min = String(now.getMinutes()).padStart(2, '0');
+  const defaultTimeStr = `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+  
+  const timeInput = document.getElementById('dispatchTime');
+  if(timeInput && !timeInput.value) {
+    timeInput.value = defaultTimeStr;
+  }
+});
 
 auth.onAuthStateChanged(user => {
   if (user) {
@@ -552,6 +606,7 @@ function saveState(){
   try{
     const state = {
       bldgName: document.getElementById('bldgName').value,
+      dispatchTime: document.getElementById('dispatchTime').value, /* 🌟 추가된 데이터 저장 */
       topFloor: document.getElementById('topFloor').value,
       botFloor: document.getElementById('botFloor').value,
       skip4Floor: document.getElementById('skip4Floor').value,
@@ -599,6 +654,7 @@ function startDatabaseListener() {
     lastSavedData = stateStr;
     
     document.getElementById('bldgName').value = state.bldgName || '';
+    if(document.getElementById('dispatchTime')) document.getElementById('dispatchTime').value = state.dispatchTime || '';
     document.getElementById('topFloor').value = state.topFloor || 12;
     document.getElementById('botFloor').value = state.botFloor || 1;
     document.getElementById('skip4Floor').value = state.skip4Floor || 'none';
@@ -891,6 +947,10 @@ function render(){
   document.getElementById('iconBadge').innerHTML = APT_FIRE_ICON_SVG;
   const name = document.getElementById('bldgName').value.trim();
   document.getElementById('titleLine').textContent = name || '';
+
+  // 🌟 상단바 신고접수일시 화면 반영
+  const dTime = document.getElementById('dispatchTime').value.trim();
+  document.getElementById('viewDispatchTime').textContent = dTime || '-';
 
   let evacTotal=0, rescueTotal=0, evacSelfTotal=0, clearTotal=0;
   const evacDetail = [];
