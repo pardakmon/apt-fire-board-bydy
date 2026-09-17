@@ -63,26 +63,23 @@
     overflow: hidden; 
   }
   
-  #captureTarget::before {
-    content: "";
+  /* 🌟 확실하게 캡처되는 워터마크 전용 구역 */
+  .watermark-bg {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    
-    /* 🚨 방금 깃허브에 올리신 파일명으로 변경 */
     background-image: url('seoulfire.png'); 
-
     background-repeat: no-repeat;
     background-position: center center;
-    background-size: 60vmin; 
-    opacity: 0.15; /* 💡 0.08은 워터마크가 너무 흐려서 0.15로 살짝 진하게 올렸습니다. 필요시 조절하세요. */
+    background-size: 50%; /* 💡 크기를 적절하게 조절하세요 (예: 50% ~ 70%) */
+    opacity: 0.15; 
     z-index: 0; 
     pointer-events: none; 
   }
   
-  #captureTarget.hide-watermark::before {
+  #captureTarget.hide-watermark .watermark-bg {
     display: none !important;
-    background-image: none !important;
   }
+
   #captureTarget > * { position: relative; z-index: 1; }
   .wrap{max-width:1100px;margin:0 auto; position: relative; z-index: 1;}
   h1{font-size:20px;margin:0 0 16px;color:var(--navy);}
@@ -328,6 +325,10 @@
     
     <!-- 📷 캡처될 내용물이 쏙 들어가는 알맹이 구역 -->
     <div id="captureTarget">
+
+      <!-- 🌟 워터마크 이미지 추가 -->
+      <div class="watermark-bg"></div>
+
       <div class="board-header">
         <div class="icon-badge" id="iconBadge"></div>
         <div class="board-header-text">
