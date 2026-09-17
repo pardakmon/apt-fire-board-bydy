@@ -314,9 +314,8 @@
 
 <div class="wrap" id="mainWrap" style="display:none;">
   <div id="setupScreen">
-    <h1>아파트 화재 세대별 대피현황판 생성기</h1>
+    <h1>공동주택 화재 현황판</h1>
     <div class="panel" id="setupPanel">
-      <h2>① 기본 설정</h2>
       <div class="row">
         <div class="field"><label>건물명 / 사건명</label><input type="text" id="bldgName" class="wide" placeholder="예) OO아파트 101동 화재" oninput="if(floors.length){ document.getElementById('titleLine').textContent=this.value; saveState(); }"></div>
       </div>
@@ -324,7 +323,7 @@
       <!-- 🌟 추가: 신고접수일시 입력 -->
       <div class="row" style="margin-top:12px;">
         <div class="field">
-          <label style="font-size:12px;color:#64748b;font-weight:600;">신고접수일시 (최근접 시간 자동입력)</label>
+          <label style="font-size:12px;color:#86868b;font-weight:600;">신고접수일시 (최근접 시간 자동입력)</label>
           <input type="text" id="dispatchTime" class="wide" placeholder="예) 2026-09-17 13:44" oninput="if(floors.length){ saveState(); document.getElementById('viewDispatchTime').textContent=this.value; }">
         </div>
       </div>
@@ -350,15 +349,16 @@
         </div>
         <div class="field"><label>기본 호수(뒤 2자리, 콤마구분)</label><input type="text" id="unitPattern" class="wide" value="01,02,03,04" oninput="syncUnitsCountFromPattern()"></div>
       </div>
-      <div class="row">
-        <h2 style="width:100%;margin-top:10px;">② 표 생성</h2>
+      
+      <!-- 버튼 윗부분 여백을 위해 스타일 추가 -->
+      <div class="row" style="margin-top:16px;">
         <button type="button" onclick="generateBoard()">표 생성 (현황판으로 이동)</button>
         <button type="button" class="secondary" id="backToBoardBtn" style="display:none;" onclick="showBoardScreen()">← 현황판으로 돌아가기(재생성 없이)</button>
       </div>
     </div>
     <div class="credit-line">제작 영등포소방서 화재조사팀</div>
   </div>
-
+  
   <div id="boardScreen" style="display:none;">
     <div class="board-topbar">
       <button type="button" class="secondary" id="btnBackToSetup" onclick="showSetupScreen()">← 설정으로 돌아가기</button>
