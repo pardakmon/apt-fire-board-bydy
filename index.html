@@ -314,46 +314,40 @@
 
 <div class="wrap" id="mainWrap" style="display:none;">
   <div id="setupScreen">
-    <h1>공동주택 화재 현황판</h1>
+    <h1>교통사고 차량별 현황판</h1>
     <div class="panel" id="setupPanel">
-      <div class="row">
-        <div class="field"><label>건물명</label><input type="text" id="bldgName" class="wide" placeholder="예) OO아파트 101동 화재" oninput="if(floors.length){ document.getElementById('titleLine').textContent=this.value; saveState(); }"></div>
-      </div>
       
-      <!-- 🌟 추가: 신고접수일시 입력 -->
-      <div class="row" style="margin-top:12px;">
-        <div class="field">
-          <label style="font-size:12px;color:#86868b;font-weight:600;">신고접수일시 (최근접 시간 자동입력)</label>
-          <input type="text" id="dispatchTime" class="wide" placeholder="예) 2026-09-17 13:44" oninput="if(floors.length){ saveState(); document.getElementById('viewDispatchTime').textContent=this.value; }">
+      <div class="row">
+        <div class="field" style="width:100%;">
+          <label style="font-size:12px;color:#86868b;font-weight:600;">사건명 / 장소</label>
+          <input type="text" id="accidentName" style="width:100%; max-width:500px;" placeholder="예) 영등포교차로 4중 추돌사고">
         </div>
       </div>
 
-      <div class="row">
-        <div class="field"><label>최고층</label><input type="number" id="topFloor" value="12"></div>
-        <div class="field"><label>최저층</label><input type="number" id="botFloor" value="1"></div>
+      <!-- 🌟 신고접수일시 입력 칸 (페이지 진입 시 현재 시간 자동 세팅) -->
+      <div class="row" style="margin-top:12px;">
         <div class="field">
-          <label>4층 표기/제외 옵션</label>
-          <select id="skip4Floor">
-            <option value="none">기본 (4층 포함)</option>
-            <option value="skip">4층 완전 제외 (건너뛰기)</option>
-            <option value="f_floor">4층을 'F층'으로 표기</option>
-          </select>
+          <label style="font-size:12px;color:#86868b;font-weight:600;">신고접수일시 (최근접 시간 자동입력)</label>
+          <input type="text" id="dispatchTime" class="wide" placeholder="예) 2026-09-17 13:44">
         </div>
+      </div>
+
+      <div class="row" style="margin-top:16px;">
         <div class="field">
-          <label>층별 세대수</label>
+          <label style="font-size:12px;color:#86868b;font-weight:600;">관련 차량 대수</label>
           <div class="stepper-row setup-stepper">
-            <button type="button" class="step-btn" onclick="adjustUnitsCount(-1)">−</button>
-            <input type="text" id="unitsCount" value="4" readonly tabindex="-1">
-            <button type="button" class="step-btn" onclick="adjustUnitsCount(1)">+</button>
+            <button type="button" class="step-btn" onclick="adjustVehicleCount(-1)">−</button>
+            <input type="text" id="vehicleCount" value="2" readonly tabindex="-1">
+            <button type="button" class="step-btn" onclick="adjustVehicleCount(1)">+</button>
           </div>
         </div>
-        <div class="field"><label>기본 호수(뒤 2자리, 콤마구분)</label><input type="text" id="unitPattern" class="wide" value="01,02,03,04" oninput="syncUnitsCountFromPattern()"></div>
       </div>
-      
-      <!-- 버튼 윗부분 여백을 위해 스타일 추가 -->
-      <div class="row" style="margin-top:16px;">
-        <button type="button" onclick="generateBoard()">표 생성 (현황판으로 이동)</button>
-        <button type="button" class="secondary" id="backToBoardBtn" style="display:none;" onclick="showBoardScreen()">← 현황판으로 돌아가기(재생성 없이)</button>
+
+      <div id="vehicleSetupList" class="v-setup-list"></div>
+
+      <div class="row" style="margin-top:24px;">
+        <button type="button" onclick="generateBoard()" style="width:100%; max-width:500px; padding:14px; font-size:15px;">표 생성 (현황판으로 이동)</button>
+        <button type="button" class="secondary" id="backToBoardBtn" style="display:none; width:100%; max-width:500px;" onclick="showBoardScreen()">← 현황판으로 돌아가기</button>
       </div>
     </div>
     <div class="credit-line">제작 영등포소방서 화재조사팀</div>
