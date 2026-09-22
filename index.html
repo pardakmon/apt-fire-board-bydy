@@ -393,7 +393,7 @@
           <div class="icon-badge" id="iconBadge"></div>
           <div class="board-header-text">
             <div id="titleLine" class="board-title"></div>
-            <div class="board-subtitle">아파트 화재 세대별 대피현황판</div>
+            <div class="board-subtitle">공동주택 화재 세대별 대피현황판</div>
           </div>
         </div>
 
@@ -1058,28 +1058,18 @@ function render(){
   
   while(i < floors.length){
     const fl = floors[i];
-    if(fl.noIssue){
-      let j=i;
-      while(j+1<floors.length && floors[j+1].noIssue) j++;
-      const label = (j>i) ? `${floors[i].floor}층~${floors[j].floor}층` : `${fl.floor}층`;
-      
-      const releaseBtnHtml = isReadOnly ? '' : `<div class="floor-controls"><button type="button" class="small secondary" onclick="toggleNoIssue(${i})">해제</button></div>`;
-      
-      html += `<tr class="noissue-row">
-        <td class="floor-cell">${label}${releaseBtnHtml}</td>
-        <td colspan="20">특이사항 없음</td>
-      </tr>`;
-      i = j+1;
-      continue;
-    }
     
-    const editControlsHtml = isReadOnly ? '' : `
-      <div class="floor-controls">
-        <button type="button" class="small secondary" onclick="editUnits(${i})">세대수정</button>
-        <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">특이없음</button>
-      </div>`;
+    // 🌟 1. '특이없음' 상태에 따라 측면 버튼 분기 (해제 vs 세대수정/특이없음)
+    const controlsHtml = isReadOnly ? '' : (
+      fl.noIssue 
+      ? `<div class="floor-controls"><button type="button" class="small secondary" onclick="toggleNoIssue(${i})">해제</button></div>`
+      : `<div class="floor-controls">
+           <button type="button" class="small secondary" onclick="editUnits(${i})">세대수정</button>
+           <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">특이없음</button>
+         </div>`
+    );
       
-    html += `<tr><td class="floor-cell">${fl.floor}층${editControlsHtml}</td>`;
+    html += `<tr><td class="floor-cell">${fl.floor}층${controlsHtml}</td>`;
       
     columns.forEach(suf=>{
       const ui = fl.units.findIndex(x=> unitSuffix(x, fl.floor)===suf);
@@ -1089,6 +1079,18 @@ function render(){
       }
       const u = fl.units[ui];
       
+      // 🌟 2. 층이 통째로 합쳐지는 것을 막고, 각 호수마다 '특이사항 없음' 녹색 블록 생성
+      if (fl.noIssue) {
+        html += `<td class="unit-cell is-clear" style="background:var(--clear-bg); cursor:default;">
+          <div class="unit-no" style="color:#fff;">${u.no}호</div>
+          <div class="unit-status">
+            <div class="tag-clear" style="background:rgba(255,255,255,0.2); color:#fff; border-color:transparent; font-size:12px; padding:6px 8px; margin-top:4px;">✅ 특이사항 없음</div>
+          </div>
+        </td>`;
+        return; // 아래의 복잡한 개별 상태 렌더링은 건너뜁니다.
+      }
+      
+      // 🌟 3. 기존의 정상적인 세대별 현황 렌더링
       const cc = u.clearCount || 0;
       const isClearActive = cc > 0; 
 
