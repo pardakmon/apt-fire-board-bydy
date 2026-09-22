@@ -146,6 +146,13 @@
   .board-title{font-size:22px;font-weight:800;color:#fff;min-height:24px;}
   .board-subtitle{font-size:13px;color:#cbd5e1;margin-top:4px;font-weight:600;letter-spacing:0.5px;}
 
+  .board-header-right { display:flex; gap:12px; align-items:center; }
+  .header-utilities { display:flex; flex-direction:column; gap:6px; }
+  .btn-util { padding:6px 12px; font-size:12px; font-weight:700; border-radius:6px; border:1px solid rgba(255,255,255,0.3); background:rgba(0,0,0,0.35); color:#cbd5e1; cursor:pointer; transition:0.2s; text-align:center; line-height:1.2; min-width:145px; }
+  .btn-util:hover { background:rgba(0,0,0,0.5); }
+  .btn-util.elec.active { background:#e11d48; color:#fff; border-color:#fda4af; }
+  .btn-util.gas.active { background:#ea580c; color:#fff; border-color:#fdba74; }
+
   /* 🌟 우측 상단 신고접수일시 표시 박스 스타일 */
   .header-dispatch-info {
     text-align: right;
@@ -396,12 +403,17 @@
             <div class="board-subtitle">아파트 화재 세대별 대피현황판</div>
           </div>
         </div>
-        <!-- 우측 신고접수일시 박스 -->
-        <div class="header-dispatch-info">
-          <span class="dispatch-label">신고접수일시</span>
-          <span class="dispatch-val" id="viewDispatchTime">-</span>
+
+        <div class="board-header-right">
+          <div class="header-dispatch-info" style="margin-bottom: 4px;">
+            <span class="dispatch-label">신고접수일시</span>
+            <span class="dispatch-val" id="viewDispatchTime">-</span>
+          </div>
+          <div class="header-utilities">
+            <button id="btn-elec" class="btn-util elec" onclick="toggleUtility('elec')">전기차단 X</button>
+            <button id="btn-gas" class="btn-util gas" onclick="toggleUtility('gas')">가스차단 X</button>
+          </div>
         </div>
-      </div>
 
       <div id="summaryCards" class="stat-cards"></div>
       
@@ -637,6 +649,8 @@ function saveState(){
       unitPattern: document.getElementById('unitPattern').value,
       unitsCount: document.getElementById('unitsCount').value,
       floors: floors,
+      elec: elecData,
+      gas: gasData,
       savedAt: new Date().toISOString()
     };
     
@@ -694,6 +708,10 @@ function startDatabaseListener() {
     document.getElementById('unitPattern').value = state.unitPattern || '01,02,03,04';
     document.getElementById('unitsCount').value = state.unitsCount || 4;
     floors = state.floors || [];
+
+    elecData = state.elec || { status: false, updateTime: '', updateBy: '' };
+    gasData = state.gas || { status: false, updateTime: '', updateBy: '' };
+    if(typeof updateUtilityButtons === 'function') updateUtilityButtons();
     
     document.getElementById('backToBoardBtn').style.display = isReadOnly ? 'none' : 'inline-block';
     
@@ -1121,16 +1139,67 @@ function render(){
   if(rescueTotal>0) fn += `<div class="fn-line">※ 구조 ${rescueTotal}명: ${rescueDetail.join(', ')}</div>`;
   document.getElementById('footNotes').innerHTML = fn;
 }
-function toggleUtility(type) {
-    if(isReadOnly) return;
-    const btn = document.getElementById('btn-' + type);
-    btn.classList.toggle('active');
+// 🌟 추가 5-1: 전역 변수 선언
+let elecData = { status: false, updateTime: '', updateBy: '' };
+let gasData = { status: false, updateTime: '', updateBy: '' };
+
+// 🌟 추가 5-2: 가스/전기 차단 UI 화면 변경 함수 (시간/직위 표시)
+function updateUtilityButtons() {
+    const btnElec = document.getElementById('btn-elec');
+    const btnGas = document.getElementById('btn-gas');
     
-    if (btn.classList.contains('active')) {
-        btn.innerHTML = type === 'gas' ? '가스차단 완료 🟢' : '전기차단 완료 🟢';
+    if (elecData.status) {
+        btnElec.classList.add('active');
+        btnElec.innerHTML = `전기차단 O<br><span style="font-size:10px; font-weight:normal; opacity:0.9;">(${elecData.updateTime} / ${elecData.updateBy})</span>`;
     } else {
-        btn.innerHTML = type === 'gas' ? '가스차단 전 ❌' : '전기차단 전 ❌';
+        btnElec.classList.remove('active');
+        btnElec.innerHTML = `전기차단 X`;
     }
+    
+    if (gasData.status) {
+        btnGas.classList.add('active');
+        btnGas.innerHTML = `가스차단 O<br><span style="font-size:10px; font-weight:normal; opacity:0.9;">(${gasData.updateTime} / ${gasData.updateBy})</span>`;
+    } else {
+        btnGas.classList.remove('active');
+        btnGas.innerHTML = `가스차단 X`;
+    }
+}
+
+// 🌟 추가 5-3: 버튼 클릭 시 작동하고 DB에 전송하는 함수
+function toggleUtility(type) {
+    if(isReadOnly) {
+        alert("👀 관전 모드(읽기 전용)에서는 상태를 변경할 수 없습니다.\n관리자 로그인 후 이용해주세요.");
+        return;
+    }
+    
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const timeStr = `${hh}:${mm}`;
+    
+    if(type === 'elec') {
+        elecData.status = !elecData.status;
+        if(elecData.status) {
+            elecData.updateTime = timeStr;
+            elecData.updateBy = currentRole;
+        }
+    } else {
+        gasData.status = !gasData.status;
+        if(gasData.status) {
+            gasData.updateTime = timeStr;
+            gasData.updateBy = currentRole;
+        }
+    }
+    
+    updateUtilityButtons();
+    
+    dbRef.update({
+        elec: elecData,
+        gas: gasData
+    }).then(() => {
+        const note = document.getElementById('autosaveNote');
+        if(note) note.textContent = `차단상태 동기화 완료 · ${hh}:${mm}:${String(now.getSeconds()).padStart(2,'0')}`;
+    }).catch(e => console.error("차단상태 업데이트 실패", e));
 }
 </script>
 </body>
