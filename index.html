@@ -912,6 +912,7 @@ function openEditor(floorIdx, unitIdx){
       <hr style="border:0; border-top:1px solid #e2e8f0; margin:16px 0;">
       
       <div class="mrow checks" style="margin-top:0; flex-wrap:wrap;">
+        <label><input type="checkbox" id="m_isReported" ${u.isReportedUnit?'checked':''}> <span style="color:var(--origin);">🚨 신고세대</span></label>
         <label><input type="checkbox" id="m_origin" ${u.origin?'checked':''}> 🔥 발화지점</label>
         <label><input type="checkbox" id="m_spread" ${u.spread?'checked':''}> 💥 연소확대</label>
         <label><input type="checkbox" id="m_isLocked" ${u.isLocked?'checked':''}> 🔒 문잠김(미확인)</label>
@@ -972,7 +973,8 @@ function closeEditor(){
 function saveEditor(){
   const {floorIdx, unitIdx} = editing;
   const u = floors[floorIdx].units[unitIdx];
-  
+
+  u.isReportedUnit = document.getElementById('m_isReported').checked;
   u.isLocked = document.getElementById('m_isLocked').checked;
   u.clearCount = parseInt(document.getElementById('m_clearCount').value)||0;
   u.evacCount = parseInt(document.getElementById('m_evacCount').value)||0;
@@ -1081,17 +1083,26 @@ function render(){
   while(i < floors.length){
     const fl = floors[i];
     
-    // 🌟 1. '특이없음' 상태에 따라 측면 버튼 분기 (해제 vs 세대수정/특이없음)
+    // 🌟 버튼이 눌리면 붉게 변하도록 스타일 지정
+    const btnReportStyle = fl.isReportedFloor ? 'color:var(--origin); font-weight:bold; background:#fee2e2; border-color:#fca5a5;' : '';
+    
+    // 🌟 '신고층' 버튼 추가
     const controlsHtml = isReadOnly ? '' : (
       fl.noIssue 
-      ? `<div class="floor-controls"><button type="button" class="small secondary" onclick="toggleNoIssue(${i})">해제</button></div>`
+      ? `<div class="floor-controls">
+           <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">해제</button>
+           <button type="button" class="small secondary" onclick="toggleReportedFloor(${i})" style="${btnReportStyle}">🚨신고층</button>
+         </div>`
       : `<div class="floor-controls">
            <button type="button" class="small secondary" onclick="editUnits(${i})">세대수정</button>
            <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">특이없음</button>
+           <button type="button" class="small secondary" onclick="toggleReportedFloor(${i})" style="${btnReportStyle}">🚨신고층</button>
          </div>`
     );
       
-    html += `<tr><td class="floor-cell">${fl.floor}층${controlsHtml}</td>`;
+    // 🌟 층 전체 붉은 테두리 클래스 적용
+    const trCls = fl.isReportedFloor ? 'is-reported-floor' : '';
+    html += `<tr class="${trCls}"><td class="floor-cell">${fl.floor}층${controlsHtml}</td>`;
       
     columns.forEach(suf=>{
       const ui = fl.units.findIndex(x=> unitSuffix(x, fl.floor)===suf);
@@ -1101,25 +1112,28 @@ function render(){
       }
       const u = fl.units[ui];
       
-      // 🌟 2. 층이 통째로 합쳐지는 것을 막고, 각 호수마다 '특이사항 없음' 녹색 블록 생성
+      const isReportedUnit = u.isReportedUnit;
+      const reportedCls = isReportedUnit ? ' is-reported-unit' : '';
+      const reportedTag = isReportedUnit ? `<div class="tag-reported">🚨 신고세대</div>` : '';
+      
       if (fl.noIssue) {
-        html += `<td class="unit-cell is-clear" style="background:var(--clear-bg); cursor:default;">
+        html += `<td class="unit-cell is-clear${reportedCls}" style="background:var(--clear-bg); cursor:default;">
           <div class="unit-no" style="color:#fff;">${u.no}호</div>
           <div class="unit-status">
+            ${reportedTag}
             <div class="tag-clear" style="background:rgba(255,255,255,0.2); color:#fff; border-color:transparent; font-size:12px; padding:6px 8px; margin-top:4px;">✅ 특이사항 없음</div>
           </div>
         </td>`;
-        return; // 아래의 복잡한 개별 상태 렌더링은 건너뜁니다.
+        return; 
       }
       
-      // 🌟 3. 기존의 정상적인 세대별 현황 렌더링
       const cc = u.clearCount || 0;
       const isClearActive = cc > 0; 
 
       let bg = u.origin ? 'var(--origin)' : (u.spread ? 'var(--spread)' : (isClearActive ? 'var(--clear-bg)' : (u.isLocked ? 'var(--locked)' : '')));
-      let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (isClearActive ? ' is-clear' : (u.isLocked ? ' is-locked' : ''))));
+      let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (isClearActive ? ' is-clear' : (u.isLocked ? ' is-locked' : '')))) + reportedCls;
       
-      let bodyHtml = '';
+      let bodyHtml = reportedTag; // 신고세대를 맨 위에 표시
       if(isClearActive) bodyHtml += `<div class="tag-clear">✅ 이상없음 ${cc}명</div>`;
       if(u.isLocked) bodyHtml += `<div class="tag-locked">🔒 문잠김</div>`;
       
