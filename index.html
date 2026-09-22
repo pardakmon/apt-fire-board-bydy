@@ -372,11 +372,6 @@
   
   <div id="boardScreen" style="display:none;">
     
-    <div class="utility-controls" id="utilityControls" style="display:none;">
-        <button id="btn-gas" class="utility-btn gas" onclick="toggleUtility('gas')">가스차단 전 ❌</button>
-        <button id="btn-elec" class="utility-btn elec" onclick="toggleUtility('elec')">전기차단 전 ❌</button>
-    </div>
-    
     <div class="board-topbar">
       <button type="button" class="secondary" id="btnBackToSetup" onclick="showSetupScreen()">← 설정으로 돌아가기</button>
       <div style="flex:1;"></div>
@@ -394,7 +389,7 @@
         </div>
       </div>
 
-      <!-- 🌟 진한 상단바 (제목 영역 + 우측 신고접수일시) -->
+      <!-- 🌟 진한 상단바 (제목 영역 + 우측 신고접수일시 및 차단버튼) -->
       <div class="board-header">
         <div class="board-header-left">
           <div class="icon-badge" id="iconBadge"></div>
@@ -414,6 +409,7 @@
             <button id="btn-gas" class="btn-util gas" onclick="toggleUtility('gas')">가스차단 X</button>
           </div>
         </div>
+      </div>
 
       <div id="summaryCards" class="stat-cards"></div>
       
