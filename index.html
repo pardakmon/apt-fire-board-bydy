@@ -645,8 +645,6 @@ function saveState(){
       unitPattern: document.getElementById('unitPattern').value,
       unitsCount: document.getElementById('unitsCount').value,
       floors: floors,
-      elec: elecData,
-      gas: gasData,
       savedAt: new Date().toISOString()
     };
     
@@ -705,10 +703,6 @@ function startDatabaseListener() {
     document.getElementById('unitsCount').value = state.unitsCount || 4;
     floors = state.floors || [];
 
-    elecData = state.elec || { status: false, updateTime: '', updateBy: '' };
-    gasData = state.gas || { status: false, updateTime: '', updateBy: '' };
-    if(typeof updateUtilityButtons === 'function') updateUtilityButtons();
-    
     document.getElementById('backToBoardBtn').style.display = isReadOnly ? 'none' : 'inline-block';
     
     if(floors.length > 0) {
