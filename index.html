@@ -695,6 +695,7 @@ function handleOCR(event) {
         requests: [{
           image: { content: base64Image },
           features: [{ type: 'DOCUMENT_TEXT_DETECTION' }]
+          imageContext: { languageHints: ["ko", "en"] }
         }]
       })
     })
