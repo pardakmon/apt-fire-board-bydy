@@ -116,10 +116,15 @@
   button.secondary:hover { background:#e8e8ed; }
   button.danger { background:#fef0f0; color:#d50000; border:none; box-shadow:none; }
   button.danger:hover { background:#fee2e2; }
-  .utility-controls { display:flex; gap:10px; margin-bottom:14px; }
-  .utility-btn { padding:10px 16px; font-size:14px; font-weight:700; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc; color:#64748b; cursor:pointer; transition:all 0.2s; -webkit-tap-highlight-color: transparent; }
-  .utility-btn.gas.active { background:#ffeaa7; border-color:#fdcb6e; color:#d35400; box-shadow: 0 4px 12px rgba(211, 84, 0, 0.15); }
-  .utility-btn.elec.active { background:#ff7675; border-color:#d63031; color:#fff; box-shadow: 0 4px 12px rgba(214, 48, 49, 0.2); }
+  
+  /* 🌟 상단바 우측영역 (신고접수 + 차단버튼) 디자인 */
+  .board-header-right { display:flex; gap:12px; align-items:center; }
+  .header-utilities { display:flex; flex-direction:column; gap:6px; }
+  .btn-util { padding:6px 12px; font-size:12px; font-weight:700; border-radius:6px; border:1px solid rgba(255,255,255,0.3); background:rgba(0,0,0,0.35); color:#cbd5e1; cursor:pointer; transition:0.2s; text-align:center; line-height:1.2; min-width:145px; }
+  .btn-util:hover { background:rgba(0,0,0,0.5); }
+  .btn-util.elec.active { background:#e11d48; color:#fff; border-color:#fda4af; }
+  .btn-util.gas.active { background:#ea580c; color:#fff; border-color:#fdba74; }
+
   #titleLine{ color:#fff; }
   .stat-cards{ display:flex;gap:12px;margin:4px 0 16px; flex-wrap: wrap; }
   .stat-card{ flex:1; min-width:100px; text-align:center;border-radius:12px;padding:18px 10px 15px; background:rgba(255, 255, 255, 0.9); border:1px solid var(--panel-border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); }
@@ -145,13 +150,6 @@
   .board-header-text{text-align:left;}
   .board-title{font-size:22px;font-weight:800;color:#fff;min-height:24px;}
   .board-subtitle{font-size:13px;color:#cbd5e1;margin-top:4px;font-weight:600;letter-spacing:0.5px;}
-
-  .board-header-right { display:flex; gap:12px; align-items:center; }
-  .header-utilities { display:flex; flex-direction:column; gap:6px; }
-  .btn-util { padding:6px 12px; font-size:12px; font-weight:700; border-radius:6px; border:1px solid rgba(255,255,255,0.3); background:rgba(0,0,0,0.35); color:#cbd5e1; cursor:pointer; transition:0.2s; text-align:center; line-height:1.2; min-width:145px; }
-  .btn-util:hover { background:rgba(0,0,0,0.5); }
-  .btn-util.elec.active { background:#e11d48; color:#fff; border-color:#fda4af; }
-  .btn-util.gas.active { background:#ea580c; color:#fff; border-color:#fdba74; }
 
   /* 🌟 우측 상단 신고접수일시 표시 박스 스타일 */
   .header-dispatch-info {
@@ -458,15 +456,15 @@ const db = firebase.database();
 const dbRef = db.ref('apt_evac_board_v1'); 
 
 let floors = []; 
-let lastSavedData = ""; 
 let isInitialLoad = true; 
 let isReadOnly = false; 
 
 // 🌟 로그인 로직 (직위 포함)
 let isListening = false;
 let currentRole = "알수없음";
+let elecData = { status: false, updateTime: '', updateBy: '' };
+let gasData = { status: false, updateTime: '', updateBy: '' };
 
-// --- [페이지 열릴 당시의 현재 시간을 자동 생성하는 함수] ---
 function getDefaultTimeStr() {
   const now = new Date();
   const yyyy = now.getFullYear();
@@ -477,7 +475,6 @@ function getDefaultTimeStr() {
   return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
 }
 
-// 1) 페이지에 처음 접속할 때 무조건 시간 채워넣기
 window.addEventListener('DOMContentLoaded', () => {
   const timeInput = document.getElementById('dispatchTime');
   if(timeInput && !timeInput.value) {
@@ -496,7 +493,6 @@ auth.onAuthStateChanged(user => {
     document.getElementById('btnLoginFromView').style.display = 'none';
     document.getElementById('btnBackToSetup').style.display = 'inline-block';
     document.getElementById('btnResetDB').style.display = 'inline-block';
-    document.getElementById('utilityControls').style.display = 'flex';
     
     startDatabaseListener();
   } else {
@@ -635,8 +631,7 @@ function captureBoard() {
 
 function saveState(){
   if(isReadOnly) return; 
-try{
-    // 전체 데이터를 무식하게 덮어쓰지 않고, 필요한 부분만 부드럽게 업데이트(update)합니다.
+  try{
     const updates = {
       bldgName: document.getElementById('bldgName').value,
       dispatchTime: document.getElementById('dispatchTime').value,
@@ -646,6 +641,8 @@ try{
       unitPattern: document.getElementById('unitPattern').value,
       unitsCount: document.getElementById('unitsCount').value,
       floors: floors,
+      elec: elecData,
+      gas: gasData,
       savedAt: new Date().toISOString()
     };
     
@@ -678,23 +675,25 @@ function startDatabaseListener() {
       return;
     }
     
-    // 💡 1. 타이핑 중 커서가 뒤로 튕기는 현상 방지 (값이 다를 때만 업데이트)
-    function safeUpdate(id, val) {
+    // 💡 입력칸 포커스 충돌 방지 및 안전한 데이터 갱신
+    const activeEl = document.activeElement;
+    const safeUpdate = (id, val) => {
         const el = document.getElementById(id);
-        if (el && String(el.value) !== String(val)) el.value = val;
-    }
+        if(el && activeEl !== el && el.value !== val) {
+            el.value = val || '';
+        }
+    };
 
-    if(state.bldgName !== undefined) safeUpdate('bldgName', state.bldgName);
-    if(state.dispatchTime !== undefined) safeUpdate('dispatchTime', state.dispatchTime);
-    if(state.topFloor !== undefined) safeUpdate('topFloor', state.topFloor);
-    if(state.botFloor !== undefined) safeUpdate('botFloor', state.botFloor);
-    if(state.skip4Floor !== undefined) safeUpdate('skip4Floor', state.skip4Floor);
-    if(state.unitPattern !== undefined) safeUpdate('unitPattern', state.unitPattern);
-    if(state.unitsCount !== undefined) safeUpdate('unitsCount', state.unitsCount);
+    safeUpdate('bldgName', state.bldgName);
+    safeUpdate('dispatchTime', state.dispatchTime);
+    safeUpdate('topFloor', state.topFloor);
+    safeUpdate('botFloor', state.botFloor);
+    safeUpdate('skip4Floor', state.skip4Floor);
+    safeUpdate('unitPattern', state.unitPattern);
+    safeUpdate('unitsCount', state.unitsCount);
     
-    // 💡 2. [핵심 해결] 파이어베이스가 세대 리스트를 제멋대로 망가뜨리는 버그 완벽 방어!
+    // 💡 파이어베이스 배열 꼬임 완벽 복구
     if(state.floors) {
-        // 망가진 객체 형태로 들어오면 강제로 배열로 조립해서 복구합니다.
         let parsedFloors = Array.isArray(state.floors) ? state.floors : Object.values(state.floors);
         parsedFloors.forEach(fl => {
             if (fl && fl.units && !Array.isArray(fl.units)) {
@@ -705,11 +704,15 @@ function startDatabaseListener() {
     } else {
         floors = [];
     }
+
+    elecData = state.elec || { status: false, updateTime: '', updateBy: '' };
+    gasData = state.gas || { status: false, updateTime: '', updateBy: '' };
+    updateUtilityButtons();
     
     document.getElementById('backToBoardBtn').style.display = isReadOnly ? 'none' : 'inline-block';
     
     if(floors.length > 0) {
-      render(); // 복구된 데이터를 바탕으로 0.1초 만에 화면을 다시 그립니다!
+      render();
       if(isInitialLoad && !isReadOnly && document.getElementById('setupScreen').style.display !== 'none') {
         showBoardScreen();
       }
@@ -848,8 +851,6 @@ function openEditor(floorIdx, unitIdx){
     <div class="modal" style="z-index:100;">
       <h3>${u.no}호 현황 입력</h3>
       
-      <!-- 🌟 기존 상단에 있던 '문잠김'을 제거하고 아래로 이동시켰습니다. -->
-      
       <div class="mrow" style="margin-top:0;">
         <label style="color:var(--clear-bg);">✅ 자택대기(이상없음) 인원</label>
         <div class="stepper-row">
@@ -888,7 +889,6 @@ function openEditor(floorIdx, unitIdx){
       </div>
       <hr style="border:0; border-top:1px solid #e2e8f0; margin:16px 0;">
       
-      <!-- 🌟 '문잠김' 체크박스를 하단 특이사항 영역으로 나란히 배치 완료! -->
       <div class="mrow checks" style="margin-top:0; flex-wrap:wrap;">
         <label><input type="checkbox" id="m_origin" ${u.origin?'checked':''}> 🔥 발화지점</label>
         <label><input type="checkbox" id="m_spread" ${u.spread?'checked':''}> 💥 연소확대</label>
@@ -947,7 +947,6 @@ function closeEditor(){
   editing = null; editingDetails = []; editingEvacDetails = [];
 }
 
-// 🌟 부분 업데이트 (시간/직위 기록)
 function saveEditor(){
   const {floorIdx, unitIdx} = editing;
   const u = floors[floorIdx].units[unitIdx];
@@ -983,7 +982,6 @@ function saveEditor(){
   }
 }
 
-// 🌟 전역 클릭 이벤트 등록 (안전 장치)
 window.__cellClick = function(td){
   const fi = parseInt(td.getAttribute('data-fi'));
   const ui = parseInt(td.getAttribute('data-ui'));
@@ -996,7 +994,6 @@ function render(){
   const name = document.getElementById('bldgName').value.trim();
   document.getElementById('titleLine').textContent = name || '';
 
-  // 🌟 상단바 신고접수일시 화면 반영
   const dTime = document.getElementById('dispatchTime').value.trim();
   document.getElementById('viewDispatchTime').textContent = dTime || '-';
 
@@ -1113,7 +1110,6 @@ function render(){
       const originTag = u.origin ? `<div class="origin-tag">🔥 발화지점</div>` : '';
       const spreadTag = (!u.origin && u.spread) ? `<div class="spread-tag">💥 연소확대</div>` : '';
       
-      // 🌟 타임스탬프 HTML
       const updateLog = u.lastUpdatedTime ? `<div style="font-size:10.5px; color:#fff; background:rgba(0,0,0,0.4); border-radius:4px; padding:2px 4px; margin-top:6px; font-weight:600; display:inline-block;">🕒 ${u.lastUpdatedTime} (${u.lastUpdatedBy})</div>` : '';
       
       html += `<td class="${cellCls}" data-fi="${i}" data-ui="${ui}" onclick="__cellClick(this)" style="${bg?('background:'+bg+';'):''}">
@@ -1132,25 +1128,7 @@ function render(){
   if(rescueTotal>0) fn += `<div class="fn-line">※ 구조 ${rescueTotal}명: ${rescueDetail.join(', ')}</div>`;
   document.getElementById('footNotes').innerHTML = fn;
 }
-// 🌟 1. 가스/전기 차단 전역 변수
-let elecData = { status: false, updateTime: '', updateBy: '' };
-let gasData = { status: false, updateTime: '', updateBy: '' };
 
-// 🌟 2. 차단버튼 전용 실시간 수신망 (다른 기기의 클릭을 0.1초 만에 감지!)
-dbRef.child('elec').on('value', (snap) => {
-    if(snap.exists()) {
-        elecData = snap.val();
-        if(typeof updateUtilityButtons === 'function') updateUtilityButtons();
-    }
-});
-dbRef.child('gas').on('value', (snap) => {
-    if(snap.exists()) {
-        gasData = snap.val();
-        if(typeof updateUtilityButtons === 'function') updateUtilityButtons();
-    }
-});
-
-// 🌟 3. 화면 색상 및 시간/직위 갱신 함수
 function updateUtilityButtons() {
     const btnElec = document.getElementById('btn-elec');
     const btnGas = document.getElementById('btn-gas');
@@ -1176,7 +1154,6 @@ function updateUtilityButtons() {
     }
 }
 
-// 🌟 4. 버튼 클릭 시 파이어베이스 즉시 전송
 function toggleUtility(type) {
     if(isReadOnly) {
         alert("👀 관전 모드(읽기 전용)에서는 상태를 변경할 수 없습니다.\n관리자 로그인 후 이용해주세요.");
@@ -1195,7 +1172,6 @@ function toggleUtility(type) {
             updateTime: newStatus ? timeStr : '',
             updateBy: newStatus ? currentRole : ''
         };
-        // 서버로 전송 완료되면 위의 실시간 수신망이 작동해서 화면을 바꿔줍니다.
         dbRef.child('elec').set(newData); 
     } else {
         const newStatus = !gasData.status;
