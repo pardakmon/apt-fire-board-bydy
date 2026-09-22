@@ -213,7 +213,15 @@
   .legend .swatch.spread-sw{background:var(--spread);}
   .legend .swatch.clear-sw{background:var(--clear-bg);}
   .legend .swatch.locked-sw{background:var(--locked);}
-  .floor-controls{display:flex;justify-content:center;gap:6px;margin-top:6px;}
+  /* 🌟 기본 (아이패드 전체, 핸드폰 가로): 기존처럼 가로로 나란히 배치 */
+  .floor-controls { display:flex; justify-content:center; flex-wrap:wrap; gap:6px; margin-top:6px; }
+  .floor-controls button.small { word-break:keep-all; }
+
+  /* 🌟 오직 '핸드폰 세로' 화면일 때만: 칸 밖으로 삐져나오지 않게 위아래로 쌓기 */
+  @media (max-width: 640px) and (orientation: portrait) {
+    .floor-controls { flex-direction:column; align-items:stretch; gap:4px; margin-top:8px; }
+    .floor-controls button.small { width:100%; padding:6px 0; font-size:11px; margin:0; }
+  }
   #footNotes{margin-top:16px;font-size:13px;line-height:1.7;color:#475569;font-weight:500;}
   #footNotes .fn-line{margin:3px 0;}
   .toolbar{display:flex;gap:10px;margin-top:18px;justify-content:flex-end;}
