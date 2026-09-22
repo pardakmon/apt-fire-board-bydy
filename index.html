@@ -1135,33 +1135,51 @@ function render(){
   if(rescueTotal>0) fn += `<div class="fn-line">※ 구조 ${rescueTotal}명: ${rescueDetail.join(', ')}</div>`;
   document.getElementById('footNotes').innerHTML = fn;
 }
-// 🌟 추가 5-1: 전역 변수 선언
+// 🌟 1. 가스/전기 차단 전역 변수
 let elecData = { status: false, updateTime: '', updateBy: '' };
 let gasData = { status: false, updateTime: '', updateBy: '' };
 
-// 🌟 추가 5-2: 가스/전기 차단 UI 화면 변경 함수 (시간/직위 표시)
+// 🌟 2. 차단버튼 전용 실시간 수신망 (다른 기기의 클릭을 0.1초 만에 감지!)
+dbRef.child('elec').on('value', (snap) => {
+    if(snap.exists()) {
+        elecData = snap.val();
+        if(typeof updateUtilityButtons === 'function') updateUtilityButtons();
+    }
+});
+dbRef.child('gas').on('value', (snap) => {
+    if(snap.exists()) {
+        gasData = snap.val();
+        if(typeof updateUtilityButtons === 'function') updateUtilityButtons();
+    }
+});
+
+// 🌟 3. 화면 색상 및 시간/직위 갱신 함수
 function updateUtilityButtons() {
     const btnElec = document.getElementById('btn-elec');
     const btnGas = document.getElementById('btn-gas');
     
-    if (elecData.status) {
-        btnElec.classList.add('active');
-        btnElec.innerHTML = `전기차단 O<br><span style="font-size:10px; font-weight:normal; opacity:0.9;">(${elecData.updateTime} / ${elecData.updateBy})</span>`;
-    } else {
-        btnElec.classList.remove('active');
-        btnElec.innerHTML = `전기차단 X`;
+    if(btnElec) {
+        if (elecData.status) {
+            btnElec.classList.add('active');
+            btnElec.innerHTML = `전기차단 O<br><span style="font-size:10.5px; font-weight:normal; opacity:0.9;">(${elecData.updateTime} / ${elecData.updateBy})</span>`;
+        } else {
+            btnElec.classList.remove('active');
+            btnElec.innerHTML = `전기차단 X`;
+        }
     }
     
-    if (gasData.status) {
-        btnGas.classList.add('active');
-        btnGas.innerHTML = `가스차단 O<br><span style="font-size:10px; font-weight:normal; opacity:0.9;">(${gasData.updateTime} / ${gasData.updateBy})</span>`;
-    } else {
-        btnGas.classList.remove('active');
-        btnGas.innerHTML = `가스차단 X`;
+    if(btnGas) {
+        if (gasData.status) {
+            btnGas.classList.add('active');
+            btnGas.innerHTML = `가스차단 O<br><span style="font-size:10.5px; font-weight:normal; opacity:0.9;">(${gasData.updateTime} / ${gasData.updateBy})</span>`;
+        } else {
+            btnGas.classList.remove('active');
+            btnGas.innerHTML = `가스차단 X`;
+        }
     }
 }
 
-// 🌟 추가 5-3: 버튼 클릭 시 작동하고 DB에 전송하는 함수
+// 🌟 4. 버튼 클릭 시 파이어베이스 즉시 전송
 function toggleUtility(type) {
     if(isReadOnly) {
         alert("👀 관전 모드(읽기 전용)에서는 상태를 변경할 수 없습니다.\n관리자 로그인 후 이용해주세요.");
@@ -1174,28 +1192,23 @@ function toggleUtility(type) {
     const timeStr = `${hh}:${mm}`;
     
     if(type === 'elec') {
-        elecData.status = !elecData.status;
-        if(elecData.status) {
-            elecData.updateTime = timeStr;
-            elecData.updateBy = currentRole;
-        }
+        const newStatus = !elecData.status;
+        const newData = {
+            status: newStatus,
+            updateTime: newStatus ? timeStr : '',
+            updateBy: newStatus ? currentRole : ''
+        };
+        // 서버로 전송 완료되면 위의 실시간 수신망이 작동해서 화면을 바꿔줍니다.
+        dbRef.child('elec').set(newData); 
     } else {
-        gasData.status = !gasData.status;
-        if(gasData.status) {
-            gasData.updateTime = timeStr;
-            gasData.updateBy = currentRole;
-        }
+        const newStatus = !gasData.status;
+        const newData = {
+            status: newStatus,
+            updateTime: newStatus ? timeStr : '',
+            updateBy: newStatus ? currentRole : ''
+        };
+        dbRef.child('gas').set(newData);
     }
-    
-    updateUtilityButtons();
-    
-    dbRef.update({
-        elec: elecData,
-        gas: gasData
-    }).then(() => {
-        const note = document.getElementById('autosaveNote');
-        if(note) note.textContent = `차단상태 동기화 완료 · ${hh}:${mm}:${String(now.getSeconds()).padStart(2,'0')}`;
-    }).catch(e => console.error("차단상태 업데이트 실패", e));
 }
 </script>
 </body>
