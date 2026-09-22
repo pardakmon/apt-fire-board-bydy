@@ -635,10 +635,11 @@ function captureBoard() {
 
 function saveState(){
   if(isReadOnly) return; 
-  try{
-    const state = {
+try{
+    // 전체 데이터를 무식하게 덮어쓰지 않고, 필요한 부분만 부드럽게 업데이트(update)합니다.
+    const updates = {
       bldgName: document.getElementById('bldgName').value,
-      dispatchTime: document.getElementById('dispatchTime').value, /* 🌟 추가된 데이터 저장 */
+      dispatchTime: document.getElementById('dispatchTime').value,
       topFloor: document.getElementById('topFloor').value,
       botFloor: document.getElementById('botFloor').value,
       skip4Floor: document.getElementById('skip4Floor').value,
@@ -648,19 +649,12 @@ function saveState(){
       savedAt: new Date().toISOString()
     };
     
-    const stateStr = JSON.stringify(state);
-    if(lastSavedData === stateStr) return; 
-    
-    lastSavedData = stateStr;
-    dbRef.set(state); 
+    dbRef.update(updates); 
     
     const note = document.getElementById('autosaveNote');
     if(note){
       const t = new Date();
-      const hh = String(t.getHours()).padStart(2,'0');
-      const mm = String(t.getMinutes()).padStart(2,'0');
-      const ss = String(t.getSeconds()).padStart(2,'0');
-      note.textContent = `서버 동기화됨 · ${hh}:${mm}:${ss}`;
+      note.textContent = `서버 동기화됨 · ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}:${String(t.getSeconds()).padStart(2,'0')}`;
     }
   }catch(e){
     console.error('저장 실패', e);
