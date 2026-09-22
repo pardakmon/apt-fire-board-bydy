@@ -304,6 +304,10 @@
     table.board{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     td.unit-cell{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   }
+  
+  @media (max-width: 640px) and (orientation: portrait) {
+    .legend { display: grid !important; grid-template-columns: 1fr 1fr; row-gap: 8px; column-gap: 4px; justify-items: start; }
+  }
 </style>
 </head>
 <body>
