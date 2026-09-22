@@ -672,35 +672,32 @@ function startDatabaseListener() {
       if(isReadOnly) {
         document.getElementById('boardHolder').innerHTML = '<div class="empty-hint">아직 생성된 현황판이 없습니다.</div>';
       } else {
-        // 2) 데이터가 아예 없을 때도 빈칸이 되지 않도록 방어
         const timeInput = document.getElementById('dispatchTime');
         if(timeInput && !timeInput.value) timeInput.value = getDefaultTimeStr();
       }
       return;
     }
     
-    const stateStr = JSON.stringify(state);
-    if(lastSavedData === stateStr) return; 
-    lastSavedData = stateStr;
+    // 💡 문제가 되던 예민한 안전장치(lastSavedData)를 삭제하고 무조건 최신 데이터를 화면에 꽂아 넣습니다.
+    if(state.bldgName !== undefined) document.getElementById('bldgName').value = state.bldgName;
+    if(state.dispatchTime !== undefined && document.getElementById('dispatchTime')) {
+      document.getElementById('dispatchTime').value = state.dispatchTime;
+    }
+    if(state.topFloor !== undefined) document.getElementById('topFloor').value = state.topFloor;
+    if(state.botFloor !== undefined) document.getElementById('botFloor').value = state.botFloor;
+    if(state.skip4Floor !== undefined) document.getElementById('skip4Floor').value = state.skip4Floor;
+    if(state.unitPattern !== undefined) document.getElementById('unitPattern').value = state.unitPattern;
+    if(state.unitsCount !== undefined) document.getElementById('unitsCount').value = state.unitsCount;
     
-    document.getElementById('bldgName').value = state.bldgName || '';
-    
-    // 3) DB에서 시간을 불러올 때, 빈 값이면 방금 자동입력된 시간을 그대로 유지
-    if(document.getElementById('dispatchTime')) {
-      document.getElementById('dispatchTime').value = state.dispatchTime || document.getElementById('dispatchTime').value || getDefaultTimeStr();
+    // 다른 기기에서 수정한 세대별 현황(floors) 즉각 반영!
+    if(state.floors) {
+        floors = state.floors;
     }
     
-    document.getElementById('topFloor').value = state.topFloor || 12;
-    document.getElementById('botFloor').value = state.botFloor || 1;
-    document.getElementById('skip4Floor').value = state.skip4Floor || 'none';
-    document.getElementById('unitPattern').value = state.unitPattern || '01,02,03,04';
-    document.getElementById('unitsCount').value = state.unitsCount || 4;
-    floors = state.floors || [];
-
     document.getElementById('backToBoardBtn').style.display = isReadOnly ? 'none' : 'inline-block';
     
     if(floors.length > 0) {
-      render();
+      render(); // 👈 여기서 바뀐 데이터를 바탕으로 화면을 0.1초 만에 다시 그립니다.
       if(isInitialLoad && !isReadOnly && document.getElementById('setupScreen').style.display !== 'none') {
         showBoardScreen();
       }
