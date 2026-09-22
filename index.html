@@ -678,26 +678,38 @@ function startDatabaseListener() {
       return;
     }
     
-    // 💡 문제가 되던 예민한 안전장치(lastSavedData)를 삭제하고 무조건 최신 데이터를 화면에 꽂아 넣습니다.
-    if(state.bldgName !== undefined) document.getElementById('bldgName').value = state.bldgName;
-    if(state.dispatchTime !== undefined && document.getElementById('dispatchTime')) {
-      document.getElementById('dispatchTime').value = state.dispatchTime;
+    // 💡 1. 타이핑 중 커서가 뒤로 튕기는 현상 방지 (값이 다를 때만 업데이트)
+    function safeUpdate(id, val) {
+        const el = document.getElementById(id);
+        if (el && String(el.value) !== String(val)) el.value = val;
     }
-    if(state.topFloor !== undefined) document.getElementById('topFloor').value = state.topFloor;
-    if(state.botFloor !== undefined) document.getElementById('botFloor').value = state.botFloor;
-    if(state.skip4Floor !== undefined) document.getElementById('skip4Floor').value = state.skip4Floor;
-    if(state.unitPattern !== undefined) document.getElementById('unitPattern').value = state.unitPattern;
-    if(state.unitsCount !== undefined) document.getElementById('unitsCount').value = state.unitsCount;
+
+    if(state.bldgName !== undefined) safeUpdate('bldgName', state.bldgName);
+    if(state.dispatchTime !== undefined) safeUpdate('dispatchTime', state.dispatchTime);
+    if(state.topFloor !== undefined) safeUpdate('topFloor', state.topFloor);
+    if(state.botFloor !== undefined) safeUpdate('botFloor', state.botFloor);
+    if(state.skip4Floor !== undefined) safeUpdate('skip4Floor', state.skip4Floor);
+    if(state.unitPattern !== undefined) safeUpdate('unitPattern', state.unitPattern);
+    if(state.unitsCount !== undefined) safeUpdate('unitsCount', state.unitsCount);
     
-    // 다른 기기에서 수정한 세대별 현황(floors) 즉각 반영!
+    // 💡 2. [핵심 해결] 파이어베이스가 세대 리스트를 제멋대로 망가뜨리는 버그 완벽 방어!
     if(state.floors) {
-        floors = state.floors;
+        // 망가진 객체 형태로 들어오면 강제로 배열로 조립해서 복구합니다.
+        let parsedFloors = Array.isArray(state.floors) ? state.floors : Object.values(state.floors);
+        parsedFloors.forEach(fl => {
+            if (fl && fl.units && !Array.isArray(fl.units)) {
+                fl.units = Object.values(fl.units);
+            }
+        });
+        floors = parsedFloors;
+    } else {
+        floors = [];
     }
     
     document.getElementById('backToBoardBtn').style.display = isReadOnly ? 'none' : 'inline-block';
     
     if(floors.length > 0) {
-      render(); // 👈 여기서 바뀐 데이터를 바탕으로 화면을 0.1초 만에 다시 그립니다.
+      render(); // 복구된 데이터를 바탕으로 0.1초 만에 화면을 다시 그립니다!
       if(isInitialLoad && !isReadOnly && document.getElementById('setupScreen').style.display !== 'none') {
         showBoardScreen();
       }
