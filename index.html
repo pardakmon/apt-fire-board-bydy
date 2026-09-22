@@ -124,6 +124,8 @@
   .btn-util:hover { background:rgba(0,0,0,0.5); }
   .btn-util.elec.active { background:#e11d48; color:#fff; border-color:#fda4af; }
   .btn-util.gas.active { background:#ea580c; color:#fff; border-color:#fdba74; }
+  .btn-util.elec::before { content: "⚡ "; }
+  .btn-util.gas::before { content: "💨 "; }
 
   #titleLine{ color:#fff; }
   .stat-cards{ display:flex;gap:12px;margin:4px 0 16px; flex-wrap: wrap; }
