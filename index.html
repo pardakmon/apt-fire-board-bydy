@@ -103,7 +103,7 @@
   .field input:focus, .field select:focus { background:#ffffff; border-color:#0071e3; box-shadow:0 0 0 4px rgba(0, 113, 227, 0.1); }
   .field input.wide { width:260px; }
   
-  /* 모서리가 둥근 메인 버튼 */
+  /* 모서리가 둥근 메인 버튼 (애플 블루) */
   button { padding:14px 22px; border:none; border-radius:14px; background:#0071e3; color:#fff; font-size:14.5px; cursor:pointer; font-weight:600; letter-spacing:-0.2px; transition:all 0.2s; -webkit-tap-highlight-color: transparent; }
   button:hover { background:#0077ed; }
   button:active { transform:scale(0.97); }
@@ -114,12 +114,10 @@
   button.success-outline:hover { background:#e8e8ed; color:#0071e3; }
   button.secondary { background:#f5f5f7; color:#1d1d1f; border:none; box-shadow:none; }
   button.secondary:hover { background:#e8e8ed; }
-  
-  /* 🌟 초기화 버튼: 기존 핑크색 바탕 + 빨간색 테두리 포인트 */
   button.danger { background:#fef0f0; color:#d50000; border:1px solid #fca5a5; box-shadow:none; }
   button.danger:hover { background:#fee2e2; border-color:#ef4444; }
   
-  /* 🌟 상단바 우측영역 디자인 */
+  /* 🌟 상단바 우측영역 (신고접수 + 차단버튼) 디자인 */
   .board-header-right { display:flex; gap:12px; align-items:center; }
   .header-utilities { display:flex; flex-direction:column; gap:6px; }
   .btn-util { padding:6px 12px; font-size:12px; font-weight:700; border-radius:6px; border:1px solid rgba(255,255,255,0.3); background:rgba(0,0,0,0.35); color:#cbd5e1; cursor:pointer; transition:0.2s; text-align:center; line-height:1.2; min-width:145px; }
@@ -152,24 +150,22 @@
   .board-header .icon-badge{ width:60px;height:60px;border-radius:50%;flex-shrink:0; background:rgba(255,255,255,0.1); border:2px solid rgba(255,255,255,0.2); display:flex;align-items:center;justify-content:center; }
   .board-header .icon-badge svg{width:40px;height:40px;}
   .board-header-text{text-align:left;}
-  .board-title{font-size:22px;font-weight:800;color:#fff;min-height:24px; margin-bottom:2px;}
-  .board-subtitle{font-size:12.5px;color:#94a3b8;margin-top:4px;font-weight:700;letter-spacing:0.5px;}
+  .board-title{font-size:22px;font-weight:800;color:#fff;min-height:24px;}
+  .board-subtitle{font-size:13px;color:#cbd5e1;margin-top:4px;font-weight:600;letter-spacing:0.5px;}
 
-  /* 🌟 우측 상단 OCR 정보 표시 박스 스타일 */
+  /* 🌟 우측 상단 신고접수일시 표시 박스 스타일 */
   .header-dispatch-info {
-    text-align: left;
+    text-align: right;
+    color: #ffffff;
     background: rgba(0, 0, 0, 0.35);
-    padding: 10px 14px;
+    padding: 10px 16px;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 160px;
+    flex-shrink: 0;
+    font-size: 13px;
   }
-  .dispatch-row { display:flex; align-items:center; font-size:13.5px; font-weight:800; }
-  .dispatch-row .label { color: #94a3b8; font-size: 11.5px; margin-right: 8px; display:inline-block; }
-  .dispatch-row .val.time { color: #38bdf8; } /* 하늘색 */
+  .header-dispatch-info .dispatch-label { color: #94a3b8; font-weight: 700; font-size: 11px; display: block; margin-bottom: 2px;}
+  .header-dispatch-info .dispatch-val { color: #38bdf8; font-weight: 700; font-size: 14px; }
 
   .legend{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:16px;margin-bottom:8px;font-size:12px;font-weight:600;}
   .legend span{display:inline-flex;align-items:center;gap:6px;}
@@ -219,7 +215,6 @@
   .legend .swatch.spread-sw{background:var(--spread);}
   .legend .swatch.clear-sw{background:var(--clear-bg);}
   .legend .swatch.locked-sw{background:var(--locked);}
-  
   /* 🌟 기본 (아이패드 전체, 핸드폰 가로): 기존처럼 가로로 나란히 배치 */
   .floor-controls { display:flex; justify-content:center; flex-wrap:wrap; gap:6px; margin-top:6px; }
   .floor-controls button.small { word-break:keep-all; }
@@ -245,8 +240,9 @@
   .modal input[type=text], .modal input[type=number]{ width:100%;padding:8px 10px;border:1px solid #cbd5e1;border-radius:8px;font-size:13.5px; outline:none; transition:border-color 0.2s; }
   .modal input:focus{border-color:var(--accent);}
   
-  /* 🌟 수정된 체크박스 레이아웃 */
+  /* 🌟 수정된 체크박스 레이아웃 (줄바꿈 가능하게 flex-wrap 추가) */
   .modal .checks{display:flex;gap:16px;font-size:13px;align-items:center; flex-wrap:wrap;}
+  
   .modal .checks label{display:flex;align-items:center;gap:6px;margin:0;font-weight:600;cursor:pointer;}
   .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
   .stepper-row{display:flex;align-items:center;gap:8px;}
@@ -275,9 +271,9 @@
 
   @media (min-width: 641px){
     .board-header{padding:20px 24px;}
-    .board-header-text{ display:flex;align-items:flex-start; flex-direction:column; justify-content:center;}
-    .board-title{font-size:32px;min-height:auto; display:inline-block;}
-    .board-subtitle{margin-top:2px;font-size:14px;}
+    .board-header-text{ display:flex;align-items:baseline;flex-wrap:wrap;column-gap:18px;row-gap:4px; }
+    .board-title{font-size:32px;min-height:auto;}
+    .board-subtitle{margin-top:0;font-size:15px;}
     .icon-badge{width:64px;height:64px;}
     .icon-badge svg{width:36px;height:36px;}
   }
@@ -293,7 +289,7 @@
     .setup-stepper input{width:auto;}
     .board-header{flex-wrap:wrap;gap:12px;padding:16px;}
     .board-header-right{width:100%; justify-content:flex-end; flex-wrap:wrap; margin-top:4px;}
-    .board-title{font-size:20px;}
+    .board-title{font-size:18px;}
     .toolbar{justify-content:stretch;flex-wrap:wrap;gap:8px;}
     .toolbar button{flex:1;}
   }
@@ -321,10 +317,12 @@
   <div class="login-box">
     <h2>현황판 접속</h2>
     
+    <!-- 🌟 추가된 직위 입력칸 -->
     <div class="field">
       <label>담당 직위(임무)</label>
       <input type="text" id="loginRole" placeholder="예: 팀장, 조사, 감식">
     </div>
+    
     <div class="field">
       <label>이메일 아이디</label>
       <input type="email" id="loginEmail" placeholder="team@fire.com">
@@ -349,23 +347,16 @@
   <div id="setupScreen">
     <h1>공동주택 화재 현황판</h1>
     <div class="panel" id="setupPanel">
+      <div class="row">
+        <div class="field"><label>건물명</label><input type="text" id="bldgName" class="wide" placeholder="예) OO아파트 101동 화재" oninput="if(floors.length){ document.getElementById('titleLine').textContent=this.value; saveState(); }"></div>
+      </div>
       
-      <!-- 🌟 OCR 스캔 버튼 및 진행 상태창 -->
-      <div class="row" style="margin-bottom: 24px; padding:16px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:12px; text-align:center; display:block;">
-        <h3 style="margin:0 0 10px; font-size:15px; color:var(--navy);">📷 인공지능 출동지령서 스캐너</h3>
-        <p style="font-size:12px; color:#64748b; margin:0 0 12px; line-height:1.5;">지령서를 촬영하거나 사진을 올리면 <strong>일시와 주소</strong>를 찾아 자동 입력합니다.</p>
-        <button type="button" style="background:#8b5cf6; width:100%; max-width:300px; font-size:15px; box-shadow: 0 4px 6px rgba(139, 92, 246, 0.2);" onclick="document.getElementById('ocrInput').click()">📷 출동지령서 스캔하기</button>
-        <input type="file" id="ocrInput" accept="image/*" style="display:none;" onchange="handleOCR(event)">
-        <div id="ocrStatus" style="display:none; font-size:13px; color:#ea580c; font-weight:bold; margin-top:10px;">⏳ 지령서 텍스트를 분석 중입니다... 잠시만 기다려주세요.</div>
-      </div>
-
-      <!-- 🌟 수정된 설정 입력칸 영역 (긴급구조번호 삭제) -->
-      <div class="row">
-        <div class="field" style="flex:1;"><label>신고접수일시</label><input type="text" id="dispatchTime" class="wide" style="width:100%;" placeholder="예) 2026-09-17 13:44" oninput="if(floors.length) saveState();"></div>
-      </div>
-      <div class="row">
-        <div class="field" style="flex:1.5;"><label>건물명</label><input type="text" id="bldgName" class="wide" style="width:100%;" placeholder="예) OO아파트 101동 화재" oninput="if(floors.length) saveState();"></div>
-        <div class="field" style="flex:2.5;"><label>발생 위치 (주소)</label><input type="text" id="bldgAddress" class="wide" style="width:100%;" placeholder="예) 서울특별시 영등포구 OO동 123" oninput="if(floors.length) saveState();"></div>
+      <!-- 🌟 추가: 신고접수일시 입력 -->
+      <div class="row" style="margin-top:12px;">
+        <div class="field">
+          <label style="font-size:12px;color:#86868b;font-weight:600;">신고접수일시 (최근접 시간 자동입력)</label>
+          <input type="text" id="dispatchTime" class="wide" placeholder="예) 2026-09-17 13:44" oninput="if(floors.length){ saveState(); document.getElementById('viewDispatchTime').textContent=this.value; }">
+        </div>
       </div>
 
       <div class="row">
@@ -390,6 +381,7 @@
         <div class="field"><label>기본 호수(뒤 2자리, 콤마구분)</label><input type="text" id="unitPattern" class="wide" value="01,02,03,04" oninput="syncUnitsCountFromPattern()"></div>
       </div>
       
+      <!-- 버튼 윗부분 여백을 위해 스타일 추가 -->
       <div class="row" style="margin-top:16px;">
         <button type="button" onclick="generateBoard()">표 생성 (현황판으로 이동)</button>
         <button type="button" class="secondary" id="backToBoardBtn" style="display:none;" onclick="showBoardScreen()">← 현황판으로 돌아가기(재생성 없이)</button>
@@ -410,33 +402,28 @@
     <!-- 📷 캡처될 내용물이 쏙 들어가는 알맹이 구역 -->
     <div id="captureTarget">
 
+      <!-- 🌟 워터마크 이미지 구역 -->
       <div class="watermark-bg">
-        <div class="watermark-content"><img src="seoulfire.png" style="width:100%; display:block;"></div>
+        <div class="watermark-content">
+          <img src="seoulfire.png" style="width:100%; display:block;">
+        </div>
       </div>
 
-      <!-- 🌟 진한 상단바 (좌측 주소 / 우측 일시 배치) -->
+      <!-- 🌟 진한 상단바 (제목 영역 + 우측 신고접수일시 및 차단버튼) -->
       <div class="board-header">
         <div class="board-header-left">
           <div class="icon-badge" id="iconBadge"></div>
           <div class="board-header-text">
-            <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:4px;">
-              <div id="titleLine" class="board-title"></div>
-              <div class="board-subtitle">공동주택 화재 세대별 대피현황판</div>
-            </div>
-            <!-- 🌟 건물명 아래에 표시될 주소 영역 -->
-            <div id="addressLine" style="font-size:14px; color:#cbd5e1; font-weight:600;"></div>
+            <div id="titleLine" class="board-title"></div>
+            <div class="board-subtitle">공동주택 화재 세대별 대피현황판</div>
           </div>
         </div>
 
         <div class="board-header-right">
-          <!-- 🌟 일시가 들어갈 박스 (긴급구조번호 뺌) -->
-          <div class="header-dispatch-info">
-            <div class="dispatch-row">
-              <span class="label">⏰ 접수일시</span>
-              <span class="val time" id="viewDispatchTime">-</span>
-            </div>
+          <div class="header-dispatch-info" style="margin-bottom: 4px;">
+            <span class="dispatch-label">신고접수일시</span>
+            <span class="dispatch-val" id="viewDispatchTime">-</span>
           </div>
-          
           <div class="header-utilities">
             <button id="btn-elec" class="btn-util elec" onclick="toggleUtility('elec')">전기차단 X</button>
             <button id="btn-gas" class="btn-util gas" onclick="toggleUtility('gas')">가스차단 X</button>
@@ -472,12 +459,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-// ==============================================================================
-// 🌟 [매우 중요] 발급받은 Google Cloud Vision API 키를 아래 큰따옴표 사이에 넣으세요!
-// ==============================================================================
-const VISION_API_KEY = "AIzaSyAUj2SrbplU65prbUZYNwKdUc_JkTDeC7w";
-// ==============================================================================
-
 // ====== Firebase 실시간 데이터베이스 설정 ======
 const firebaseConfig = {
   apiKey: "AIzaSyBaGmIgVoIzrQ1WRdn8BwrO0fPOECNl-mQ",
@@ -500,6 +481,7 @@ let floors = [];
 let isInitialLoad = true; 
 let isReadOnly = false; 
 
+// 🌟 로그인 로직 (직위 포함)
 let isListening = false;
 let currentRole = "알수없음";
 let elecData = { status: false, updateTime: '', updateBy: '' };
@@ -669,82 +651,11 @@ function captureBoard() {
   }, 300);
 }
 
-// 🌟 [OCR] 이미지 선택 시 작동하는 함수
-function handleOCR(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const statusEl = document.getElementById('ocrStatus');
-  statusEl.style.display = 'block';
-  
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const base64Image = e.target.result.split(',')[1];
-    
-    // 구글 비전 API 호출 (한국어 힌트 추가)
-    fetch(`https://vision.googleapis.com/v1/images:annotate?key=${VISION_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        requests: [{
-          image: { content: base64Image },
-          features: [{ type: 'DOCUMENT_TEXT_DETECTION' }],
-          imageContext: { languageHints: ["ko", "en"] } // 🌟 한국어 및 영어(숫자) 우선 인식
-        }]
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
-      statusEl.style.display = 'none';
-      if (data.responses && data.responses[0].fullTextAnnotation) {
-        const text = data.responses[0].fullTextAnnotation.text;
-        processOCRText(text);
-      } else {
-        alert("글자를 인식하지 못했습니다. 더 선명한 사진으로 다시 시도해주세요.");
-      }
-      event.target.value = ''; // 동일한 파일 다시 올릴 수 있게 초기화
-    })
-    .catch(error => {
-      statusEl.style.display = 'none';
-      console.error("OCR 에러:", error);
-      alert("OCR 처리 중 오류가 발생했습니다. 구글 API 키를 다시 확인해주세요.");
-      event.target.value = '';
-    });
-  };
-  reader.readAsDataURL(file);
-}
-
-// 🌟 [OCR] 출동지령서 양식에 맞춘 텍스트 완벽 추출 함수 (긴급구조번호 제외)
-function processOCRText(text) {
-  
-  // 1. 신고접수일시 (예: 2026-09-16 13:52:39 형태에서 분 단위까지만 추출)
-  const timeMatch = text.match(/(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2})/);
-  if(timeMatch) {
-    document.getElementById('dispatchTime').value = timeMatch[1];
-  }
-
-  // 2. 긴급구조위치 (주소 추출)
-  const addrMatch = text.match(/((?:서울|부산|대구|인천|광주|대전|울산|세종|경기|강원|충북|충남|전북|전남|경북|경남|제주)[가-힣]*\s+[가-힣]+(?:구|시|군)\s+[^\n]+)/);
-  if(addrMatch) {
-    let address = addrMatch[1].replace(/긴급구조위치|신고내용|▶|◀/g, '').trim();
-    document.getElementById('bldgAddress').value = address;
-  }
-
-  // 데이터 저장 및 현황판 화면 즉시 갱신
-  if(floors.length > 0) {
-    saveState();
-    render(); 
-  }
-  
-  alert("✅ 지령서 텍스트 스캔이 완료되었습니다!\n상단의 일시와 주소가 자동으로 채워졌습니다.");
-}
-
 function saveState(){
   if(isReadOnly) return; 
   try{
     const updates = {
       bldgName: document.getElementById('bldgName').value,
-      bldgAddress: document.getElementById('bldgAddress').value,
       dispatchTime: document.getElementById('dispatchTime').value,
       topFloor: document.getElementById('topFloor').value,
       botFloor: document.getElementById('botFloor').value,
@@ -786,6 +697,7 @@ function startDatabaseListener() {
       return;
     }
     
+    // 💡 입력칸 포커스 충돌 방지 및 안전한 데이터 갱신
     const activeEl = document.activeElement;
     const safeUpdate = (id, val) => {
         const el = document.getElementById(id);
@@ -795,7 +707,6 @@ function startDatabaseListener() {
     };
 
     safeUpdate('bldgName', state.bldgName);
-    safeUpdate('bldgAddress', state.bldgAddress);
     safeUpdate('dispatchTime', state.dispatchTime);
     safeUpdate('topFloor', state.topFloor);
     safeUpdate('botFloor', state.botFloor);
@@ -803,6 +714,7 @@ function startDatabaseListener() {
     safeUpdate('unitPattern', state.unitPattern);
     safeUpdate('unitsCount', state.unitsCount);
     
+    // 💡 파이어베이스 배열 꼬임 완벽 복구
     if(state.floors) {
         let parsedFloors = Array.isArray(state.floors) ? state.floors : Object.values(state.floors);
         parsedFloors.forEach(fl => {
@@ -939,12 +851,14 @@ function toggleNoIssue(floorIdx){
   saveState(); 
 }
 
+// 🌟 층 단위 신고위치 설정 버튼 기능
 function toggleReportedFloor(floorIdx){
   if(isReadOnly) return;
   floors[floorIdx].isReportedFloor = !floors[floorIdx].isReportedFloor;
   render();
   
   const now = new Date();
+  // 실시간 즉각 동기화
   dbRef.child('floors/' + floorIdx).update({ isReportedFloor: floors[floorIdx].isReportedFloor })
     .then(() => {
       const note = document.getElementById('autosaveNote');
@@ -1113,19 +1027,14 @@ window.__cellClick = function(td){
   openEditor(fi, ui);
 };
 
-// 🌟 메인 렌더링 함수
 function render(){
   document.getElementById('toolbar').style.display='flex';
   document.getElementById('iconBadge').innerHTML = APT_FIRE_ICON_SVG;
-  
   const name = document.getElementById('bldgName').value.trim();
   document.getElementById('titleLine').textContent = name || '';
 
   const dTime = document.getElementById('dispatchTime').value.trim();
   document.getElementById('viewDispatchTime').textContent = dTime || '-';
-  
-  const address = document.getElementById('bldgAddress').value.trim();
-  document.getElementById('addressLine').innerHTML = address ? `📍 ${address}` : '';
 
   let evacTotal=0, rescueTotal=0, evacSelfTotal=0, clearTotal=0;
   const evacDetail = [];
@@ -1173,7 +1082,6 @@ function render(){
   else if(totalCols <= 10){ sizeTier='tier-sm'; layoutMode='fit-table'; }
   else if(totalCols <= 14){ sizeTier='tier-xs'; layoutMode='fit-table'; }
   else { sizeTier='tier-xs'; layoutMode='scroll-table'; }
-  
   const floorWeight = 1.4, unitWeight = 1;
   const totalWeight = floorWeight + maxUnits*unitWeight;
   const floorPct = (floorWeight/totalWeight*100).toFixed(2);
@@ -1189,7 +1097,11 @@ function render(){
   
   while(i < floors.length){
     const fl = floors[i];
+    
+    // 🌟 버튼이 눌리면 붉게 변하도록 스타일 지정
     const btnReportStyle = fl.isReportedFloor ? 'color:var(--origin); font-weight:bold; background:#fee2e2; border-color:#fca5a5;' : '';
+    
+    // 🌟 '신고층' 버튼 추가
     const controlsHtml = isReadOnly ? '' : (
       fl.noIssue 
       ? `<div class="floor-controls">
@@ -1203,6 +1115,7 @@ function render(){
          </div>`
     );
       
+    // 🌟 층 전체 붉은 테두리 클래스 적용
     const trCls = fl.isReportedFloor ? 'is-reported-floor' : '';
     html += `<tr class="${trCls}"><td class="floor-cell">${fl.floor}층${controlsHtml}</td>`;
       
@@ -1235,7 +1148,7 @@ function render(){
       let bg = u.origin ? 'var(--origin)' : (u.spread ? 'var(--spread)' : (isClearActive ? 'var(--clear-bg)' : (u.isLocked ? 'var(--locked)' : '')));
       let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (isClearActive ? ' is-clear' : (u.isLocked ? ' is-locked' : '')))) + reportedCls;
       
-      let bodyHtml = reportedTag; 
+      let bodyHtml = reportedTag; // 신고세대를 맨 위에 표시
       if(isClearActive) bodyHtml += `<div class="tag-clear">✅ 이상없음 ${cc}명</div>`;
       if(u.isLocked) bodyHtml += `<div class="tag-locked">🔒 문잠김</div>`;
       
