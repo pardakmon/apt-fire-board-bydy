@@ -116,6 +116,10 @@
   button.secondary:hover { background:#e8e8ed; }
   button.danger { background:#fef0f0; color:#d50000; border:none; box-shadow:none; }
   button.danger:hover { background:#fee2e2; }
+  .utility-controls { display:flex; gap:10px; margin-bottom:14px; }
+  .utility-btn { padding:10px 16px; font-size:14px; font-weight:700; border-radius:10px; border:2px solid #e2e8f0; background:#f8fafc; color:#64748b; cursor:pointer; transition:all 0.2s; -webkit-tap-highlight-color: transparent; }
+  .utility-btn.gas.active { background:#ffeaa7; border-color:#fdcb6e; color:#d35400; box-shadow: 0 4px 12px rgba(211, 84, 0, 0.15); }
+  .utility-btn.elec.active { background:#ff7675; border-color:#d63031; color:#fff; box-shadow: 0 4px 12px rgba(214, 48, 49, 0.2); }
   #titleLine{ color:#fff; }
   .stat-cards{ display:flex;gap:12px;margin:4px 0 16px; flex-wrap: wrap; }
   .stat-card{ flex:1; min-width:100px; text-align:center;border-radius:12px;padding:18px 10px 15px; background:rgba(255, 255, 255, 0.9); border:1px solid var(--panel-border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); }
@@ -360,6 +364,12 @@
   </div>
   
   <div id="boardScreen" style="display:none;">
+    
+    <div class="utility-controls" id="utilityControls" style="display:none;">
+        <button id="btn-gas" class="utility-btn gas" onclick="toggleUtility('gas')">가스차단 전 ❌</button>
+        <button id="btn-elec" class="utility-btn elec" onclick="toggleUtility('elec')">전기차단 전 ❌</button>
+    </div>
+    
     <div class="board-topbar">
       <button type="button" class="secondary" id="btnBackToSetup" onclick="showSetupScreen()">← 설정으로 돌아가기</button>
       <div style="flex:1;"></div>
@@ -409,7 +419,7 @@
     </div>
 
     <div class="toolbar" id="toolbar" style="display:none; flex-wrap: wrap;">
-      <button type="button" class="success-outline" onclick="captureBoard()">📷 전체 화면 캡처</button>
+      <button type="button" style="background:#ffffff; color:#10b981; border:1px solid #34d399; font-weight:bold;" onclick="captureBoard()">📷 전체 화면 캡처</button>
       <button type="button" class="danger" id="btnResetDB" onclick="resetAll()">초기화 (DB 삭제)</button>
     </div>
   </div>
@@ -478,6 +488,7 @@ auth.onAuthStateChanged(user => {
     document.getElementById('btnLoginFromView').style.display = 'none';
     document.getElementById('btnBackToSetup').style.display = 'inline-block';
     document.getElementById('btnResetDB').style.display = 'inline-block';
+    document.getElementById('utilityControls').style.display = 'flex';
     
     startDatabaseListener();
   } else {
@@ -1109,6 +1120,17 @@ function render(){
   if(evacSelfTotal>0) fn += `<div class="fn-line">※ 자력대피 ${evacSelfTotal}명: ${evacDetail.join(', ')}</div>`;
   if(rescueTotal>0) fn += `<div class="fn-line">※ 구조 ${rescueTotal}명: ${rescueDetail.join(', ')}</div>`;
   document.getElementById('footNotes').innerHTML = fn;
+}
+function toggleUtility(type) {
+    if(isReadOnly) return;
+    const btn = document.getElementById('btn-' + type);
+    btn.classList.toggle('active');
+    
+    if (btn.classList.contains('active')) {
+        btn.innerHTML = type === 'gas' ? '가스차단 완료 🟢' : '전기차단 완료 🟢';
+    } else {
+        btn.innerHTML = type === 'gas' ? '가스차단 전 ❌' : '전기차단 전 ❌';
+    }
 }
 </script>
 </body>
