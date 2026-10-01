@@ -640,8 +640,21 @@ function captureBoard() {
   }, 300);
 }
 
-// PC와 모바일을 구분하여 가장 편한 방식으로 공유해주는 업그레이드 함수 (화재 현황판 전용)
+// PC와 모바일을 구분하여 가장 편한 방식으로 공유해주는 업그레이드 함수 (파일명 시간 자동 추가)
 async function shareCapturedImage(dataUrl) {
+  // 1. 캡처 버튼을 누른 현재 시간으로 겹치지 않는 파일명 만들기 (예: 20261002_084530)
+  const now = new Date();
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const hh = String(now.getHours()).padStart(2, '0');
+  const min = String(now.getMinutes()).padStart(2, '0');
+  const ss = String(now.getSeconds()).padStart(2, '0');
+  const timeString = `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
+  
+  // 파일명 완성 (예: 아파트현황판_20261002_084530.jpg)
+  const fileName = `아파트현황판_${timeString}.jpg`;
+  
   // 모바일 기기인지 확인
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   
@@ -650,22 +663,20 @@ async function shareCapturedImage(dataUrl) {
     try {
       const res = await fetch(dataUrl);
       const blob = await res.blob();
-      // 아파트 현황판은 기본이 jpg이므로 확장자 맞춤 처리
-      const file = new File([blob], '아파트현황판_상황보고.jpg', { type: 'image/jpeg' });
+      const file = new File([blob], fileName, { type: 'image/jpeg' });
       await navigator.share({ title: '아파트 현황판 상황보고', files: [file] });
     } catch (error) {
       console.log('공유 취소 또는 에러:', error);
     }
   } else {
-    // [PC 환경] 1. 파일 다운로드 실행
+    // [PC 환경] 1. 파일 다운로드 실행 (시간이 적힌 파일명으로 다운로드됨)
     const link = document.createElement('a');
     link.href = dataUrl;
-    link.download = '아파트현황판_상황보고.jpg';
+    link.download = fileName; 
     link.click(); 
     
-    // [PC 환경] 2. 카카오톡 바로 붙여넣기를 위한 클립보드(임시저장소) 자동 변환 및 복사
+    // [PC 환경] 2. 카카오톡 바로 붙여넣기를 위한 클립보드 자동 변환 및 복사
     try {
-      // PC 클립보드는 호환성을 위해 PNG를 선호하므로, 보이지 않는 캔버스를 이용해 즉시 변환 후 복사
       const img = new Image();
       img.src = dataUrl;
       img.onload = async () => {
@@ -678,12 +689,12 @@ async function shareCapturedImage(dataUrl) {
         canvas.toBlob(async (pngBlob) => {
           const item = new ClipboardItem({ "image/png": pngBlob });
           await navigator.clipboard.write([item]);
-          alert("✅ 캡처 완료!\n이미지가 복사되었습니다.\n\nPC 카카오톡 채팅창을 클릭하고 '붙여넣기(Ctrl + V)'를 하시면 바로 전송됩니다.");
+          // 안내창에 바뀐 파일명도 함께 띄워줌
+          alert(`✅ 캡처 완료!\n[${fileName}]\n저장 및 복사가 완료되었습니다.\n\nPC 카카오톡 채팅창에 '붙여넣기(Ctrl + V)'를 하시면 바로 전송됩니다.`);
         }, 'image/png');
       };
     } catch (err) {
-      // 복사를 지원하지 않는 구형 브라우저인 경우
-      alert("✅ 캡처 이미지가 [다운로드] 폴더에 저장되었습니다.");
+      alert(`✅ 캡처 이미지가 [다운로드] 폴더에 [${fileName}] 이름으로 저장되었습니다.`);
     }
   }
 }
