@@ -623,21 +623,10 @@ function captureBoard() {
       topbar.style.display = 'flex';
       autosaveNote.style.display = 'block';
 
+      // 이미지 데이터 생성 후 팝업 띄우지 않고 바로 공유 함수로 넘김
       const imgData = canvas.toDataURL('image/jpeg', 0.9);
-      const overlay = document.createElement('div');
-      overlay.className = 'overlay';
-      overlay.id = 'captureOverlay';
-      overlay.innerHTML = `
-        <div class="modal" style="max-width:95vw; max-height:95vh; display:flex; flex-direction:column; align-items:center; padding:16px; z-index:10000;">
-          <h3 style="margin-bottom:8px; font-size:16px; color:#10b981;">📷 캡처 완료</h3>
-          <p style="font-size:13px; color:#475569; text-align:center; margin-bottom:12px;">사진을 <strong>꾹 누른 후 저장</strong>하세요.</p>
-          <div style="overflow:auto; max-height:60vh; border:1px solid #cbd5e1; border-radius:8px; width:100%;">
-            <img src="${imgData}" style="width:100%; display:block; user-select: auto;">
-          </div>
-          <button type="button" class="secondary" style="margin-top:16px; width:100%;" onclick="document.getElementById('captureOverlay').remove()">닫기</button>
-        </div>
-      `;
-      document.body.appendChild(overlay);
+      shareCapturedImage(imgData);
+
     }).catch(err => {
       console.error("캡처 오류:", err);
       boardHolder.style.overflow = origOverflow;
@@ -649,6 +638,30 @@ function captureBoard() {
       alert("기기 메모리가 부족합니다. 기본 캡처 기능을 이용해주세요.");
     });
   }, 300);
+}
+
+// 캡처된 이미지 데이터를 터치 한 번에 공유/저장 창으로 띄워주는 함수
+async function shareCapturedImage(dataUrl) {
+  if (navigator.share) {
+    try {
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const file = new File([blob], '재난현황판_상황보고.jpg', { type: 'image/jpeg' });
+
+      await navigator.share({
+        title: '스마트 재난 현황판 상황보고',
+        files: [file]
+      });
+      console.log('공유 창 호출 성공');
+    } catch (error) {
+      console.log('공유 취소 또는 에러 발생:', error);
+    }
+  } else {
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = '재난현황판_상황보고.jpg';
+    link.click();
+  }
 }
 
 function saveState(){
