@@ -1009,7 +1009,14 @@ function openEditor(floorIdx, unitIdx){
   
   overlay.innerHTML = `
     <div class="modal" style="z-index:100;">
-      <h3>${u.no}호 현황 입력</h3>
+      <!-- 🌟 인명검색완료 체크박스가 추가된 헤더 -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:2px solid #e2e8f0; padding-bottom:12px;">
+        <h3 style="margin:0; border:none; padding:0; font-size:18px; color:var(--navy); font-weight:800;">${u.no}호 현황</h3>
+        <label style="font-size:14px; font-weight:800; color:#15803d; display:flex; align-items:center; gap:6px; margin:0; cursor:pointer; background:#dcfce7; padding:6px 12px; border-radius:8px; border:1px solid #86efac; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+          <input type="checkbox" id="m_searchCompleted" ${u.isSearchCompleted?'checked':''} style="width:18px; height:18px; accent-color:#16a34a;">
+          ✅ 인명검색완료
+        </label>
+      </div>
       
       <div class="mrow" style="margin-top:0;">
         <label style="color:var(--clear-bg);">✅ 자택대기(이상없음) 인원</label>
@@ -1111,6 +1118,9 @@ function saveEditor(){
   const {floorIdx, unitIdx} = editing;
   const u = floors[floorIdx].units[unitIdx];
 
+  // 🌟 인명검색완료 데이터 저장 추가
+  u.isSearchCompleted = document.getElementById('m_searchCompleted').checked;
+  
   u.isLocked = document.getElementById('m_isLocked').checked;
   u.clearCount = parseInt(document.getElementById('m_clearCount').value)||0;
   u.evacCount = parseInt(document.getElementById('m_evacCount').value)||0;
@@ -1221,7 +1231,7 @@ function render(){
   let html = '';
   
   if (!isReadOnly) {
-    const lockBtnText = isLayoutLocked ? '🔒 세대 수정 잠금해제' : '🔓 수정 완료 (터치하여 고정)';
+    const lockBtnText = isLayoutLocked ? '🔒 뼈대 수정 잠금해제' : '🔓 수정 완료 (터치하여 고정)';
     const lockBtnStyle = isLayoutLocked ? 'background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;' : 'background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; font-weight:bold; box-shadow: 0 0 8px rgba(239,68,68,0.4);';
     html += `<div style="text-align:right; margin-bottom:8px;">
        <button type="button" onclick="toggleLayoutLock()" style="padding:8px 14px; font-size:13px; border-radius:8px; cursor:pointer; ${lockBtnStyle}">${lockBtnText}</button>
@@ -1241,7 +1251,7 @@ function render(){
   while(i < floors.length){
     const fl = floors[i];
     
-    // 🚨 신고층 관련 버튼 렌더링 제거 완료
+    // (신고층 버튼 지워진 깔끔한 상태)
     const controlsHtml = isReadOnly ? '' : (
       fl.noIssue 
       ? `<div class="floor-controls">
@@ -1263,7 +1273,6 @@ function render(){
       }
       const u = fl.units[ui];
       
-      // 🚨 신고세대 관련 렌더링 제거 완료
       if (fl.noIssue) {
         html += `<td class="unit-cell is-clear" style="background:var(--clear-bg); cursor:default;">
           <div class="unit-no" style="color:#fff;">${u.no}호</div>
@@ -1281,6 +1290,10 @@ function render(){
       let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (isClearActive ? ' is-clear' : (u.isLocked ? ' is-locked' : ''))));
       
       let bodyHtml = ''; 
+      
+      // 🌟 인명검색완료 표시 마크 (가장 눈에 잘 띄게 맨 위에 배치)
+      if(u.isSearchCompleted) bodyHtml += `<div style="background:#15803d; color:#fff; font-size:12.5px; font-weight:800; padding:4px 6px; border-radius:6px; margin-bottom:4px; display:inline-block; border:1px solid #16a34a; box-shadow:0 1px 2px rgba(0,0,0,0.1);">✅ 인명검색완료</div><br>`;
+      
       if(isClearActive) bodyHtml += `<div class="tag-clear">✅ 이상없음 ${cc}명</div>`;
       if(u.isLocked) bodyHtml += `<div class="tag-locked">🔒 문잠김</div>`;
       
