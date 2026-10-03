@@ -575,7 +575,26 @@ function doLogout() {
   }
 }
 
+// 🌟 보안: 오늘 날짜(월+일 4자리)로 자동 생성되는 암호
+function getDailyPin() {
+  const today = new Date();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  return mm + dd; // 예: 10월 3일이면 "1003"
+}
+
 function enterViewMode() {
+  const dailyPin = getDailyPin();
+  
+  // 대원들이 쉽게 알 수 있도록 힌트 제공
+  const pwd = prompt("👀 관전 모드 접속 암호를 입력하세요.\n(힌트: 오늘 날짜 4자리, 예: 10월 3일 ➔ 1003)");
+  
+  // 취소를 누르거나 암호가 틀리면 차단
+  if(pwd !== dailyPin) { 
+    alert("❌ 암호가 일치하지 않아 접근이 차단됩니다.");
+    return; 
+  }
+
   isReadOnly = true;
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('mainWrap').style.display = 'block';
