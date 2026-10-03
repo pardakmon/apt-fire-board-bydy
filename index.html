@@ -1221,7 +1221,7 @@ function render(){
   let html = '';
   
   if (!isReadOnly) {
-    const lockBtnText = isLayoutLocked ? '🔒 뼈대 수정 잠금해제' : '🔓 수정 완료 (터치하여 고정)';
+    const lockBtnText = isLayoutLocked ? '🔒 세대 수정 잠금해제' : '🔓 수정 완료 (터치하여 고정)';
     const lockBtnStyle = isLayoutLocked ? 'background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;' : 'background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; font-weight:bold; box-shadow: 0 0 8px rgba(239,68,68,0.4);';
     html += `<div style="text-align:right; margin-bottom:8px;">
        <button type="button" onclick="toggleLayoutLock()" style="padding:8px 14px; font-size:13px; border-radius:8px; cursor:pointer; ${lockBtnStyle}">${lockBtnText}</button>
