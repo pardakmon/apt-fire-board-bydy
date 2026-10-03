@@ -360,8 +360,22 @@
       </div>
 
       <div class="row">
-        <div class="field"><label>최고층</label><input type="number" id="topFloor" value="12"></div>
-        <div class="field"><label>최저층</label><input type="number" id="botFloor" value="1"></div>
+      <div class="field">
+          <label>최고층</label>
+          <div class="stepper-row setup-stepper">
+            <button type="button" class="step-btn" onclick="adjustFloor('topFloor', -1)">−</button>
+            <input type="text" id="topFloor" value="12" readonly tabindex="-1">
+            <button type="button" class="step-btn" onclick="adjustFloor('topFloor', 1)">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>최저층</label>
+          <div class="stepper-row setup-stepper">
+            <button type="button" class="step-btn" onclick="adjustFloor('botFloor', -1)">−</button>
+            <input type="text" id="botFloor" value="1" readonly tabindex="-1">
+            <button type="button" class="step-btn" onclick="adjustFloor('botFloor', 1)">+</button>
+          </div>
+        </div>
         <div class="field">
           <label>4층 표기/제외 옵션</label>
           <select id="skip4Floor">
@@ -795,6 +809,35 @@ function resetAll(){
   if(isReadOnly) return;
   if(!confirm('데이터를 모두 지우고 초기화할까요?')) return;
   dbRef.remove().then(() => { location.reload(); });
+}
+
+// 🌟 층수 조절 ➕/➖ 버튼 기능 (0층 건너뛰기 적용)
+function adjustFloor(id, delta) {
+  if (isReadOnly) return;
+  const el = document.getElementById(id);
+  let v = parseInt(el.value) || 1;
+  
+  v += delta; // 버튼 누른 값 계산
+  
+  // 🌟 0층 건너뛰기 마법
+  if (v === 0) {
+    if (delta > 0) {
+      v = 1;  // -1층에서 ➕ 누르면 1층으로
+    } else {
+      v = -1; // 1층에서 ➖ 누르면 -1층으로
+    }
+  }
+  
+  // 최고층이 최저층보다 낮아지거나, 최저층이 최고층보다 높아지는 것 방지
+  if (id === 'topFloor') {
+    const bot = parseInt(document.getElementById('botFloor').value) || 1;
+    if (v < bot) v = bot;
+  } else if (id === 'botFloor') {
+    const top = parseInt(document.getElementById('topFloor').value) || 12;
+    if (v > top) v = top;
+  }
+  
+  el.value = v;
 }
 
 function adjustUnitsCount(delta){
