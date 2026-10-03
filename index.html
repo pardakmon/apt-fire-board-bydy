@@ -587,7 +587,7 @@ function enterViewMode() {
   const dailyPin = getDailyPin();
   
   // 대원들이 쉽게 알 수 있도록 힌트 제공
-  const pwd = prompt("👀 관전 모드 접속 암호를 입력하세요.\n(힌트: 오늘 날짜 4자리, 예: 10월 3일 ➔ 1003)");
+  const pwd = prompt("👀 관전 모드 접속 암호를 입력하세요.\n(힌트: 4자리)");
   
   // 취소를 누르거나 암호가 틀리면 차단
   if(pwd !== dailyPin) { 
