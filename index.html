@@ -1118,9 +1118,8 @@ function saveEditor(){
   const {floorIdx, unitIdx} = editing;
   const u = floors[floorIdx].units[unitIdx];
 
-  // 🌟 인명검색완료 데이터 저장 추가
+  // 🌟 데이터 수집
   u.isSearchCompleted = document.getElementById('m_searchCompleted').checked;
-  
   u.isLocked = document.getElementById('m_isLocked').checked;
   u.clearCount = parseInt(document.getElementById('m_clearCount').value)||0;
   u.evacCount = parseInt(document.getElementById('m_evacCount').value)||0;
@@ -1131,13 +1130,26 @@ function saveEditor(){
   u.evacDetails = editingEvacDetails.slice();
   u.rescueDetails = editingDetails.slice();
   
+  // 🌟 입력된 데이터가 하나도 없는 '완전 초기화' 상태인지 확인
+  const isCompletelyEmpty = 
+    !u.isSearchCompleted && !u.isLocked && !u.origin && !u.spread && 
+    u.clearCount === 0 && u.evacCount === 0 && u.rescueCount === 0 && 
+    u.evacDetails.length === 0 && u.rescueDetails.length === 0;
+
   const now = new Date();
   const hh = String(now.getHours()).padStart(2, '0');
   const mm = String(now.getMinutes()).padStart(2, '0');
   const ss = String(now.getSeconds()).padStart(2, '0');
-  
-  u.lastUpdatedTime = `${hh}:${mm}`;
-  u.lastUpdatedBy = currentRole; 
+
+  if (isCompletelyEmpty) {
+    // 실수로 누른 걸 다 지웠다면 시간 로그도 깔끔하게 삭제!
+    u.lastUpdatedTime = "";
+    u.lastUpdatedBy = "";
+  } else {
+    // 정상적으로 현황이 입력되었다면 현재 시간 기록
+    u.lastUpdatedTime = `${hh}:${mm}`;
+    u.lastUpdatedBy = currentRole; 
+  }
   
   closeEditor();
   render(); 
