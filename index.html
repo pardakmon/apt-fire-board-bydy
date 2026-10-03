@@ -989,21 +989,6 @@ function toggleNoIssue(floorIdx){
   saveState(); 
 }
 
-// 🌟 층 단위 신고위치 설정 버튼 기능
-function toggleReportedFloor(floorIdx){
-  if(isReadOnly) return;
-  floors[floorIdx].isReportedFloor = !floors[floorIdx].isReportedFloor;
-  render();
-  
-  const now = new Date();
-  // 실시간 즉각 동기화
-  dbRef.child('floors/' + floorIdx).update({ isReportedFloor: floors[floorIdx].isReportedFloor })
-    .then(() => {
-      const note = document.getElementById('autosaveNote');
-      if(note) note.textContent = `신고층 동기화 완료 · ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-    }).catch(e => console.error(e));
-}
-
 let editing = null;
 let editingDetails = [];
 let editingEvacDetails = [];
@@ -1065,7 +1050,6 @@ function openEditor(floorIdx, unitIdx){
       <hr style="border:0; border-top:1px solid #e2e8f0; margin:16px 0;">
       
       <div class="mrow checks" style="margin-top:0; flex-wrap:wrap;">
-        <label><input type="checkbox" id="m_isReported" ${u.isReportedUnit?'checked':''}> <span style="color:var(--origin);">🚨 신고세대</span></label>
         <label><input type="checkbox" id="m_origin" ${u.origin?'checked':''}> 🔥 발화지점</label>
         <label><input type="checkbox" id="m_spread" ${u.spread?'checked':''}> 💥 연소확대</label>
         <label><input type="checkbox" id="m_isLocked" ${u.isLocked?'checked':''}> 🔒 문잠김(미확인)</label>
@@ -1127,7 +1111,6 @@ function saveEditor(){
   const {floorIdx, unitIdx} = editing;
   const u = floors[floorIdx].units[unitIdx];
 
-  u.isReportedUnit = document.getElementById('m_isReported').checked;
   u.isLocked = document.getElementById('m_isLocked').checked;
   u.clearCount = parseInt(document.getElementById('m_clearCount').value)||0;
   u.evacCount = parseInt(document.getElementById('m_evacCount').value)||0;
@@ -1231,15 +1214,14 @@ function render(){
   if(layoutMode==='fit-table'){
     colgroupHtml += `<col style="width:${floorPct}%">`;
     for(let c=0;c<maxUnits;c++) colgroupHtml += `<col style="width:${unitPct}%">`;
-    if(!isReadOnly && !isLayoutLocked) colgroupHtml += `<col style="width:45px;">`; // 수정 모드일 때만 우측 버튼 공간 확보
+    if(!isReadOnly && !isLayoutLocked) colgroupHtml += `<col style="width:45px;">`; 
   }
   colgroupHtml += '</colgroup>';
   
   let html = '';
   
-  // 🌟 표 상단: 잠금 토글 버튼 
   if (!isReadOnly) {
-    const lockBtnText = isLayoutLocked ? '🔒 세대 수정 잠금해제' : '🔓 수정 완료 (터치하여 고정)';
+    const lockBtnText = isLayoutLocked ? '🔒 뼈대 수정 잠금해제' : '🔓 수정 완료 (터치하여 고정)';
     const lockBtnStyle = isLayoutLocked ? 'background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;' : 'background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; font-weight:bold; box-shadow: 0 0 8px rgba(239,68,68,0.4);';
     html += `<div style="text-align:right; margin-bottom:8px;">
        <button type="button" onclick="toggleLayoutLock()" style="padding:8px 14px; font-size:13px; border-radius:8px; cursor:pointer; ${lockBtnStyle}">${lockBtnText}</button>
@@ -1248,7 +1230,6 @@ function render(){
 
   html += `<table class="board ${sizeTier} ${layoutMode}">${colgroupHtml}<tbody>`;
   
-  // 🌟 표 상단: 위로 층 추가/삭제 버튼 (잠금 해제 상태일 때만 보임)
   if (!isReadOnly && !isLayoutLocked && floors.length > 0) {
       html += `<tr><td colspan="${totalCols + 1}" style="text-align:center; padding:8px; font-size:13px; background:rgba(241,245,249,0.7); border:2px dashed #cbd5e1; border-bottom:none;">
         <span onclick="addFloorAbove()" style="cursor:pointer; color:#0ea5e9; font-weight:800; margin-right:24px; padding:6px;">➕ 위로 층 추가</span>
@@ -1259,23 +1240,20 @@ function render(){
   let i=0;
   while(i < floors.length){
     const fl = floors[i];
-    const btnReportStyle = fl.isReportedFloor ? 'color:var(--origin); font-weight:bold; background:#fee2e2; border-color:#fca5a5;' : '';
     
+    // 🚨 신고층 관련 버튼 렌더링 제거 완료
     const controlsHtml = isReadOnly ? '' : (
       fl.noIssue 
       ? `<div class="floor-controls">
            <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">해제</button>
-           <button type="button" class="small secondary" onclick="toggleReportedFloor(${i})" style="${btnReportStyle}">🚨신고층</button>
          </div>`
       : `<div class="floor-controls">
            <button type="button" class="small secondary" onclick="editUnits(${i})">세대수정</button>
            <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">특이없음</button>
-           <button type="button" class="small secondary" onclick="toggleReportedFloor(${i})" style="${btnReportStyle}">🚨신고층</button>
          </div>`
     );
       
-    const trCls = fl.isReportedFloor ? 'is-reported-floor' : '';
-    html += `<tr class="${trCls}"><td class="floor-cell">${fl.floor}층${controlsHtml}</td>`;
+    html += `<tr><td class="floor-cell">${fl.floor}층${controlsHtml}</td>`;
       
     columns.forEach(suf=>{
       const ui = fl.units.findIndex(x=> unitSuffix(x, fl.floor)===suf);
@@ -1284,15 +1262,12 @@ function render(){
         return;
       }
       const u = fl.units[ui];
-      const isReportedUnit = u.isReportedUnit;
-      const reportedCls = isReportedUnit ? ' is-reported-unit' : '';
-      const reportedTag = isReportedUnit ? `<div class="tag-reported">🚨 신고세대</div>` : '';
       
+      // 🚨 신고세대 관련 렌더링 제거 완료
       if (fl.noIssue) {
-        html += `<td class="unit-cell is-clear${reportedCls}" style="background:var(--clear-bg); cursor:default;">
+        html += `<td class="unit-cell is-clear" style="background:var(--clear-bg); cursor:default;">
           <div class="unit-no" style="color:#fff;">${u.no}호</div>
           <div class="unit-status">
-            ${reportedTag}
             <div class="tag-clear" style="background:rgba(255,255,255,0.2); color:#fff; border-color:transparent; font-size:12px; padding:6px 8px; margin-top:4px;">✅ 특이사항 없음</div>
           </div>
         </td>`;
@@ -1303,9 +1278,9 @@ function render(){
       const isClearActive = cc > 0; 
 
       let bg = u.origin ? 'var(--origin)' : (u.spread ? 'var(--spread)' : (isClearActive ? 'var(--clear-bg)' : (u.isLocked ? 'var(--locked)' : '')));
-      let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (isClearActive ? ' is-clear' : (u.isLocked ? ' is-locked' : '')))) + reportedCls;
+      let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (isClearActive ? ' is-clear' : (u.isLocked ? ' is-locked' : ''))));
       
-      let bodyHtml = reportedTag; 
+      let bodyHtml = ''; 
       if(isClearActive) bodyHtml += `<div class="tag-clear">✅ 이상없음 ${cc}명</div>`;
       if(u.isLocked) bodyHtml += `<div class="tag-locked">🔒 문잠김</div>`;
       
@@ -1327,7 +1302,6 @@ function render(){
       </td>`;
     });
     
-    // 🌟 표 우측: 세대 추가/삭제 버튼 (잠금 해제 상태일 때만 보임)
     if (!isReadOnly && !isLayoutLocked && i === 0) {
         html += `<td rowspan="${floors.length}" style="vertical-align:middle; text-align:center; padding:0 8px; font-size:18px; background:rgba(241,245,249,0.7); border:2px dashed #cbd5e1; border-left:none;">
           <div onclick="addUnitColumn()" style="cursor:pointer; color:#0ea5e9; margin-bottom:28px; padding:6px;" title="세대 라인 추가">➕</div>
@@ -1339,7 +1313,6 @@ function render(){
     i++;
   }
   
-  // 🌟 표 하단: 아래로 층 추가/삭제 버튼 (잠금 해제 상태일 때만 보임)
   if (!isReadOnly && !isLayoutLocked && floors.length > 0) {
       html += `<tr><td colspan="${totalCols + 1}" style="text-align:center; padding:8px; font-size:13px; background:rgba(241,245,249,0.7); border:2px dashed #cbd5e1; border-top:none;">
         <span onclick="addFloorBelow()" style="cursor:pointer; color:#0ea5e9; font-weight:800; margin-right:24px; padding:6px;">➕ 아래(지하) 층 추가</span>
