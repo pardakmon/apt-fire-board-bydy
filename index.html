@@ -877,62 +877,74 @@ function generateBoard(){
   showBoardScreen();
 }
   
-// 🌟 1. 맨 위로 층 추가
+// 🌟 [추가] 단면도 수정 잠금 상태 변수
+let isLayoutLocked = true; // 기본적으로 고정 (오작동 방지)
+
+function toggleLayoutLock() {
+  if(isReadOnly) return;
+  isLayoutLocked = !isLayoutLocked;
+  render();
+}
+
+// 🌟 1. 위로 층 추가 및 삭제
 function addFloorAbove() {
   if(isReadOnly || floors.length === 0) return;
   let topNum = parseInt(floors[0].floor);
   let nextNum = topNum + 1;
-  if(nextNum === 0) nextNum = 1; // 0층 건너뛰기
-  
+  if(nextNum === 0) nextNum = 1;
   const skipOption = document.getElementById('skip4Floor').value;
   if (nextNum === 4 && skipOption === 'skip') nextNum = 5;
-  
   let floorName = String(nextNum);
   let floorPrefix = floorName;
   if(nextNum === 4 && skipOption === 'f_floor') { floorName = 'F'; floorPrefix = 'F'; }
-  
   const suffixSet = new Set();
   floors[0].units.forEach(u => suffixSet.add(u.no.slice(String(floors[0].floor).length)));
   const columns = Array.from(suffixSet).sort((a,b)=> a.localeCompare(b, undefined, {numeric:true}));
-  
   floors.unshift({
     floor: floorName, noIssue: false,
     units: columns.map(suf => ({ no: floorPrefix + suf, isLocked: false, clearCount: 0, evacCount: 0, rescueCount: 0, origin: false, spread: false, evacDetails: [], rescueDetails: [] }))
   });
   render(); saveState();
 }
+function removeFloorAbove() {
+  if(isReadOnly || floors.length <= 1) return alert("더 이상 삭제할 수 없습니다.");
+  if(confirm(floors[0].floor + "층을 현황판에서 삭제하시겠습니까?")) {
+    floors.shift(); render(); saveState();
+  }
+}
 
-// 🌟 2. 맨 아래로 층 추가 (-1, -2층 확장)
+// 🌟 2. 아래(지하) 층 추가 및 삭제
 function addFloorBelow() {
   if(isReadOnly || floors.length === 0) return;
   let botNum = parseInt(floors[floors.length - 1].floor);
   let nextNum = botNum - 1;
-  if(nextNum === 0) nextNum = -1; // 0층 건너뛰기 (-1층 직행)
-  
+  if(nextNum === 0) nextNum = -1;
   const skipOption = document.getElementById('skip4Floor').value;
   if (nextNum === 4 && skipOption === 'skip') nextNum = 3;
-  
   let floorName = String(nextNum);
   let floorPrefix = floorName;
   if(nextNum === 4 && skipOption === 'f_floor') { floorName = 'F'; floorPrefix = 'F'; }
-  
   const suffixSet = new Set();
   floors[0].units.forEach(u => suffixSet.add(u.no.slice(String(floors[0].floor).length)));
   const columns = Array.from(suffixSet).sort((a,b)=> a.localeCompare(b, undefined, {numeric:true}));
-  
   floors.push({
     floor: floorName, noIssue: false,
     units: columns.map(suf => ({ no: floorPrefix + suf, isLocked: false, clearCount: 0, evacCount: 0, rescueCount: 0, origin: false, spread: false, evacDetails: [], rescueDetails: [] }))
   });
   render(); saveState();
 }
+function removeFloorBelow() {
+  if(isReadOnly || floors.length <= 1) return alert("더 이상 삭제할 수 없습니다.");
+  if(confirm(floors[floors.length-1].floor + "층을 현황판에서 삭제하시겠습니까?")) {
+    floors.pop(); render(); saveState();
+  }
+}
 
-// 🌟 3. 맨 우측에 세대(라인) 추가
+// 🌟 3. 세대 추가 및 삭제
 function addUnitColumn() {
   if(isReadOnly || floors.length === 0) return;
   const suffixSet = new Set();
   floors.forEach(fl => fl.units.forEach(u => suffixSet.add(u.no.slice(String(fl.floor).length))));
-  
   let maxNum = 0; let suffixLen = 2;
   suffixSet.forEach(suf => {
     const num = parseInt(suf);
@@ -940,12 +952,18 @@ function addUnitColumn() {
     suffixLen = suf.length;
   });
   const nextSuf = String(maxNum + 1).padStart(suffixLen, '0');
-
   floors.forEach(fl => {
     let floorPrefix = String(fl.floor);
     fl.units.push({ no: floorPrefix + nextSuf, isLocked: false, clearCount: 0, evacCount: 0, rescueCount: 0, origin: false, spread: false, evacDetails: [], rescueDetails: [] });
   });
   render(); saveState();
+}
+function removeUnitColumn() {
+  if(isReadOnly || floors[0].units.length <= 1) return alert("더 이상 삭제할 수 없습니다.");
+  if(confirm("가장 우측 세대(라인)를 전체 층에서 삭제하시겠습니까?")) {
+    floors.forEach(fl => fl.units.pop());
+    render(); saveState();
+  }
 }
   
 function editUnits(floorIdx){
@@ -1213,15 +1231,29 @@ function render(){
   if(layoutMode==='fit-table'){
     colgroupHtml += `<col style="width:${floorPct}%">`;
     for(let c=0;c<maxUnits;c++) colgroupHtml += `<col style="width:${unitPct}%">`;
-    if(!isReadOnly) colgroupHtml += `<col style="width:45px;">`; // 🌟 세대 추가 버튼용 공간 확보
+    if(!isReadOnly && !isLayoutLocked) colgroupHtml += `<col style="width:45px;">`; // 수정 모드일 때만 우측 버튼 공간 확보
   }
   colgroupHtml += '</colgroup>';
   
-  let html = `<table class="board ${sizeTier} ${layoutMode}">${colgroupHtml}<tbody>`;
+  let html = '';
   
-  // 🌟 표 상단: 위로 층 추가 버튼
-  if (!isReadOnly && floors.length > 0) {
-      html += `<tr><td colspan="${totalCols + 1}" style="text-align:center; padding:8px; font-size:13px; color:#64748b; background:rgba(241,245,249,0.7); cursor:pointer; border:2px dashed #cbd5e1; border-bottom:none; font-weight:700;" onclick="addFloorAbove()">⬆ 맨 위로 층 추가</td></tr>`;
+  // 🌟 표 상단: 잠금 토글 버튼 
+  if (!isReadOnly) {
+    const lockBtnText = isLayoutLocked ? '🔒 뼈대 수정 잠금해제' : '🔓 수정 완료 (터치하여 고정)';
+    const lockBtnStyle = isLayoutLocked ? 'background:#f8fafc; color:#64748b; border:1px solid #cbd5e1;' : 'background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; font-weight:bold; box-shadow: 0 0 8px rgba(239,68,68,0.4);';
+    html += `<div style="text-align:right; margin-bottom:8px;">
+       <button type="button" onclick="toggleLayoutLock()" style="padding:8px 14px; font-size:13px; border-radius:8px; cursor:pointer; ${lockBtnStyle}">${lockBtnText}</button>
+    </div>`;
+  }
+
+  html += `<table class="board ${sizeTier} ${layoutMode}">${colgroupHtml}<tbody>`;
+  
+  // 🌟 표 상단: 위로 층 추가/삭제 버튼 (잠금 해제 상태일 때만 보임)
+  if (!isReadOnly && !isLayoutLocked && floors.length > 0) {
+      html += `<tr><td colspan="${totalCols + 1}" style="text-align:center; padding:8px; font-size:13px; background:rgba(241,245,249,0.7); border:2px dashed #cbd5e1; border-bottom:none;">
+        <span onclick="addFloorAbove()" style="cursor:pointer; color:#0ea5e9; font-weight:800; margin-right:24px; padding:6px;">➕ 위로 층 추가</span>
+        <span onclick="removeFloorAbove()" style="cursor:pointer; color:#ef4444; font-weight:800; padding:6px;">➖ 맨 위층 삭제</span>
+      </td></tr>`;
   }
 
   let i=0;
@@ -1295,18 +1327,24 @@ function render(){
       </td>`;
     });
     
-    // 🌟 표 우측: 세대(라인) 추가 버튼 (첫 번째 줄에만 생성되어 전체 층 높이만큼 늘어남)
-    if (!isReadOnly && i === 0) {
-        html += `<td rowspan="${floors.length}" style="vertical-align:middle; text-align:center; padding:0 12px; font-size:20px; color:#64748b; background:rgba(241,245,249,0.7); cursor:pointer; border:2px dashed #cbd5e1; border-left:none;" onclick="addUnitColumn()" title="전체 층에 세대 추가">➕</td>`;
+    // 🌟 표 우측: 세대 추가/삭제 버튼 (잠금 해제 상태일 때만 보임)
+    if (!isReadOnly && !isLayoutLocked && i === 0) {
+        html += `<td rowspan="${floors.length}" style="vertical-align:middle; text-align:center; padding:0 8px; font-size:18px; background:rgba(241,245,249,0.7); border:2px dashed #cbd5e1; border-left:none;">
+          <div onclick="addUnitColumn()" style="cursor:pointer; color:#0ea5e9; margin-bottom:28px; padding:6px;" title="세대 라인 추가">➕</div>
+          <div onclick="removeUnitColumn()" style="cursor:pointer; color:#ef4444; padding:6px;" title="마지막 세대 라인 삭제">➖</div>
+        </td>`;
     }
     
     html += `</tr>`;
     i++;
   }
   
-  // 🌟 표 하단: 아래로 층 추가 버튼
-  if (!isReadOnly && floors.length > 0) {
-      html += `<tr><td colspan="${totalCols + 1}" style="text-align:center; padding:8px; font-size:13px; color:#64748b; background:rgba(241,245,249,0.7); cursor:pointer; border:2px dashed #cbd5e1; border-top:none; font-weight:700;" onclick="addFloorBelow()">⬇️ 맨 아래로 층 추가 (지하)</td></tr>`;
+  // 🌟 표 하단: 아래로 층 추가/삭제 버튼 (잠금 해제 상태일 때만 보임)
+  if (!isReadOnly && !isLayoutLocked && floors.length > 0) {
+      html += `<tr><td colspan="${totalCols + 1}" style="text-align:center; padding:8px; font-size:13px; background:rgba(241,245,249,0.7); border:2px dashed #cbd5e1; border-top:none;">
+        <span onclick="addFloorBelow()" style="cursor:pointer; color:#0ea5e9; font-weight:800; margin-right:24px; padding:6px;">➕ 아래(지하) 층 추가</span>
+        <span onclick="removeFloorBelow()" style="cursor:pointer; color:#ef4444; font-weight:800; padding:6px;">➖ 맨 아래층 삭제</span>
+      </td></tr>`;
   }
   
   html += '</tbody></table>';
