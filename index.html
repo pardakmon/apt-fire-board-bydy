@@ -323,8 +323,13 @@
     }
   }
 /* 🌟 스마트폰 세로 화면일 때만 글자를 숨기는 마법 */
-  @media (max-width: 640px) and (orientation: portrait) {
+@media (max-width: 640px) and (orientation: portrait) {
     .hide-on-portrait { display: none !important; }
+  }
+
+  /* 🌟 각종 태그(박스) 안의 글자가 두 줄로 쪼개지는 현상 방지 */
+  .tag-clear, .tag-locked, .tag-evac, .tag-rescue, .origin-tag, .spread-tag {
+    white-space: nowrap !important;
   }
 </style>
 </head>
