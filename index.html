@@ -306,16 +306,18 @@
   }
   
   @media (max-width: 640px) and (orientation: portrait) {
-    /* 🌟 범례 크기 확대 및 여백 최적화 (4열 유지) */
+    /* 🌟 세로 모드 범례: 빈 공간 없이 좌측 밀착 및 글씨 크기 최대화 (4열 유지) */
     .legend { 
       display: grid !important; 
-      grid-template-columns: auto auto auto auto; /* 글자 길이에 맞춰 자연스럽게 분배 */
-      justify-content: space-between; /* 양끝으로 쫙 펴주기 */
-      row-gap: 10px; 
-      font-size: 11.5px !important; /* 글씨 크기 시원하게 확대 */
-      letter-spacing: -0.3px; 
+      grid-template-columns: auto auto auto auto !important; 
+      width: 100% !important; /* 화면 폭을 온전히 다 쓰도록 강제 */
+      justify-content: flex-start !important; /* 무조건 왼쪽 끝에서부터 정렬 */
+      column-gap: 12px !important; /* 항목 간격 넉넉하게 */
+      row-gap: 12px !important; /* 위아래 줄 간격도 여유 있게 */
+      font-size: 13px !important; /* 남는 공간을 활용해 글씨를 훨씬 크게 확대! */
+      letter-spacing: -0.5px !important;
     }
-    .legend span { gap: 4px !important; } /* 이모티콘과 글자 사이 여유 확보 */
+    .legend span { gap: 4px !important; }
   }
 
 /* 🌟 모바일/태블릿(가로/세로) 모두 칸이 찌그러지지 않고 스와이프 되도록 범위 확대 */
