@@ -309,9 +309,18 @@
     .legend { display: grid !important; grid-template-columns: 1fr 1fr; row-gap: 8px; column-gap: 4px; justify-items: start; }
   }
 
-  td.unit-cell div {
-    white-space: nowrap !important;
-    word-break: keep-all !important;
+/* 🌟 모바일 화면에서 세대 칸이 찌그러지지 않고 좌우로 스와이프 되도록 설정 */
+  @media (max-width: 640px) {
+    table.board {
+      width: max-content !important;
+      min-width: 100% !important;
+    }
+    td.unit-cell {
+      min-width: 115px !important; /* 칸이 이 크기 이하로는 절대 줄어들지 않음 */
+    }
+    td.unit-cell div {
+      word-break: keep-all !important; /* 글자가 칸 안에서 안전하게 유지됨 */
+    }
   }
 </style>
 </head>
