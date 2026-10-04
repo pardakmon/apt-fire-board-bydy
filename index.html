@@ -388,6 +388,19 @@
   </div>
 </div>
 
+<!-- 🌟 타임라인 팝업창 추가 -->
+<div id="timelineOverlay" class="overlay" style="display:none; z-index:30000;">
+  <div class="modal" style="width:90vw; max-width:400px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--navy); padding-bottom:10px; margin-bottom:12px;">
+      <h3 style="margin:0; font-size:16px;">⏱️ 상황 일지 (타임라인)</h3>
+      <button type="button" class="small secondary" onclick="document.getElementById('timelineOverlay').style.display='none'">닫기</button>
+    </div>
+    <div id="timelineList" style="max-height:60vh; overflow-y:auto; font-size:12.5px; line-height:1.5; color:#334155;">
+      <!-- 기록이 여기에 쌓입니다 -->
+    </div>
+  </div>
+</div>
+
 <div class="wrap" id="mainWrap" style="display:none;">
   <div id="setupScreen">
     <h1>공동주택 화재 현황판</h1>
@@ -499,6 +512,8 @@
     </div>
 
     <div class="toolbar" id="toolbar" style="display:none; flex-wrap: wrap;">
+      <button type="button" style="background:#f8fafc; color:#3b82f6; border:1px solid #93c5fd; font-weight:bold;" onclick="copyReportText()">📝 상황보고 복사</button>
+      <button type="button" class="secondary" onclick="openTimeline()">⏱️ 타임라인(일지)</button>
       <button type="button" style="background:#ffffff; color:#10b981; border:1px solid #34d399; font-weight:bold;" onclick="captureBoard()">📷 전체 화면 캡처</button>
       <button type="button" class="danger" id="btnResetDB" onclick="resetAll()">초기화 (DB 삭제)</button>
     </div>
@@ -1241,7 +1256,7 @@ function saveEditor(){
   const mm = String(now.getMinutes()).padStart(2, '0');
   const ss = String(now.getSeconds()).padStart(2, '0');
 
-  if (isCompletelyEmpty) {
+if (isCompletelyEmpty) {
     // 실수로 누른 걸 다 지웠다면 시간 로그도 깔끔하게 삭제!
     u.lastUpdatedTime = "";
     u.lastUpdatedBy = "";
@@ -1251,8 +1266,11 @@ function saveEditor(){
     u.lastUpdatedBy = currentRole; 
   }
   
+  // 🌟 (추가) 세대 정보 수정 시 타임라인 자동 기록
+  writeLog('세대 현황 수정', `${u.no}호 (검색완료:${u.isSearchCompleted?'O':'X'}, 발화:${u.origin?'O':'X'}, 대피:${u.clearCount+u.evacCount+u.rescueCount}명)`);
+  
   closeEditor();
-  render(); 
+  render();
   
   if(!isReadOnly) {
     dbRef.child('floors/' + floorIdx + '/units/' + unitIdx).update(u)
@@ -1512,6 +1530,101 @@ function toggleUtility(type) {
         };
         dbRef.child('gas').set(newData);
     }
+    
+// 🌟 (추가) 전기/가스 차단 버튼 누를 시 타임라인 자동 기록
+    const logName = type === 'elec' ? '전기 통제' : '가스 통제';
+    writeLog(logName, `상태 변경 조치`);
+}
+
+// ==========================================
+// 🌟 [추가 기능 1] 상황보고 텍스트 자동 요약 및 복사
+// ==========================================
+function copyReportText() {
+  const bldg = document.getElementById('bldgName').value || '건물명 미상';
+  const dTime = document.getElementById('dispatchTime').value || '시간 미상';
+  
+  let origins = [], spreads = [], rescues = [], evacs = [], clears = [];
+  let searchCompletedCount = 0;
+  let totalRescue = 0, totalEvac = 0, totalClear = 0;
+
+  floors.forEach(fl => {
+    fl.units.forEach(u => {
+      if(u.origin) origins.push(u.no + '호');
+      if(u.spread) spreads.push(u.no + '호');
+      if(u.isSearchCompleted) searchCompletedCount++;
+      
+      if(u.rescueCount > 0) { rescues.push(`${u.no}호(${u.rescueCount}명)`); totalRescue += u.rescueCount; }
+      if(u.evacCount > 0) { evacs.push(`${u.no}호(${u.evacCount}명)`); totalEvac += u.evacCount; }
+      if(u.clearCount > 0) { clears.push(`${u.no}호(${u.clearCount}명)`); totalClear += u.clearCount; }
+    });
+  });
+
+  let report = `[상황보고] ${bldg} 화재\n`;
+  report += `- 신고일시: ${dTime}\n`;
+  report += `- 발화지점: ${origins.length ? origins.join(', ') : '미상'}\n`;
+  if(spreads.length) report += `- 연소확대: ${spreads.join(', ')}\n`;
+  report += `- 인명검색완료: 총 ${searchCompletedCount}세대\n`;
+  report += `- 인명대피: 총 ${totalRescue + totalEvac + totalClear}명\n`;
+  report += `  · 구조 ${totalRescue}명 ${rescues.length ? '('+rescues.join(', ')+')' : ''}\n`;
+  report += `  · 자력대피 ${totalEvac}명 ${evacs.length ? '('+evacs.join(', ')+')' : ''}\n`;
+  report += `  · 자택대기 ${totalClear}명 ${clears.length ? '('+clears.join(', ')+')' : ''}\n`;
+  
+  let elec = elecData.status ? '차단 완료' : '미차단';
+  let gas = gasData.status ? '차단 완료' : '미차단';
+  report += `- 통제현황: 전기(${elec}), 가스(${gas})\n`;
+  report += `\n※ 영등포소방서 재난조사팀`;
+
+  const ta = document.createElement("textarea");
+  ta.value = report;
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand("copy");
+  document.body.removeChild(ta);
+  
+  alert("✅ 상황보고 텍스트가 복사되었습니다.\n카카오톡이나 문자(무전) 입력창에 '붙여넣기' 하세요.");
+}
+
+// ==========================================
+// 🌟 [추가 기능 2] 타임라인(상황 일지) 기록 및 조회
+// ==========================================
+function writeLog(actionType, message) {
+  if (isReadOnly) return;
+  const now = new Date();
+  const tStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  
+  // 파이어베이스 'logs' 폴더에 기록 밀어넣기
+  dbRef.child('logs').push({
+    time: tStr,
+    role: currentRole,
+    action: actionType,
+    msg: message
+  });
+}
+
+function openTimeline() {
+  const overlay = document.getElementById('timelineOverlay');
+  const list = document.getElementById('timelineList');
+  overlay.style.display = 'flex';
+  list.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;">불러오는 중...</div>';
+  
+  dbRef.child('logs').once('value').then(snap => {
+    const logs = snap.val();
+    if (!logs) {
+      list.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8;">아직 기록된 일지가 없습니다.</div>';
+      return;
+    }
+    // 최신 기록이 맨 위로 오도록 뒤집기(reverse)
+    const logArr = Object.values(logs).reverse();
+    list.innerHTML = logArr.map(L => `
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:8px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px; font-weight:800; font-size:11.5px; color:#64748b;">
+          <span>🕒 ${L.time}</span>
+          <span style="color:#0ea5e9;">${L.role}</span>
+        </div>
+        <div><strong style="color:var(--navy);">${L.action}</strong>: ${L.msg}</div>
+      </div>
+    `).join('');
+  });
 }
 </script>
 </body>
