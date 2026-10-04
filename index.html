@@ -1348,10 +1348,10 @@ function render(){
       const u = fl.units[ui];
       
       if (fl.noIssue) {
-        html += `<td class="unit-cell is-clear" style="background:var(--clear-bg); cursor:default;">
-          <div class="unit-no" style="color:#fff;">${u.no}호</div>
+        html += `<td class="unit-cell" style="cursor:default;">
+          <div class="unit-no">${u.no}호</div>
           <div class="unit-status">
-            <div class="tag-clear" style="background:rgba(255,255,255,0.2); color:#fff; border-color:transparent; font-size:12px; padding:6px 8px; margin-top:4px;">✅ 특이사항 없음</div>
+            <div class="tag-clear">✅ 특이사항 없음</div>
           </div>
         </td>`;
         return; 
@@ -1360,8 +1360,8 @@ function render(){
       const cc = u.clearCount || 0;
       const isClearActive = cc > 0; 
 
-      let bg = u.origin ? 'var(--origin)' : (u.spread ? 'var(--spread)' : (isClearActive ? 'var(--clear-bg)' : (u.isLocked ? 'var(--locked)' : '')));
-      let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (isClearActive ? ' is-clear' : (u.isLocked ? ' is-locked' : ''))));
+      let bg = u.origin ? 'var(--origin)' : (u.spread ? 'var(--spread)' : (u.isLocked ? 'var(--locked)' : ''));
+      let cellCls = 'unit-cell' + (u.origin ? ' is-origin' : (u.spread ? ' is-spread' : (u.isLocked ? ' is-locked' : '')));
       
       let bodyHtml = ''; 
       
