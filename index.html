@@ -1406,6 +1406,7 @@ function render(){
 
       const originTag = u.origin ? `<div class="origin-tag">🔥 <span class="hide-on-portrait">발화지점</span></div>` : '';
       const spreadTag = (!u.origin && u.spread) ? `<div class="spread-tag">💥 <span class="hide-on-portrait">연소확대</span></div>` : '';
+      const updateLog = u.lastUpdatedTime ? `<div style="font-size:10.5px; color:#fff; background:rgba(0,0,0,0.4); border-radius:4px; padding:2px 4px; margin-top:6px; font-weight:600; display:inline-block;">🕒 ${u.lastUpdatedTime} (${u.lastUpdatedBy})</div>` : '';
       
       html += `<td class="${cellCls}" data-fi="${i}" data-ui="${ui}" onclick="__cellClick(this)" style="${bg?('background:'+bg+';'):''}">
         <div class="unit-no">${u.no}호</div>
