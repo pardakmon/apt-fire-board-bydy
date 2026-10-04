@@ -1368,7 +1368,7 @@ function render(){
       // 🌟 인명검색완료 표시 마크 (가장 눈에 잘 띄게 맨 위에 배치)
       if(u.isSearchCompleted) bodyHtml += `<div style="background:#15803d; color:#fff; font-size:12px; font-weight:800; padding:4px 6px; border-radius:6px; margin-bottom:4px; display:inline-block; border:1px solid #16a34a; box-shadow:0 1px 2px rgba(0,0,0,0.1);">✅ 인명검색완료</div><br>`;
       
-      if(isClearActive) bodyHtml += `<div class="tag-clear">✅ 자택대기 ${cc}명</div>`;
+      if(isClearActive) bodyHtml += `<div class="tag-clear">🏠 자택대기 ${cc}명</div>`;
       if(u.isLocked) bodyHtml += `<div class="tag-locked">🔒 문잠김</div>`;
       
       const ec = u.evacCount || 0;
