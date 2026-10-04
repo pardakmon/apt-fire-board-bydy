@@ -1578,8 +1578,7 @@ function copyReportText() {
   let elec = elecData.status ? '차단 완료' : '미차단';
   let gas = gasData.status ? '차단 완료' : '미차단';
   report += `- 통제현황: 전기(${elec}), 가스(${gas})\n`;
-  report += `\n※ 영등포소방서 재난조사팀`;
-
+  
   const ta = document.createElement("textarea");
   ta.value = report;
   document.body.appendChild(ta);
