@@ -306,17 +306,16 @@
   }
   
   @media (max-width: 640px) and (orientation: portrait) {
-    /* 🌟 범례를 4개씩 2칸으로 꽉 차게 배치 (4열 그리드) */
+    /* 🌟 범례 크기 확대 및 여백 최적화 (4열 유지) */
     .legend { 
       display: grid !important; 
-      grid-template-columns: 1fr 1fr 1fr 1fr; /* 4칸으로 쪼개기 */
-      row-gap: 8px; 
-      column-gap: 2px; 
-      justify-items: center; 
-      font-size: 10.5px !important; /* 4개가 한 줄에 들어가도록 글씨 미세 조정 */
-      letter-spacing: -0.5px; 
+      grid-template-columns: auto auto auto auto; /* 글자 길이에 맞춰 자연스럽게 분배 */
+      justify-content: space-between; /* 양끝으로 쫙 펴주기 */
+      row-gap: 10px; 
+      font-size: 11.5px !important; /* 글씨 크기 시원하게 확대 */
+      letter-spacing: -0.3px; 
     }
-    .legend span { gap: 2px !important; } /* 이모티콘과 글자 사이 간격도 조여줌 */
+    .legend span { gap: 4px !important; } /* 이모티콘과 글자 사이 여유 확보 */
   }
 
 /* 🌟 모바일/태블릿(가로/세로) 모두 칸이 찌그러지지 않고 스와이프 되도록 범위 확대 */
@@ -483,7 +482,7 @@
       </div>
 
       <div id="summaryCards" class="stat-cards"></div>
-      <div class="legend" style="justify-content:flex-start; gap:12px; font-size:12px; flex-wrap:wrap; margin-bottom:12px;">
+      <div class="legend" style="justify-content:flex-end; gap:12px; font-size:12px; flex-wrap:wrap; margin-bottom:12px;">
         <span>✅ 인명검색완료</span>
         <span>🔥 발화지점</span>
         <span>💥 연소확대</span>
