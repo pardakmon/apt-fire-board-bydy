@@ -290,8 +290,10 @@
     .board-header{flex-wrap:wrap;gap:12px;padding:16px;}
     .board-header-right{width:100%; justify-content:flex-end; flex-wrap:wrap; margin-top:4px;}
     .board-title{font-size:18px;}
-    .toolbar{justify-content:stretch;flex-wrap:wrap;gap:8px;}
-    .toolbar button{flex:1;}
+    
+    /* 🌟 스마트폰 화면에서 하단 버튼 4개를 2x2 격자로 넓고 예쁘게 배치 */
+    .toolbar { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .toolbar button { width: 100%; font-size: 13px; padding: 12px 4px; word-break: keep-all; }
   }
 
   @media print{
@@ -511,9 +513,13 @@
       <div id="autosaveNote" style="font-size:11px;color:#94a3b8;text-align:right;margin-top:10px;font-weight:600;"></div>
     </div>
 
-    <div class="toolbar" id="toolbar" style="display:none; flex-wrap: wrap;">
+    <!-- 🌟 하단 여백(margin-bottom: 80px)을 줘서 둥근 잠금버튼에 가려지지 않게 처리 -->
+    <div class="toolbar" id="toolbar" style="display:none; flex-wrap: wrap; margin-bottom: 80px;">
       <button type="button" style="background:#f8fafc; color:#3b82f6; border:1px solid #93c5fd; font-weight:bold;" onclick="copyReportText()">📝 상황보고 복사</button>
-      <button type="button" class="secondary" onclick="openTimeline()">⏱️ 타임라인(일지)</button>
+      
+      <!-- 🌟 타임라인 버튼에 회색 테두리와 볼드체 추가 -->
+      <button type="button" style="background:#f8fafc; color:#475569; border:1px solid #cbd5e1; font-weight:bold;" onclick="openTimeline()">⏱️ 타임라인(일지)</button>
+      
       <button type="button" style="background:#ffffff; color:#10b981; border:1px solid #34d399; font-weight:bold;" onclick="captureBoard()">📷 전체 화면 캡처</button>
       <button type="button" class="danger" id="btnResetDB" onclick="resetAll()">초기화 (DB 삭제)</button>
     </div>
