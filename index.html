@@ -450,7 +450,7 @@
       <div class="legend">
         <span><span class="swatch origin-sw"></span>🔥 발화지점</span>
         <span><span class="swatch spread-sw"></span>💥 연소확대</span>
-        <span><span class="swatch clear-sw"></span>✅ 자택대기</span>
+        <span><span class="swatch clear-sw"></span>🏠 자택대기</span>
         <span><span class="swatch locked-sw"></span>🔒 문잠김(미확인)</span>
       </div>
 
@@ -1081,7 +1081,7 @@ function openEditor(floorIdx, unitIdx){
       </div>
       
       <div class="mrow" style="margin-top:0;">
-        <label style="color:var(--clear-bg);">✅ 자택대기 인원</label>
+        <label style="color:var(--clear-bg);">🏠 자택대기 인원</label>
         <div class="stepper-row">
           <button type="button" class="step-btn" onclick="adjustNewCount('m_clearCount', -1)">−</button>
           <input type="number" id="m_clearCount" min="0" value="${u.clearCount||0}">
@@ -1372,11 +1372,11 @@ function render(){
       if(u.isLocked) bodyHtml += `<div class="tag-locked">🔒 문잠김</div>`;
       
       const ec = u.evacCount || 0;
-      if(ec > 0) bodyHtml += `<div class="tag-evac">자력대피 ${ec}명</div>`;
+      if(ec > 0) bodyHtml += `<div class="tag-evac">🏃 자력대피 ${ec}명</div>`;
       if(u.evacDetails && u.evacDetails.length) bodyHtml += `<div class="status-note">${u.evacDetails.map(d=>'· '+d).join('<br>')}</div>`;
       
       const rc = u.rescueCount || 0;
-      if(rc > 0) bodyHtml += `<div class="tag-rescue">구조 ${rc}명</div>`;
+      if(rc > 0) bodyHtml += `<div class="tag-rescue">🚁 구조 ${rc}명</div>`;
       if(u.rescueDetails && u.rescueDetails.length) bodyHtml += `<div class="status-note">${u.rescueDetails.map(d=>'· '+d).join('<br>')}</div>`;
 
       const originTag = u.origin ? `<div class="origin-tag">🔥 발화지점</div>` : '';
