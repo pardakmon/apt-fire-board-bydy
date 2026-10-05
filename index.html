@@ -1648,11 +1648,11 @@ function openTimeline() {
 }
 
 // ==========================================
-// 🌟 [추가 기능] PC 마우스 드래그 스크롤 (스와이프)
+// 🌟 [추가 기능] PC 마우스 드래그 스크롤 (상하좌우 스와이프 통합)
 // ==========================================
 window.isDraggingBoard = false;
 let isMouseDown = false;
-let startX, scrollLeft;
+let startX, startY, scrollLeft, scrollTop;
 
 window.addEventListener('DOMContentLoaded', () => {
   const slider = document.getElementById('boardHolder');
@@ -1663,8 +1663,12 @@ window.addEventListener('DOMContentLoaded', () => {
     isMouseDown = true;
     window.isDraggingBoard = false;
     slider.style.cursor = 'grabbing'; // 마우스 커서를 '움켜쥔 손' 모양으로 변경
-    startX = e.pageX - slider.offsetLeft;
+    
+    // 🌟 가로 좌표(표 내부)와 세로 좌표(화면 전체)를 모두 기억
+    startX = e.clientX;
+    startY = e.clientY;
     scrollLeft = slider.scrollLeft;
+    scrollTop = window.scrollY || document.documentElement.scrollTop;
   });
   
   // 2. 마우스가 표 밖으로 나갔을 때
@@ -1677,7 +1681,6 @@ window.addEventListener('DOMContentLoaded', () => {
   slider.addEventListener('mouseup', () => {
     isMouseDown = false;
     slider.style.cursor = 'default';
-    // 클릭(팝업)이 바로 실행되지 않도록 0.05초 동안 드래그 상태 유지
     setTimeout(() => { window.isDraggingBoard = false; }, 50); 
   });
   
@@ -1685,17 +1688,18 @@ window.addEventListener('DOMContentLoaded', () => {
   slider.addEventListener('mousemove', (e) => {
     if (!isMouseDown) return;
     e.preventDefault();
-    const x = e.pageX - slider.offsetLeft;
-    const walk = (x - startX) * 1.5; // 🌟 1.5 숫자를 조절하면 미끄러지는 속도가 달라집니다.
     
-    // 마우스가 제자리 클릭이 아니라 5px 이상 움직였다면 '드래그'로 판정!
-    if (Math.abs(walk) > 5) { 
+    // 🌟 이동한 거리 계산 (X축과 Y축 동시 계산)
+    const walkX = (e.clientX - startX) * 1.5; // 1.5는 미끄러지는 속도
+    const walkY = (e.clientY - startY) * 1.5; 
+    
+    // 가로든 세로든 5px 이상 움직였다면 '드래그'로 판정!
+    if (Math.abs(walkX) > 5 || Math.abs(walkY) > 5) { 
       window.isDraggingBoard = true;
     }
-    slider.scrollLeft = scrollLeft - walk;
+    
+    // 🌟 가로(표 내부 스크롤) + 세로(브라우저 전체 스크롤) 동시 이동!
+    slider.scrollLeft = scrollLeft - walkX;
+    window.scrollTo(window.scrollX, scrollTop - walkY);
   });
 });
-
-</script>
-</body>
-</html>
