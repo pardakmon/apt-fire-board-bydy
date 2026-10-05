@@ -606,9 +606,9 @@ function renderTimeButtons() {
       btn.style.borderColor = '#cbd5e1';
     }
   };
-  renderBtn('btnOin', '오인', timeRecords.oin, '#475569', '#ffffff');     // 오인: 회색
-  renderBtn('btnChojin', '초진', timeRecords.chojin, '#ea580c', '#ffffff'); // 초진: 주황색
-  renderBtn('btnWanjin', '완진', timeRecords.wanjin, '#2563eb', '#ffffff'); // 완진: 파란색
+  renderBtn('btnOin', '오인', timeRecords.oin, '#e11d48', '#ffffff');       
+  renderBtn('btnChojin', '초진', timeRecords.chojin, '#ea580c', '#ffffff'); 
+  renderBtn('btnWanjin', '완진', timeRecords.wanjin, '#3b82f6', '#ffffff'); 
 }
 
 function getDefaultTimeStr() {
@@ -1637,11 +1637,10 @@ function copyReportText() {
   });
 
   let report = `[상황보고] ${bldg} 화재\n`;
-  report += `- 시간: 신고 ${dTime}`;
-  if(timeRecords.oin) report += ` / 오인 ${timeRecords.oin}`;
-  if(timeRecords.chojin) report += ` / 초진 ${timeRecords.chojin}`;
-  if(timeRecords.wanjin) report += ` / 완진 ${timeRecords.wanjin}`;
-  report += `\n`;
+  report += `- 신고일시: ${dTime}\n`;
+  if(timeRecords.oin) report += `  · 오인: ${timeRecords.oin}\n`;
+  if(timeRecords.chojin) report += `  · 초진: ${timeRecords.chojin}\n`;
+  if(timeRecords.wanjin) report += `  · 완진: ${timeRecords.wanjin}\n`;
   report += `- 발화지점: ${origins.length ? origins.join(', ') : '미상'}\n`;
   if(spreads.length) report += `- 연소확대: ${spreads.join(', ')}\n`;
   report += `- 인명검색완료: 총 ${searchCompletedCount}세대\n`;
