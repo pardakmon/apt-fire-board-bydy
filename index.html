@@ -307,18 +307,17 @@
     td.unit-cell{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   }
   
-/* 🌟 모바일/태블릿 모두 칸이 찌그러지지 않고 스와이프 되도록 범위 확대 */
-  @media (max-width: 1024px) {
-    table.board {
-      width: max-content !important;
-      min-width: 100% !important;
-    }
-    td.unit-cell {
-      min-width: 115px !important; 
-    }
-    td.unit-cell div {
-      word-break: keep-all !important; 
-    }
+/* 🌟 PC/모바일 관계없이 세대가 많아지면 칸이 찌그러지지 않고 좌우 스크롤 되도록 강제 적용 */
+  table.board {
+    table-layout: auto !important;
+    width: max-content !important;
+    min-width: 100% !important;
+  }
+  td.unit-cell {
+    min-width: 130px !important; /* PC에서도 시인성 좋게 최소 너비를 더 넓게 확보 */
+  }
+  td.unit-cell div {
+    word-break: keep-all !important; 
   }
 
   /* 🌟 기본 (PC/가로모드): 태그 글자 줄바꿈 금지 (한줄로 쫙 펴기) */
