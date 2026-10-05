@@ -171,7 +171,7 @@
   .legend span{display:inline-flex;align-items:center;gap:6px;}
   .swatch{width:16px;height:16px;display:inline-block;border-radius:4px;}
   
-  #boardHolder{ overflow-x:auto;-webkit-overflow-scrolling:touch; border-radius:12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+  #boardHolder{ overflow-x:auto;-webkit-overflow-scrolling:touch; border-radius:12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); user-select: none; }
   table.board{ border-collapse:collapse;background:rgba(255, 255, 255, 0.5); }
   table.board.fit-table{width:100%;table-layout:fixed;}
   table.board.scroll-table{width:max-content;min-width:560px;table-layout:auto;}
@@ -1301,6 +1301,9 @@ if (isCompletelyEmpty) {
 }
 
 window.__cellClick = function(td){
+  // 🌟 (추가) 마우스로 드래그 중일 때는 클릭(팝업) 무시!
+  if(window.isDraggingBoard) return; 
+
   const fi = parseInt(td.getAttribute('data-fi'));
   const ui = parseInt(td.getAttribute('data-ui'));
   openEditor(fi, ui);
@@ -1643,6 +1646,56 @@ function openTimeline() {
     `).join('');
   });
 }
+
+// ==========================================
+// 🌟 [추가 기능] PC 마우스 드래그 스크롤 (스와이프)
+// ==========================================
+window.isDraggingBoard = false;
+let isMouseDown = false;
+let startX, scrollLeft;
+
+window.addEventListener('DOMContentLoaded', () => {
+  const slider = document.getElementById('boardHolder');
+  if(!slider) return;
+  
+  // 1. 마우스를 꾹 눌렀을 때
+  slider.addEventListener('mousedown', (e) => {
+    isMouseDown = true;
+    window.isDraggingBoard = false;
+    slider.style.cursor = 'grabbing'; // 마우스 커서를 '움켜쥔 손' 모양으로 변경
+    startX = e.pageX - slider.offsetLeft;
+    scrollLeft = slider.scrollLeft;
+  });
+  
+  // 2. 마우스가 표 밖으로 나갔을 때
+  slider.addEventListener('mouseleave', () => {
+    isMouseDown = false;
+    slider.style.cursor = 'default';
+  });
+  
+  // 3. 마우스 클릭을 뗐을 때
+  slider.addEventListener('mouseup', () => {
+    isMouseDown = false;
+    slider.style.cursor = 'default';
+    // 클릭(팝업)이 바로 실행되지 않도록 0.05초 동안 드래그 상태 유지
+    setTimeout(() => { window.isDraggingBoard = false; }, 50); 
+  });
+  
+  // 4. 마우스를 누른 채로 움직일 때 (핵심)
+  slider.addEventListener('mousemove', (e) => {
+    if (!isMouseDown) return;
+    e.preventDefault();
+    const x = e.pageX - slider.offsetLeft;
+    const walk = (x - startX) * 1.5; // 🌟 1.5 숫자를 조절하면 미끄러지는 속도가 달라집니다.
+    
+    // 마우스가 제자리 클릭이 아니라 5px 이상 움직였다면 '드래그'로 판정!
+    if (Math.abs(walk) > 5) { 
+      window.isDraggingBoard = true;
+    }
+    slider.scrollLeft = scrollLeft - walk;
+  });
+});
+
 </script>
 </body>
 </html>
