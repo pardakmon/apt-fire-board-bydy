@@ -504,6 +504,13 @@
         </div>
       </div>
 
+      <!-- 🌟 [신규] 원터치 타임스탬프 버튼 구역 -->
+      <div style="display:flex; gap:8px; margin-bottom:14px; width:100%;">
+        <button type="button" id="btnOin" onclick="stampTime('oin')" style="flex:1; background:#f1f5f9; color:#64748b; border:1px solid #cbd5e1; padding:10px 4px; font-size:13.5px; font-weight:800; border-radius:10px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.02); transition:all 0.2s; word-break:keep-all;">오인 (미입력)</button>
+        <button type="button" id="btnChojin" onclick="stampTime('chojin')" style="flex:1; background:#f1f5f9; color:#64748b; border:1px solid #cbd5e1; padding:10px 4px; font-size:13.5px; font-weight:800; border-radius:10px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.02); transition:all 0.2s; word-break:keep-all;">초진 (미입력)</button>
+        <button type="button" id="btnWanjin" onclick="stampTime('wanjin')" style="flex:1; background:#f1f5f9; color:#64748b; border:1px solid #cbd5e1; padding:10px 4px; font-size:13.5px; font-weight:800; border-radius:10px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.02); transition:all 0.2s; word-break:keep-all;">완진 (미입력)</button>
+      </div>
+
       <div id="summaryCards" class="stat-cards"></div>
 
       <div id="boardHolder"><div class="empty-hint">위 설정을 입력하고 "표 생성"을 누르세요.</div></div>
@@ -553,11 +560,56 @@ let floors = [];
 let isInitialLoad = true; 
 let isReadOnly = false; 
 
-// 🌟 로그인 로직 (직위 포함)
 let isListening = false;
 let currentRole = "알수없음";
 let elecData = { status: false, updateTime: '', updateBy: '' };
 let gasData = { status: false, updateTime: '', updateBy: '' };
+let timeRecords = { oin: '', chojin: '', wanjin: '' }; // 🌟 타임스탬프 저장 변수
+
+// 🌟 원터치 타임스탬프 로직
+function stampTime(type) {
+  if (isReadOnly) return alert("👀 관전 모드에서는 시간을 기록할 수 없습니다.");
+  
+  let currentVal = timeRecords[type];
+  let label = type === 'oin' ? '오인' : (type === 'chojin' ? '초진' : '완진');
+  
+  if (currentVal) {
+    let newVal = prompt(`[${label}] 시간을 수정하시겠습니까? (예: 14:15)`, currentVal);
+    if (newVal === null) return;
+    timeRecords[type] = newVal.trim();
+  } else {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
+    timeRecords[type] = `${hh}:${min}`;
+  }
+  
+  saveState();
+  renderTimeButtons();
+  writeLog('현장 마일스톤', `[${label}] ${timeRecords[type]}`);
+}
+
+// 🌟 입력 완료 시 버튼 색상 변경 로직
+function renderTimeButtons() {
+  const renderBtn = (id, label, val, activeColor, textColor) => {
+    const btn = document.getElementById(id);
+    if(!btn) return;
+    if(val) {
+      btn.textContent = `${label} ${val}`;
+      btn.style.background = activeColor;
+      btn.style.color = textColor;
+      btn.style.borderColor = activeColor;
+    } else {
+      btn.textContent = `${label} (미입력)`;
+      btn.style.background = '#f1f5f9';
+      btn.style.color = '#64748b';
+      btn.style.borderColor = '#cbd5e1';
+    }
+  };
+  renderBtn('btnOin', '오인', timeRecords.oin, '#475569', '#ffffff');     // 오인: 회색
+  renderBtn('btnChojin', '초진', timeRecords.chojin, '#ea580c', '#ffffff'); // 초진: 주황색
+  renderBtn('btnWanjin', '완진', timeRecords.wanjin, '#2563eb', '#ffffff'); // 완진: 파란색
+}
 
 function getDefaultTimeStr() {
   const now = new Date();
@@ -804,6 +856,7 @@ function saveState(){
       floors: floors,
       elec: elecData,
       gas: gasData,
+      timeRecords: timeRecords,
       savedAt: new Date().toISOString()
     };
     
@@ -868,7 +921,10 @@ function startDatabaseListener() {
 
     elecData = state.elec || { status: false, updateTime: '', updateBy: '' };
     gasData = state.gas || { status: false, updateTime: '', updateBy: '' };
+    timeRecords = state.timeRecords || { oin: '', chojin: '', wanjin: '' };
+    
     updateUtilityButtons();
+    if(typeof renderTimeButtons === 'function') renderTimeButtons(); //
     
     document.getElementById('backToBoardBtn').style.display = isReadOnly ? 'none' : 'inline-block';
     
@@ -1581,7 +1637,11 @@ function copyReportText() {
   });
 
   let report = `[상황보고] ${bldg} 화재\n`;
-  report += `- 신고일시: ${dTime}\n`;
+  report += `- 시간: 신고 ${dTime}`;
+  if(timeRecords.oin) report += ` / 오인 ${timeRecords.oin}`;
+  if(timeRecords.chojin) report += ` / 초진 ${timeRecords.chojin}`;
+  if(timeRecords.wanjin) report += ` / 완진 ${timeRecords.wanjin}`;
+  report += `\n`;
   report += `- 발화지점: ${origins.length ? origins.join(', ') : '미상'}\n`;
   if(spreads.length) report += `- 연소확대: ${spreads.join(', ')}\n`;
   report += `- 인명검색완료: 총 ${searchCompletedCount}세대\n`;
