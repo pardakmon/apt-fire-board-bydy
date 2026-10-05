@@ -574,7 +574,7 @@ function stampTime(type) {
   let label = type === 'oin' ? '오인' : (type === 'chojin' ? '초진' : '완진');
   
   if (currentVal) {
-    let newVal = prompt(`[${label}] 시간을 수정하시겠습니까? (예: 14:15)`, currentVal);
+    let newVal = prompt(`[${label}] 시간을 수정하시겠습니까?`, currentVal);
     if (newVal === null) return;
     timeRecords[type] = newVal.trim();
   } else {
