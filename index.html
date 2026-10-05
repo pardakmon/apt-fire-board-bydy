@@ -1052,7 +1052,13 @@ function addFloorBelow() {
     floor: floorName, noIssue: false,
     units: columns.map(suf => ({ no: floorPrefix + suf, isLocked: false, clearCount: 0, evacCount: 0, rescueCount: 0, origin: false, spread: false, evacDetails: [], rescueDetails: [] }))
   });
+  
   render(); saveState();
+  
+  // 🌟 (추가) 아래층이 늘어나면 화면 맨 밑(버튼 위치)으로 부드럽게 스크롤 자동 이동
+  setTimeout(() => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  }, 50);
 }
 function removeFloorBelow() {
   if(isReadOnly || floors.length <= 1) return alert("더 이상 삭제할 수 없습니다.");
@@ -1077,7 +1083,14 @@ function addUnitColumn() {
     let floorPrefix = String(fl.floor);
     fl.units.push({ no: floorPrefix + nextSuf, isLocked: false, clearCount: 0, evacCount: 0, rescueCount: 0, origin: false, spread: false, evacDetails: [], rescueDetails: [] });
   });
+  
   render(); saveState();
+  
+  // 🌟 (추가) 세대가 늘어나면 표의 맨 오른쪽으로 스크롤 자동 이동
+  setTimeout(() => {
+    const holder = document.getElementById('boardHolder');
+    if(holder) holder.scrollTo({ left: holder.scrollWidth, behavior: 'smooth' });
+  }, 50);
 }
 function removeUnitColumn() {
   if(isReadOnly || floors[0].units.length <= 1) return alert("더 이상 삭제할 수 없습니다.");
