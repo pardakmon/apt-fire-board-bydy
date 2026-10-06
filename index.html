@@ -1235,33 +1235,6 @@ function openEditor(floorIdx, unitIdx){
           ✅ 인명검색완료
         </label>
       </div>
-
-      <!-- 🌟 투입 소방대 입력칸 (원터치 버튼 포함) 🌟 -->
-      <div class="mrow" style="margin-top:0; margin-bottom:16px; background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0;">
-        
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <label style="color:var(--navy); font-size:13px; margin:0; font-weight:800;">🚒 투입/활동 소방대</label>
-          <button type="button" class="small secondary" onclick="document.getElementById('m_activeTeams').value=''" style="padding:2px 8px; font-size:11px; margin:0; border-radius:6px;">지우기</button>
-        </div>
-        
-        <input type="text" id="m_activeTeams" value="${u.activeTeams || ''}" placeholder="직접 입력 (예: 1구조, 본서펌프 - 쉼표 구분)" style="margin-bottom:12px;">
-        
-        <!-- 🔹 관내 출동대 -->
-        <div style="font-size:11px; color:#64748b; margin-bottom:6px; font-weight:700;">🔹 관내 기본 출동대 (터치 시 자동입력)</div>
-        <div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px;">
-          ${['영등포펌프','여의도펌프','당산펌프','대림펌프','신길펌프','영등포구조대'].map(team => 
-            `<button type="button" onclick="let el=document.getElementById('m_activeTeams'); el.value += (el.value?', ':'')+'${team}';" style="padding:5px 10px; font-size:11.5px; background:#ffffff; color:#334155; border:1px solid #cbd5e1; border-radius:12px; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.02);">${team}</button>`
-          ).join('')}
-        </div>
-        
-        <!-- 🔸 타서 구조대 -->
-        <div style="font-size:11px; color:#64748b; margin-bottom:6px; font-weight:700;">🔸 타서 구조대 지원</div>
-        <div style="display:flex; flex-wrap:wrap; gap:4px;">
-          ${['구로구조대','동작구조대','양천구조대','금천구조대','관악구조대','마포구조대','강서구조대'].map(team => 
-            `<button type="button" onclick="let el=document.getElementById('m_activeTeams'); el.value += (el.value?', ':'')+'${team}';" style="padding:5px 10px; font-size:11.5px; background:#ffffff; color:#334155; border:1px solid #cbd5e1; border-radius:12px; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.02);">${team}</button>`
-          ).join('')}
-        </div>
-      </div>
       
       <div class="mrow" style="margin-top:0;">
         <label style="color:var(--clear-bg);">🏠 자택대기 인원</label>
@@ -1272,7 +1245,6 @@ function openEditor(floorIdx, unitIdx){
         </div>
       </div>
       <hr style="border:0; border-top:1px solid #e2e8f0; margin:16px 0;">
-      
       <div class="mrow">
         <label style="color:var(--evac);">🏃 자력대피 인원</label>
         <div class="stepper-row">
@@ -1287,7 +1259,6 @@ function openEditor(floorIdx, unitIdx){
         </div>
       </div>
       <hr style="border:0; border-top:1px solid #e2e8f0; margin:16px 0;">
-      
       <div class="mrow">
         <label style="color:var(--rescue);">🚁 구조 인원</label>
         <div class="stepper-row">
@@ -1373,8 +1344,6 @@ function saveEditor(){
   u.rescueCount = parseInt(document.getElementById('m_rescueCount').value)||0;
   u.origin = document.getElementById('m_origin').checked;
   u.spread = document.getElementById('m_spread').checked;
-
-  u.activeTeams = document.getElementById('m_activeTeams').value.trim();
   
   u.evacDetails = editingEvacDetails.slice();
   u.rescueDetails = editingDetails.slice();
@@ -1623,77 +1592,6 @@ const controlsHtml = isReadOnly ? '' : (
       
       if(u.isSearchCompleted) bodyHtml += `<div style="background:#15803d; color:#fff; font-size:12px; font-weight:800; padding:4px 6px; border-radius:6px; margin-bottom:4px; display:inline-block; border:1px solid #16a34a; box-shadow:0 1px 2px rgba(0,0,0,0.1); white-space:nowrap;">✅ <span class="hide-on-portrait">인명검색완료</span></div><br>`;
       
-      // 🌟 [추가] 투입 소방대 자동 색상 분류 배지(Badge) 생성 (완벽 분산 적용!)
-      if(u.activeTeams) {
-        const teams = u.activeTeams.split(',').map(t => t.trim()).filter(Boolean);
-        teams.forEach(t => {
-          // 🌟 전 세계 표준 분산 공식(Hash * 31)을 적용하여 이름마다 완벽하게 다른 고유번호를 생성합니다.
-          let hash = 0;
-          for (let k = 0; k < t.length; k++) {
-            hash = (hash * 31) + t.charCodeAt(k);
-          }
-          hash = Math.abs(hash);
-
-          let theme = { bg: '#f1f5f9', color: '#475569', border: '#cbd5e1' };
-          let icon = '🚒';
-          
-          if(t.includes('구조')) { 
-            // 🪓 구조대: 색상을 10가지로 대폭 확장하여 겹칠 확률 제로화
-            const p = [
-              {bg:'#fff1f2', color:'#e11d48', border:'#fda4af'}, // 1. 빨강
-              {bg:'#fdf4ff', color:'#c026d3', border:'#f0abfc'}, // 2. 자주
-              {bg:'#fff7ed', color:'#ea580c', border:'#fdba74'}, // 3. 주황
-              {bg:'#faf5ff', color:'#9333ea', border:'#d8b4fe'}, // 4. 보라
-              {bg:'#fff1f2', color:'#be123c', border:'#fecdd3'}, // 5. 로즈
-              {bg:'#fef2f2', color:'#991b1b', border:'#fca5a5'}, // 6. 적갈색
-              {bg:'#fffbeb', color:'#d97706', border:'#fde68a'}, // 7. 앰버
-              {bg:'#f5f3ff', color:'#7c3aed', border:'#c4b5fd'}, // 8. 바이올렛
-              {bg:'#ffe4e6', color:'#f43f5e', border:'#fecdd3'}, // 9. 핑크
-              {bg:'#ffedd5', color:'#f97316', border:'#fed7aa'}  // 10. 라이트오렌지
-            ];
-            theme = p[hash % p.length]; 
-            icon = '🪓'; 
-          }
-          else if(t.includes('구급')) { 
-            // 🚑 구급대
-            const p = [
-              {bg:'#f0fdf4', color:'#16a34a', border:'#86efac'}, 
-              {bg:'#ecfdf5', color:'#0d9488', border:'#5eead4'}, 
-              {bg:'#f7fee7', color:'#65a30d', border:'#bef264'}, 
-              {bg:'#f0fdf4', color:'#15803d', border:'#86efac'}  
-            ];
-            theme = p[hash % p.length]; 
-            icon = '🚑'; 
-          }
-          else if(t.includes('지휘') || t.includes('조사')) { 
-            const p = [
-              {bg:'#fefce8', color:'#ca8a04', border:'#fef08a'}, 
-              {bg:'#fffbeb', color:'#d97706', border:'#fde68a'}
-            ];
-            theme = p[hash % p.length]; 
-            icon = '📋'; 
-          }
-          else if(t.includes('펌프') || t.includes('진압') || t.includes('탱크') || t.includes('화학') || t.includes('고가') || t.includes('굴절')) { 
-            // 🚒 펌프/진압대: 색상을 8가지로 확장
-            const p = [
-              {bg:'#eff6ff', color:'#2563eb', border:'#bfdbfe'}, // 1. 파랑
-              {bg:'#eef2ff', color:'#4f46e5', border:'#c7d2fe'}, // 2. 남색
-              {bg:'#f0f9ff', color:'#0284c7', border:'#7dd3fc'}, // 3. 하늘색
-              {bg:'#f5f3ff', color:'#7c3aed', border:'#c4b5fd'}, // 4. 바이올렛
-              {bg:'#ecfeff', color:'#0891b2', border:'#a5f3fc'}, // 5. 시안
-              {bg:'#f8fafc', color:'#0f172a', border:'#cbd5e1'}, // 6. 슬레이트
-              {bg:'#e0f2fe', color:'#0369a1', border:'#bae6fd'}, // 7. 딥스카이
-              {bg:'#ede9fe', color:'#6d28d9', border:'#ddd6fe'}  // 8. 딥퍼플
-            ];
-            theme = p[hash % p.length]; 
-            icon = '🚒'; 
-          }
-          
-          bodyHtml += `<div style="display:inline-block; background:${theme.bg}; color:${theme.color}; border:1px solid ${theme.border}; font-size:11.5px; font-weight:800; padding:3px 6px; border-radius:6px; margin-right:4px; margin-bottom:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05); white-space:nowrap;">${icon} ${t}</div>`;
-        });
-        bodyHtml += `<br>`;
-      }
-
       if(isClearActive) bodyHtml += `<div class="tag-clear">🏠 <span class="hide-on-portrait">자택대기 </span>${cc}명</div>`;
       if(u.isLocked) bodyHtml += `<div class="tag-locked">🔒 <span class="hide-on-portrait">문잠김</span></div>`;
       
