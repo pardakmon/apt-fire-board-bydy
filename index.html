@@ -746,17 +746,29 @@ function captureBoard() {
   topbar.style.display = 'none';
   autosaveNote.style.display = 'none';
 
-  const origOverflow = boardHolder.style.overflow;
-  const origMaxWidth = mainWrap.style.maxWidth;
-  const origWidth = captureTarget.style.width;
+  // 🌟 복구를 위해 기존 스타일(뼈대)을 완벽하게 백업
+  const orig = {
+    boardOverflow: boardHolder.style.overflow,
+    wrapMaxWidth: mainWrap.style.maxWidth,
+    targetWidth: captureTarget.style.width,
+    targetPosition: captureTarget.style.position,
+    targetZIndex: captureTarget.style.zIndex,
+    targetOverflow: captureTarget.style.overflow
+  };
 
-  // 넓은 표를 한 화면에 펼치기 위한 강제 해제
+  // 🌟 핵심 1: 안에 있는 표의 '진짜 100% 스크롤 너비'를 구함 (여백 20px 추가)
+  const fullWidth = boardHolder.scrollWidth + 20;
+
+  // 🌟 핵심 2: 캡처할 타겟을 부모 화면(스마트폰 너비) 제약에서 완전히 꺼내기 위해 absolute 강제 적용
   boardHolder.style.overflow = 'visible';
+  captureTarget.style.overflow = 'visible';
   mainWrap.style.maxWidth = 'none';
   
-  // 🌟 실제 내용물(스크롤되는 표)의 전체 너비를 정확히 계산
-  const fullWidth = Math.max(captureTarget.offsetWidth, boardHolder.scrollWidth);
+  captureTarget.style.position = 'absolute';
+  captureTarget.style.top = '0';
+  captureTarget.style.left = '0';
   captureTarget.style.width = fullWidth + 'px';
+  captureTarget.style.zIndex = '99999';
 
   setTimeout(() => {
     html2canvas(captureTarget, {
@@ -764,30 +776,37 @@ function captureBoard() {
       useCORS: true, 
       logging: false, 
       backgroundColor: "#f1f5f9",
-      // 🌟 모바일 세로 캡처 시 우측 짤림 방지 핵심 옵션! (렌즈 넓히기)
-      windowWidth: fullWidth,
       width: fullWidth,
+      windowWidth: fullWidth, // 가상 브라우저 너비를 강제로 쫙 찢어서 확보
       scrollX: 0,
       scrollY: 0
     }).then(canvas => {
-      // 캡처 후 원래 상태로 복구
-      boardHolder.style.overflow = origOverflow;
-      mainWrap.style.maxWidth = origMaxWidth;
-      captureTarget.style.width = origWidth;
+      // 🌟 캡처 완료 즉시 원래 상태로 감쪽같이 복구
+      boardHolder.style.overflow = orig.boardOverflow;
+      captureTarget.style.overflow = orig.targetOverflow;
+      mainWrap.style.maxWidth = orig.wrapMaxWidth;
+      
+      captureTarget.style.position = orig.targetPosition;
+      captureTarget.style.width = orig.targetWidth;
+      captureTarget.style.zIndex = orig.targetZIndex;
       
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
       autosaveNote.style.display = 'block';
 
-      // 이미지 데이터 생성 후 팝업 띄우지 않고 바로 공유 함수로 넘김
+      // 이미지 데이터 생성 후 공유 함수로 넘김
       const imgData = canvas.toDataURL('image/jpeg', 0.9);
       shareCapturedImage(imgData);
 
     }).catch(err => {
       console.error("캡처 오류:", err);
-      boardHolder.style.overflow = origOverflow;
-      mainWrap.style.maxWidth = origMaxWidth;
-      captureTarget.style.width = origWidth;
+      boardHolder.style.overflow = orig.boardOverflow;
+      captureTarget.style.overflow = orig.targetOverflow;
+      mainWrap.style.maxWidth = orig.wrapMaxWidth;
+      captureTarget.style.position = orig.targetPosition;
+      captureTarget.style.width = orig.targetWidth;
+      captureTarget.style.zIndex = orig.targetZIndex;
+      
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
       autosaveNote.style.display = 'block';
