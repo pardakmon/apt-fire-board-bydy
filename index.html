@@ -735,95 +735,92 @@ function showSetupScreen(){
 
 function captureBoard() {
   const captureTarget = document.getElementById('captureTarget');
-  const boardHolder = document.getElementById('boardHolder');
-  const mainWrap = document.getElementById('mainWrap');
+  const table = document.querySelector('table.board');
   const toolbar = document.getElementById('toolbar');
   const topbar = document.querySelector('.board-topbar');
   const autosaveNote = document.getElementById('autosaveNote');
 
-  // 스크롤 위치를 맨 앞으로 당기기
-  window.scrollTo(0, 0);
-  if (boardHolder) boardHolder.scrollLeft = 0;
+  if(!table) return;
 
-  // 캡처 화면에 불필요한 요소 숨김
+  window.scrollTo(0, 0);
+
+  // 1. 캡처에 불필요한 원본 UI 숨김
   toolbar.style.display = 'none';
   topbar.style.display = 'none';
   autosaveNote.style.display = 'none';
 
-  // 🌟 복구를 위해 기존 스타일(뼈대) 백업
-  const orig = {
-    wrapMaxWidth: mainWrap.style.maxWidth,
-    position: captureTarget.style.position,
-    left: captureTarget.style.left,
-    top: captureTarget.style.top,
-    width: captureTarget.style.width,
-    zIndex: captureTarget.style.zIndex,
-    targetOverflow: captureTarget.style.overflow,
-    holderOverflow: boardHolder.style.overflow
-  };
+  // 2. 표의 실제 전체 길이 픽셀 측정 (잘려나간 우측 여백까지 모두 포함)
+  const realWidth = table.scrollWidth + 40; 
+  const realHeight = captureTarget.scrollHeight + 20;
 
-  // 🌟 모바일 잘림 방지를 위한 무적 캡처 트릭
-  mainWrap.style.maxWidth = 'none';
-  captureTarget.style.position = 'absolute';
-  captureTarget.style.left = '0px';
-  captureTarget.style.top = '0px';
-  captureTarget.style.width = 'max-content';
-  captureTarget.style.overflow = 'visible';
-  boardHolder.style.overflow = 'visible';
-  captureTarget.style.zIndex = '99999';
+  // 3. 🌟 스마트폰 화면 제약을 완벽히 회피하는 '도플갱어(복제본)' 생성 🌟
+  // 화면 밖은 그리지 않으려는 모바일 브라우저의 고집을 꺾기 위해, 
+  // 아예 똑같은 현황판을 새로 만들어서 화면 맨 위에 끝까지 쫙 펼칩니다.
+  const clone = captureTarget.cloneNode(true);
+  clone.id = 'captureClone';
+  
+  clone.style.position = 'absolute';
+  clone.style.top = '0';
+  clone.style.left = '0';
+  clone.style.width = realWidth + 'px';
+  clone.style.height = realHeight + 'px';
+  clone.style.maxWidth = 'none';
+  clone.style.overflow = 'visible';
+  clone.style.zIndex = '99999'; // 화면 맨 앞으로 강제 배치
+  clone.style.backgroundColor = '#f1f5f9';
 
-  // 화면이 늘어날 시간을 0.4초 준 뒤 캡처 시작
+  // 복제본 내부의 스크롤 통(#boardHolder)도 강제 확장
+  const cloneHolder = clone.querySelector('#boardHolder');
+  if (cloneHolder) {
+    cloneHolder.style.width = realWidth + 'px';
+    cloneHolder.style.overflow = 'visible';
+    cloneHolder.style.maxWidth = 'none';
+  }
+
+  // 화면에 복제본 몰래 추가
+  document.body.appendChild(clone);
+
+  // 4. 스마트폰이 거대한 복제본을 다 그릴 때까지 0.4초 넉넉히 대기 후 캡처
   setTimeout(() => {
-    const renderWidth = captureTarget.scrollWidth + 10;
-    const renderHeight = captureTarget.scrollHeight + 10;
-
-    html2canvas(captureTarget, {
-      scale: 1.5, 
-      useCORS: true, 
-      logging: false, 
+    html2canvas(clone, {
+      scale: 1.5,
+      useCORS: true,
+      logging: false,
       backgroundColor: "#f1f5f9",
-      width: renderWidth,
-      windowWidth: renderWidth,
-      height: renderHeight,
-      windowHeight: renderHeight
+      // 🌟 카메라 렌즈 너비를 표의 실제 길이만큼 강제 주입
+      width: realWidth,
+      windowWidth: realWidth, 
+      height: realHeight,
+      windowHeight: realHeight,
+      scrollX: 0,
+      scrollY: 0
     }).then(canvas => {
-      // 🌟 1. 캡처 완료 즉시 원래 상태로 100% 감쪽같이 복구 (폰 화면 깨짐 방지)
-      mainWrap.style.maxWidth = orig.wrapMaxWidth;
-      captureTarget.style.position = orig.position;
-      captureTarget.style.left = orig.left;
-      captureTarget.style.top = orig.top;
-      captureTarget.style.width = orig.width;
-      captureTarget.style.zIndex = orig.zIndex;
-      captureTarget.style.overflow = orig.targetOverflow;
-      boardHolder.style.overflow = orig.holderOverflow;
-      
+      // 🌟 캡처 즉시 복제본 파괴 및 원본 UI 복구
+      document.body.removeChild(clone);
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
       autosaveNote.style.display = 'block';
 
-      // 🌟 2. 폰이 버벅거리지 않게 화면 복구 후 0.1초 쉬고 공유 창 띄우기!
+      // 폰 메모리 다운 방지를 위해 0.1초 쉬고 다이렉트 공유창 띄우기
       setTimeout(() => {
-        shareCapturedCanvas(canvas);
+        if(typeof shareCapturedCanvas === 'function') {
+           shareCapturedCanvas(canvas);
+        } else {
+           const imgData = canvas.toDataURL('image/jpeg', 0.9);
+           shareCapturedImage(imgData);
+        }
       }, 100);
 
     }).catch(err => {
       console.error("캡처 오류:", err);
-      // 에러 시에도 무조건 원상 복구
-      mainWrap.style.maxWidth = orig.wrapMaxWidth;
-      captureTarget.style.position = orig.position;
-      captureTarget.style.left = orig.left;
-      captureTarget.style.top = orig.top;
-      captureTarget.style.width = orig.width;
-      captureTarget.style.zIndex = orig.zIndex;
-      captureTarget.style.overflow = orig.targetOverflow;
-      boardHolder.style.overflow = orig.holderOverflow;
-      
+      // 에러 시에도 복제본 삭제 및 원상 복구
+      document.body.removeChild(clone);
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
       autosaveNote.style.display = 'block';
-      alert("기기 메모리가 부족합니다. 기본 캡처 기능을 이용해주세요.");
+      alert("캡처 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
     });
-  }, 400); 
+  }, 400);
 }
 
 // 🌟 메모리 다운/공유창 깨짐을 방지하는 다이렉트 이미지 공유 함수 (기존 shareCapturedImage 대체)
