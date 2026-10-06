@@ -1180,6 +1180,26 @@ function editUnits(floorIdx){
   saveState(); 
 }
 
+// 🌟 [추가] 층 이름 자체를 '옥상'이나 'B1' 등으로 변경하는 기능
+function editFloorName(floorIdx) {
+  if (isReadOnly) return;
+  const oldName = String(floors[floorIdx].floor);
+  const newName = prompt('층 이름을 수정하세요 (예: 옥상, 옥탑, PH, B1):', oldName);
+  if (newName === null || newName.trim() === '') return;
+
+  floors[floorIdx].floor = newName.trim();
+  
+  // 기존 호수(예: 1501) 앞부분(15)을 새 이름(옥상)으로 자동 교체 (예: 옥상01)
+  floors[floorIdx].units.forEach(u => {
+    if (u.no.startsWith(oldName)) {
+      u.no = newName.trim() + u.no.slice(oldName.length);
+    }
+  });
+  
+  render();
+  saveState();
+}
+
 function toggleNoIssue(floorIdx){
   if(isReadOnly) return;
   floors[floorIdx].noIssue = !floors[floorIdx].noIssue;
@@ -1486,21 +1506,24 @@ function render(){
   while(i < floors.length){
     const fl = floors[i];
     
-    // (신고층 버튼 지워진 깔끔한 상태)
-    const controlsHtml = isReadOnly ? '' : (
-      fl.noIssue 
-      ? `<div class="floor-controls">
-           <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">해제</button>
-         </div>`
-      : `<div class="floor-controls">
-           <button type="button" class="small secondary" onclick="editUnits(${i})">세대수정</button>
-           <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">특이없음</button>
-         </div>`
-    );
-      
-    html += `<tr><td class="floor-cell">${fl.floor}층${controlsHtml}</td>`;
-      
-    columns.forEach(suf=>{
+const controlsHtml = isReadOnly ? '' : (
+    fl.noIssue 
+    ? `<div class="floor-controls">
+         <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">해제</button>
+       </div>`
+    : `<div class="floor-controls">
+         <button type="button" class="small secondary" onclick="editUnits(${i})">세대수정</button>
+         <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">특이없음</button>
+       </div>`
+  );
+    
+  // 🌟 '옥상'이라는 글자가 들어가면 '층' 자를 빼고, 클릭 시 이름 변경(editFloorName) 기능 실행
+  const floorLabel = fl.floor.includes('옥상') || fl.floor.includes('옥탑') ? fl.floor : fl.floor + '층';
+  const clickAttr = isReadOnly ? '' : `onclick="editFloorName(${i})" style="cursor:pointer; text-decoration:underline; text-underline-offset:4px;" title="층 이름 변경 (터치)"`;
+  
+  html += `<tr><td class="floor-cell"><div ${clickAttr}>${floorLabel}</div>${controlsHtml}</td>`;
+    
+  columns.forEach(suf=>{
       const ui = fl.units.findIndex(x=> unitSuffix(x, fl.floor)===suf);
       if(ui===-1){
         html += `<td class="unit-cell empty-cell"></td>`;
