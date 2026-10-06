@@ -1016,7 +1016,10 @@ function generateBoard(){
   const top = parseInt(document.getElementById('topFloor').value);
   const bot = parseInt(document.getElementById('botFloor').value);
   const skipOption = document.getElementById('skip4Floor').value;
-  const pattern = document.getElementById('unitPattern').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const patternRaw = document.getElementById('unitPattern').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const pattern = [];
+  const occ = {};
+  patternRaw.forEach(s => { occ[s] = (occ[s]||0)+1; pattern.push(s + '\u200B'.repeat(occ[s]-1)); });
   if(isNaN(top) || isNaN(bot) || top < bot){ alert('최고층/최저층을 확인하세요.'); return; }
   if(pattern.length===0){ alert('호수 패턴을 입력하세요.'); return; }
 
@@ -1161,7 +1164,13 @@ function editUnits(floorIdx){
   const cur = floors[floorIdx].units.map(u=>u.no.slice(fName.length)).join(',');
   const val = prompt(fName+'층 호수(뒤 2자리, 콤마구분) 수정:', cur);
   if(val===null) return;
-  const pattern = val.split(',').map(s=>s.trim()).filter(Boolean);
+  
+  // 🌟 여기도 마법의 투명 공백 부여
+  const patternRaw = val.split(',').map(s=>s.trim()).filter(Boolean);
+  const pattern = [];
+  const occ_e = {};
+  patternRaw.forEach(s => { occ_e[s] = (occ_e[s]||0)+1; pattern.push(s + '\u200B'.repeat(occ_e[s]-1)); });
+  
   const oldByNo = {}; floors[floorIdx].units.forEach(u=>oldByNo[u.no]=u);
   floors[floorIdx].units = pattern.map(suf=>{
     const no = fName + suf;
@@ -1412,12 +1421,16 @@ function render(){
   const suffixSet = new Set();
   floors.forEach(fl=> fl.units.forEach(u=> suffixSet.add(unitSuffix(u, fl.floor))));
   
-  // 🌟 입력한 '기본 호수' 패턴 순서를 기억해서 최우선으로 정렬 (중간에 한글이 있어도 순서 유지!)
-  const basePattern = document.getElementById('unitPattern').value.split(',').map(s=>s.trim()).filter(Boolean);
+  // 🌟 투명 공백을 포함한 패턴으로 완벽하게 순서 정렬
+  const basePatternRaw = document.getElementById('unitPattern').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const basePattern = [];
+  const occ_r = {};
+  basePatternRaw.forEach(s => { occ_r[s] = (occ_r[s]||0)+1; basePattern.push(s + '\u200B'.repeat(occ_r[s]-1)); });
+
   const columns = Array.from(suffixSet).sort((a, b) => {
     let idxA = basePattern.indexOf(a);
     let idxB = basePattern.indexOf(b);
-    if (idxA === -1) idxA = 9999; // 패턴에 없던 나중에 추가된 호수는 맨 뒤로
+    if (idxA === -1) idxA = 9999; 
     if (idxB === -1) idxB = 9999;
     if (idxA !== idxB) return idxA - idxB;
     return a.localeCompare(b, undefined, {numeric:true});
