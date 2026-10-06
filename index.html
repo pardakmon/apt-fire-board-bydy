@@ -740,31 +740,50 @@ function captureBoard() {
   const toolbar = document.getElementById('toolbar');
   const topbar = document.querySelector('.board-topbar');
   const autosaveNote = document.getElementById('autosaveNote');
+  const table = document.querySelector('table.board');
 
+  // 🌟 스크롤을 맨 처음으로 초기화 (잘림 방지 기초 작업)
   window.scrollTo(0, 0);
+  if(boardHolder) boardHolder.scrollLeft = 0;
+
   toolbar.style.display = 'none';
   topbar.style.display = 'none';
   autosaveNote.style.display = 'none';
 
-  // 🌟 복구를 위해 기존 스타일 완벽 백업
+  // 🌟 복구를 위해 기존 스타일(뼈대)을 완벽하게 백업
   const orig = {
-    bodyWidth: document.body.style.width,
     htmlWidth: document.documentElement.style.width,
+    bodyWidth: document.body.style.width,
+    wrapWidth: mainWrap.style.width,
     wrapMaxWidth: mainWrap.style.maxWidth,
-    boardOverflow: boardHolder.style.overflow,
-    targetWidth: captureTarget.style.width
+    targetWidth: captureTarget.style.width,
+    targetOverflow: captureTarget.style.overflow, // 👈 기존에 화면을 자르던 범인
+    holderWidth: boardHolder.style.width,
+    holderOverflow: boardHolder.style.overflow,
+    tableWidth: table ? table.style.width : ''
   };
 
-  // 🌟 핵심 1: 숨겨진 스크롤 영역까지 포함한 실제 전체 너비 계산 (여백 40px 넉넉히 추가)
-  const fullWidth = boardHolder.scrollWidth + 40;
+  // 🌟 핵심 1: 잘려나가는 표의 실제 '100% 전체 길이'를 측정
+  const fullWidth = boardHolder.scrollWidth + 30; // 여백 추가
 
-  // 🌟 핵심 2: 모바일 브라우저가 화면을 자르지 못하도록 <body>와 <html> 도화지 전체를 쫙 늘려버림!
+  // 🌟 핵심 2: 화면 밖으로 삐져나간 표를 찍기 위해, 부모부터 자식까지 모든 요소의 넓이를 강제로 늘리고 '숨김(hidden)'을 완전히 해제
   document.documentElement.style.width = fullWidth + 'px';
   document.body.style.width = fullWidth + 'px';
+  
+  mainWrap.style.width = fullWidth + 'px';
   mainWrap.style.maxWidth = 'none';
-  boardHolder.style.overflow = 'visible';
+  
   captureTarget.style.width = fullWidth + 'px';
+  captureTarget.style.overflow = 'visible'; // 👈 짤림 방지 특효약!
+  
+  boardHolder.style.width = fullWidth + 'px';
+  boardHolder.style.overflow = 'visible';
 
+  if(table) {
+    table.style.width = fullWidth + 'px';
+  }
+
+  // 화면에 반영될 시간(0.3초)을 확실히 줌
   setTimeout(() => {
     html2canvas(captureTarget, {
       scale: 1.5, 
@@ -772,16 +791,20 @@ function captureBoard() {
       logging: false, 
       backgroundColor: "#f1f5f9",
       width: fullWidth,
-      windowWidth: fullWidth, // 캡처 렌즈 너비도 강제 확장
+      windowWidth: fullWidth, // 가상 브라우저 카메라 너비도 표 끝까지 벌림
       scrollX: 0,
       scrollY: 0
     }).then(canvas => {
-      // 🌟 캡처 완료 즉시 원래 상태로 감쪽같이 복구
+      // 🌟 캡처 완료 즉시 원래 스마트폰 화면 크기로 100% 감쪽같이 복구
       document.documentElement.style.width = orig.htmlWidth;
       document.body.style.width = orig.bodyWidth;
+      mainWrap.style.width = orig.wrapWidth;
       mainWrap.style.maxWidth = orig.wrapMaxWidth;
-      boardHolder.style.overflow = orig.boardOverflow;
       captureTarget.style.width = orig.targetWidth;
+      captureTarget.style.overflow = orig.targetOverflow;
+      boardHolder.style.width = orig.holderWidth;
+      boardHolder.style.overflow = orig.holderOverflow;
+      if(table) table.style.width = orig.tableWidth;
       
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
@@ -793,12 +816,15 @@ function captureBoard() {
 
     }).catch(err => {
       console.error("캡처 오류:", err);
-      // 에러 시에도 복구
       document.documentElement.style.width = orig.htmlWidth;
       document.body.style.width = orig.bodyWidth;
+      mainWrap.style.width = orig.wrapWidth;
       mainWrap.style.maxWidth = orig.wrapMaxWidth;
-      boardHolder.style.overflow = orig.boardOverflow;
       captureTarget.style.width = orig.targetWidth;
+      captureTarget.style.overflow = orig.targetOverflow;
+      boardHolder.style.width = orig.holderWidth;
+      boardHolder.style.overflow = orig.holderOverflow;
+      if(table) table.style.width = orig.tableWidth;
       
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
