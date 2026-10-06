@@ -1556,7 +1556,17 @@ const controlsHtml = isReadOnly ? '' : (
       
       // 🌟 숫자로 끝나면 '호'를 붙이고, 한글 등 글자(계단실 등)로 끝나면 '호'를 빼서 자연스럽게 만듭니다.
       const cleanNo = u.no.replace(/\u200B/g, ''); 
-      const displayNo = cleanNo + (/[0-9]/.test(cleanNo.slice(-1)) ? '호' : '');
+      let displayNo = cleanNo + (/[0-9]/.test(cleanNo.slice(-1)) ? '호' : '');
+      
+      // 🌟 [특수 아이콘 마법] '계단' 또는 '승강기'라는 글자가 들어가면 멋진 픽토그램을 그려줍니다!
+      if (cleanNo.includes('계단')) {
+        const stairSvg = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--navy); margin-bottom:4px;"><path d="M3 21h18"/><path d="M3 21v-4h4v-4h4v-4h4v-4h4"/></svg>`;
+        displayNo = `<div style="display:flex; flex-direction:column; align-items:center;">${stairSvg}<span style="font-size:12.5px; color:#475569;">${displayNo}</span></div>`;
+      } 
+      else if (cleanNo.includes('승강기') || cleanNo.includes('엘베')) {
+        const elevSvg = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--navy); margin-bottom:4px;"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M12 7v10"/><path d="M9 10l3-3 3 3"/><path d="M9 14l3 3 3-3"/></svg>`;
+        displayNo = `<div style="display:flex; flex-direction:column; align-items:center;">${elevSvg}<span style="font-size:12.5px; color:#475569;">${displayNo}</span></div>`;
+      }
       
       if (fl.noIssue) {
         html += `<td class="unit-cell" style="cursor:default;">
