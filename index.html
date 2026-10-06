@@ -740,6 +740,7 @@ function captureBoard() {
   const toolbar = document.getElementById('toolbar');
   const topbar = document.querySelector('.board-topbar');
   const autosaveNote = document.getElementById('autosaveNote');
+  const table = document.querySelector('table.board');
 
   // 스크롤 위치를 맨 앞으로 당기기
   window.scrollTo(0, 0);
@@ -750,45 +751,58 @@ function captureBoard() {
   topbar.style.display = 'none';
   autosaveNote.style.display = 'none';
 
-  // 🌟 교통사고 현황판에서 완벽하게 작동했던 그 방식 그대로 적용! 🌟
+  // 🌟 복구를 위한 기존 스타일 백업
   const origOverflow = boardHolder.style.overflow;
   const origMaxWidth = mainWrap.style.maxWidth;
-  const origWidth = captureTarget.style.width;
+  const origTargetWidth = captureTarget.style.width;
+  const origTableWidth = table.style.width;
+  const origTableMinWidth = table.style.minWidth;
 
+  // 🌟 1. 현재 화면에 쫙 펼쳐진 표의 '진짜 픽셀(px) 너비'를 측정
+  const realTableWidth = table.scrollWidth;
+
+  // 🌟 2. 부모 컨테이너들의 화면 자르기(hidden) 제한 해제
   boardHolder.style.overflow = 'visible';
   mainWrap.style.maxWidth = 'none';
   
-  // 핵심: 내용물 크기만큼만 딱 맞게 무한대로 늘려주는 마법의 단어
-  captureTarget.style.width = 'max-content';
+  // 🌟 3. 핵심 마법: html2canvas가 모바일 화면 폭(100%)으로 표를 찌그러트려 그리는 버그 원천 차단!
+  // CSS를 무시하고 표의 넓이를 방금 잰 '실제 픽셀 크기'로 강제로 못 박아버립니다.
+  table.style.setProperty('width', realTableWidth + 'px', 'important');
+  table.style.setProperty('min-width', realTableWidth + 'px', 'important');
+  captureTarget.style.setProperty('width', (realTableWidth + 30) + 'px', 'important');
 
   setTimeout(() => {
     html2canvas(captureTarget, {
-      scale: 1.5, // 폰 메모리 터짐 방지를 위해 1.5배율 유지
+      scale: 2, // 교통사고 현황판처럼 고화질 배율 적용
       backgroundColor: "#f1f5f9",
       width: captureTarget.scrollWidth,
       height: captureTarget.scrollHeight,
       useCORS: true
     }).then(canvas => {
-      // 🌟 1. 캡처 완료 즉시 원래 상태로 복구
+      // 🌟 캡처 완료 즉시 원래 상태로 감쪽같이 복구
       boardHolder.style.overflow = origOverflow;
       mainWrap.style.maxWidth = origMaxWidth;
-      captureTarget.style.width = origWidth;
-
+      captureTarget.style.width = origTargetWidth;
+      table.style.width = origTableWidth;
+      table.style.minWidth = origTableMinWidth;
+      
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
       autosaveNote.style.display = 'block';
 
-      // 🌟 2. 폰이 버벅거리지 않게 화면 복구 후 0.1초 쉬고 공유 창 띄우기!
+      // 🌟 폰이 뻗는 걸 막기 위해 0.1초 숨 고르기 후 다이렉트 공유 함수 실행
       setTimeout(() => {
         shareCapturedCanvas(canvas);
       }, 100);
 
     }).catch(err => {
       console.error("캡처 오류:", err);
-      // 에러 발생 시에도 무조건 화면 복구
       boardHolder.style.overflow = origOverflow;
       mainWrap.style.maxWidth = origMaxWidth;
-      captureTarget.style.width = origWidth;
+      captureTarget.style.width = origTargetWidth;
+      table.style.width = origTableWidth;
+      table.style.minWidth = origTableMinWidth;
+      
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
       autosaveNote.style.display = 'block';
@@ -797,7 +811,7 @@ function captureBoard() {
   }, 150); 
 }
 
-// 🌟 메모리 과부하(공유창 깨짐) 방지용 초경량 다이렉트 공유 함수
+// 🌟 메모리 과부하(보내기 창 깨짐) 방지용 초경량 다이렉트 공유 함수
 async function shareCapturedCanvas(canvas) {
   const now = new Date();
   const yyyy = now.getFullYear();
@@ -808,22 +822,22 @@ async function shareCapturedCanvas(canvas) {
   const ss = String(now.getSeconds()).padStart(2, '0');
   const timeString = `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
   
-  const fileName = `아파트현황판_${timeString}.jpg`;
+  const fileName = `아파트현황판_${timeString}.png`;
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   
   if (navigator.share && isMobile) {
-    // 🌟 핵심: 거대한 텍스트 변환 과정을 없애고 캔버스에서 사진(Blob)으로 즉시 압축 전송
+    // 🌟 핵심: 거대한 텍스트 변환 과정을 아예 없애고, 캔버스에서 직접 사진(Blob)으로 압축 전송
     canvas.toBlob(async (blob) => {
       try {
-        const file = new File([blob], fileName, { type: 'image/jpeg' });
-        await navigator.share({ title: '공동주택 현황판 상황보고', files: [file] });
+        const file = new File([blob], fileName, { type: 'image/png' });
+        await navigator.share({ title: '아파트 현황판 상황보고', files: [file] });
       } catch (error) {
         console.log('공유 취소 또는 에러:', error);
       }
-    }, 'image/jpeg', 0.9);
+    }, 'image/png');
   } else {
     // [PC 환경 처리]
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    const dataUrl = canvas.toDataURL('image/png');
     const link = document.createElement('a');
     link.href = dataUrl;
     link.download = fileName; 
