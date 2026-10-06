@@ -1599,20 +1599,65 @@ const controlsHtml = isReadOnly ? '' : (
       
       if(u.isSearchCompleted) bodyHtml += `<div style="background:#15803d; color:#fff; font-size:12px; font-weight:800; padding:4px 6px; border-radius:6px; margin-bottom:4px; display:inline-block; border:1px solid #16a34a; box-shadow:0 1px 2px rgba(0,0,0,0.1); white-space:nowrap;">✅ <span class="hide-on-portrait">인명검색완료</span></div><br>`;
       
-      // 🌟 [추가] 투입 소방대 자동 색상 분류 배지(Badge) 생성
+      // 🌟 [추가] 투입 소방대 자동 색상 분류 배지(Badge) 생성 (이름별 색상 자동 분산 적용!)
       if(u.activeTeams) {
         const teams = u.activeTeams.split(',').map(t => t.trim()).filter(Boolean);
         teams.forEach(t => {
-          let bg = '#f1f5f9', color = '#475569', border = '#cbd5e1', icon = '🚒'; // 기본 회색 (기타 차량)
+          // 🌟 글자(이름)를 분석해서 그 부대만의 고유한 번호(해시코드)를 만들어내는 마법
+          let hash = 0;
+          for (let k = 0; k < t.length; k++) {
+            hash = t.charCodeAt(k) + ((hash << 5) - hash);
+          }
+          hash = Math.abs(hash);
+
+          let theme = { bg: '#f1f5f9', color: '#475569', border: '#cbd5e1' };
+          let icon = '🚒';
           
-          if(t.includes('구조')) { bg = '#fff1f2'; color = '#e11d48'; border = '#fda4af'; icon = '🪓'; } // 구조대: 빨간색 + 도끼
-          else if(t.includes('구급')) { bg = '#f0fdf4'; color = '#16a34a'; border = '#86efac'; icon = '🚑'; } // 구급대: 초록색 + 구급차
-          else if(t.includes('지휘') || t.includes('조사')) { bg = '#fefce8'; color = '#ca8a04'; border = '#fef08a'; icon = '📋'; } // 지휘/조사: 노란색 + 클립보드
-          else if(t.includes('펌프') || t.includes('진압') || t.includes('탱크') || t.includes('화학') || t.includes('고가') || t.includes('굴절')) { bg = '#eff6ff'; color = '#2563eb'; border = '#bfdbfe'; icon = '🚒'; } // 진압대: 파란색 + 소방차
+          if(t.includes('구조')) { 
+            // 🪓 구조대는 '따뜻한 계열' 안에서 각자 다른 색상을 부여받습니다.
+            const p = [
+              {bg:'#fff1f2', color:'#e11d48', border:'#fda4af'}, // 1. 기본 빨강
+              {bg:'#fdf4ff', color:'#c026d3', border:'#f0abfc'}, // 2. 핑크/자주
+              {bg:'#fff7ed', color:'#ea580c', border:'#fdba74'}, // 3. 주황
+              {bg:'#faf5ff', color:'#9333ea', border:'#d8b4fe'}  // 4. 보라
+            ];
+            theme = p[hash % p.length]; 
+            icon = '🪓'; 
+          }
+          else if(t.includes('구급')) { 
+            // 🚑 구급대는 '녹색 계열' 안에서 각자 다른 색상을 부여받습니다.
+            const p = [
+              {bg:'#f0fdf4', color:'#16a34a', border:'#86efac'}, // 1. 기본 초록
+              {bg:'#ecfdf5', color:'#0d9488', border:'#5eead4'}, // 2. 청록(Teal)
+              {bg:'#f7fee7', color:'#65a30d', border:'#bef264'}  // 3. 라임
+            ];
+            theme = p[hash % p.length]; 
+            icon = '🚑'; 
+          }
+          else if(t.includes('지휘') || t.includes('조사')) { 
+            // 📋 지휘/조사는 '노란색 계열'
+            const p = [
+              {bg:'#fefce8', color:'#ca8a04', border:'#fef08a'}, 
+              {bg:'#fffbeb', color:'#d97706', border:'#fde68a'}
+            ];
+            theme = p[hash % p.length]; 
+            icon = '📋'; 
+          }
+          else if(t.includes('펌프') || t.includes('진압') || t.includes('탱크') || t.includes('화학') || t.includes('고가') || t.includes('굴절')) { 
+            // 🚒 진압/펌프대는 '푸른색 계열' 안에서 각자 다른 색상을 부여받습니다.
+            const p = [
+              {bg:'#eff6ff', color:'#2563eb', border:'#bfdbfe'}, // 1. 기본 파랑
+              {bg:'#eef2ff', color:'#4f46e5', border:'#c7d2fe'}, // 2. 남색
+              {bg:'#f0f9ff', color:'#0284c7', border:'#7dd3fc'}, // 3. 하늘색
+              {bg:'#f5f3ff', color:'#7c3aed', border:'#c4b5fd'}  // 4. 바이올렛
+            ];
+            theme = p[hash % p.length]; 
+            icon = '🚒'; 
+          }
           
-          bodyHtml += `<div style="display:inline-block; background:${bg}; color:${color}; border:1px solid ${border}; font-size:11.5px; font-weight:800; padding:3px 6px; border-radius:6px; margin-right:4px; margin-bottom:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05); white-space:nowrap;">${icon} ${t}</div>`;
+          bodyHtml += `<div style="display:inline-block; background:${theme.bg}; color:${theme.color}; border:1px solid ${theme.border}; font-size:11.5px; font-weight:800; padding:3px 6px; border-radius:6px; margin-right:4px; margin-bottom:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05); white-space:nowrap;">${icon} ${t}</div>`;
         });
-        bodyHtml += `<br>`; // 태그 뭉치 끝나면 줄바꿈
+        bodyHtml += `<br>`;
       }
 
       if(isClearActive) bodyHtml += `<div class="tag-clear">🏠 <span class="hide-on-portrait">자택대기 </span>${cc}명</div>`;
