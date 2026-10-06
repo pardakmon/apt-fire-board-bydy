@@ -1599,43 +1599,44 @@ const controlsHtml = isReadOnly ? '' : (
       
       if(u.isSearchCompleted) bodyHtml += `<div style="background:#15803d; color:#fff; font-size:12px; font-weight:800; padding:4px 6px; border-radius:6px; margin-bottom:4px; display:inline-block; border:1px solid #16a34a; box-shadow:0 1px 2px rgba(0,0,0,0.1); white-space:nowrap;">✅ <span class="hide-on-portrait">인명검색완료</span></div><br>`;
       
-      // 🌟 [추가] 투입 소방대 자동 색상 분류 배지(Badge) 생성 (이름별 색상 자동 분산 적용!)
+      // 🌟 [추가] 투입 소방대 자동 색상 분류 배지(Badge) 생성 (완벽 분산 적용!)
       if(u.activeTeams) {
         const teams = u.activeTeams.split(',').map(t => t.trim()).filter(Boolean);
         teams.forEach(t => {
-          // 🌟 글자(이름)를 분석해서 그 부대만의 고유한 번호(해시코드)를 만들어내는 마법
-          let hash = 0;
-          for (let k = 0; k < t.length; k++) {
-            hash = t.charCodeAt(k) + ((hash << 5) - hash);
-          }
-          hash = Math.abs(hash);
+          // 🌟 한글의 똑같은 접미사(구조대, 펌프 등) 때문에 발생하던 색상 중복을 
+          // 삼각함수(Math.sin)를 이용해 완벽하게 뒤섞어 분산시키는 마법의 공식!
+          let sum = 0;
+          for (let k = 0; k < t.length; k++) { sum += t.charCodeAt(k); }
+          let hash = Math.floor(Math.abs(Math.sin(sum) * 10000));
 
           let theme = { bg: '#f1f5f9', color: '#475569', border: '#cbd5e1' };
           let icon = '🚒';
           
           if(t.includes('구조')) { 
-            // 🪓 구조대는 '따뜻한 계열' 안에서 각자 다른 색상을 부여받습니다.
+            // 🪓 구조대: 색상 종류를 6가지로 늘려 겹침 최소화
             const p = [
               {bg:'#fff1f2', color:'#e11d48', border:'#fda4af'}, // 1. 기본 빨강
-              {bg:'#fdf4ff', color:'#c026d3', border:'#f0abfc'}, // 2. 핑크/자주
+              {bg:'#fdf4ff', color:'#c026d3', border:'#f0abfc'}, // 2. 자주/플럼
               {bg:'#fff7ed', color:'#ea580c', border:'#fdba74'}, // 3. 주황
-              {bg:'#faf5ff', color:'#9333ea', border:'#d8b4fe'}  // 4. 보라
+              {bg:'#faf5ff', color:'#9333ea', border:'#d8b4fe'}, // 4. 보라
+              {bg:'#fff1f2', color:'#be123c', border:'#fecdd3'}, // 5. 로즈(진빨강)
+              {bg:'#fef2f2', color:'#991b1b', border:'#fca5a5'}  // 6. 적갈색
             ];
             theme = p[hash % p.length]; 
             icon = '🪓'; 
           }
           else if(t.includes('구급')) { 
-            // 🚑 구급대는 '녹색 계열' 안에서 각자 다른 색상을 부여받습니다.
+            // 🚑 구급대: 녹색 계열 4가지
             const p = [
               {bg:'#f0fdf4', color:'#16a34a', border:'#86efac'}, // 1. 기본 초록
               {bg:'#ecfdf5', color:'#0d9488', border:'#5eead4'}, // 2. 청록(Teal)
-              {bg:'#f7fee7', color:'#65a30d', border:'#bef264'}  // 3. 라임
+              {bg:'#f7fee7', color:'#65a30d', border:'#bef264'}, // 3. 라임
+              {bg:'#f0fdf4', color:'#15803d', border:'#86efac'}  // 4. 진초록
             ];
             theme = p[hash % p.length]; 
             icon = '🚑'; 
           }
           else if(t.includes('지휘') || t.includes('조사')) { 
-            // 📋 지휘/조사는 '노란색 계열'
             const p = [
               {bg:'#fefce8', color:'#ca8a04', border:'#fef08a'}, 
               {bg:'#fffbeb', color:'#d97706', border:'#fde68a'}
@@ -1644,12 +1645,13 @@ const controlsHtml = isReadOnly ? '' : (
             icon = '📋'; 
           }
           else if(t.includes('펌프') || t.includes('진압') || t.includes('탱크') || t.includes('화학') || t.includes('고가') || t.includes('굴절')) { 
-            // 🚒 진압/펌프대는 '푸른색 계열' 안에서 각자 다른 색상을 부여받습니다.
+            // 🚒 펌프/진압대: 푸른색 계열 5가지
             const p = [
               {bg:'#eff6ff', color:'#2563eb', border:'#bfdbfe'}, // 1. 기본 파랑
-              {bg:'#eef2ff', color:'#4f46e5', border:'#c7d2fe'}, // 2. 남색
+              {bg:'#eef2ff', color:'#4f46e5', border:'#c7d2fe'}, // 2. 남색(Indigo)
               {bg:'#f0f9ff', color:'#0284c7', border:'#7dd3fc'}, // 3. 하늘색
-              {bg:'#f5f3ff', color:'#7c3aed', border:'#c4b5fd'}  // 4. 바이올렛
+              {bg:'#f5f3ff', color:'#7c3aed', border:'#c4b5fd'}, // 4. 바이올렛
+              {bg:'#ecfeff', color:'#0891b2', border:'#a5f3fc'}  // 5. 시안(Cyan)
             ];
             theme = p[hash % p.length]; 
             icon = '🚒'; 
