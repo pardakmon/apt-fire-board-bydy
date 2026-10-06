@@ -741,16 +741,16 @@ function captureBoard() {
   const topbar = document.querySelector('.board-topbar');
   const autosaveNote = document.getElementById('autosaveNote');
 
-  // 1. 스크롤 위치를 맨 앞으로 당기기 (초기화)
+  // 스크롤 위치를 맨 앞으로 당기기
   window.scrollTo(0, 0);
   if (boardHolder) boardHolder.scrollLeft = 0;
 
-  // 2. 캡처에 불필요한 버튼/상단바 숨김
+  // 캡처 화면에 불필요한 요소 숨김
   toolbar.style.display = 'none';
   topbar.style.display = 'none';
   autosaveNote.style.display = 'none';
 
-  // 🌟 복구를 위해 기존 스타일(뼈대)을 완벽하게 백업
+  // 🌟 복구를 위해 기존 스타일(뼈대) 백업
   const orig = {
     wrapMaxWidth: mainWrap.style.maxWidth,
     position: captureTarget.style.position,
@@ -762,24 +762,18 @@ function captureBoard() {
     holderOverflow: boardHolder.style.overflow
   };
 
-  // 🌟 모바일 세로 모드 무적 캡처 트릭 🌟
-  // 1. 겉을 감싸고 있는 최대 너비 제한 해제
+  // 🌟 모바일 잘림 방지를 위한 무적 캡처 트릭
   mainWrap.style.maxWidth = 'none';
-  
-  // 2. 타겟을 스마트폰 화면 틀에서 강제로 뽑아내어 허공에 띄움 (absolute)
   captureTarget.style.position = 'absolute';
   captureTarget.style.left = '0px';
   captureTarget.style.top = '0px';
-  
-  // 3. 내용물(테이블)이 가진 고유한 길이만큼 끝없이 쫙 찢어서 늘림 (max-content)
   captureTarget.style.width = 'max-content';
   captureTarget.style.overflow = 'visible';
   boardHolder.style.overflow = 'visible';
   captureTarget.style.zIndex = '99999';
 
-  // 4. 모바일 기기가 변경된 길이를 그릴 수 있도록 0.4초 넉넉하게 대기
+  // 화면이 늘어날 시간을 0.4초 준 뒤 캡처 시작
   setTimeout(() => {
-    // 🌟 쫙 늘어난 상태의 '진짜 픽셀 길이'를 정확하게 측정
     const renderWidth = captureTarget.scrollWidth + 10;
     const renderHeight = captureTarget.scrollHeight + 10;
 
@@ -788,13 +782,12 @@ function captureBoard() {
       useCORS: true, 
       logging: false, 
       backgroundColor: "#f1f5f9",
-      // 🌟 핵심: 스마트폰 화면 너비가 아니라, 방금 측정한 실제 표의 길이를 카메라 렌즈 규격으로 강제 주입!
       width: renderWidth,
       windowWidth: renderWidth,
       height: renderHeight,
       windowHeight: renderHeight
     }).then(canvas => {
-      // 🌟 캡처 완료 즉시 원래 상태로 감쪽같이 복구
+      // 🌟 1. 캡처 완료 즉시 원래 상태로 100% 감쪽같이 복구 (폰 화면 깨짐 방지)
       mainWrap.style.maxWidth = orig.wrapMaxWidth;
       captureTarget.style.position = orig.position;
       captureTarget.style.left = orig.left;
@@ -808,13 +801,14 @@ function captureBoard() {
       topbar.style.display = 'flex';
       autosaveNote.style.display = 'block';
 
-      // 이미지 데이터 생성 후 팝업 띄우지 않고 바로 공유 함수로 넘김
-      const imgData = canvas.toDataURL('image/jpeg', 0.9);
-      shareCapturedImage(imgData);
+      // 🌟 2. 폰이 버벅거리지 않게 화면 복구 후 0.1초 쉬고 공유 창 띄우기!
+      setTimeout(() => {
+        shareCapturedCanvas(canvas);
+      }, 100);
 
     }).catch(err => {
       console.error("캡처 오류:", err);
-      // 에러 발생 시에도 화면은 무조건 원상 복구
+      // 에러 시에도 무조건 원상 복구
       mainWrap.style.maxWidth = orig.wrapMaxWidth;
       captureTarget.style.position = orig.position;
       captureTarget.style.left = orig.left;
@@ -832,9 +826,8 @@ function captureBoard() {
   }, 400); 
 }
 
-// PC와 모바일을 구분하여 가장 편한 방식으로 공유해주는 업그레이드 함수 (파일명 시간 자동 추가)
-async function shareCapturedImage(dataUrl) {
-  // 1. 캡처 버튼을 누른 현재 시간으로 겹치지 않는 파일명 만들기 (예: 20261002_084530)
+// 🌟 메모리 다운/공유창 깨짐을 방지하는 다이렉트 이미지 공유 함수 (기존 shareCapturedImage 대체)
+async function shareCapturedCanvas(canvas) {
   const now = new Date();
   const yyyy = now.getFullYear();
   const mm = String(now.getMonth() + 1).padStart(2, '0');
@@ -844,50 +837,36 @@ async function shareCapturedImage(dataUrl) {
   const ss = String(now.getSeconds()).padStart(2, '0');
   const timeString = `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
   
-  // 파일명 완성 (예: 아파트현황판_20261002_084530.jpg)
   const fileName = `아파트현황판_${timeString}.jpg`;
-  
-  // 모바일 기기인지 확인
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   
   if (navigator.share && isMobile) {
-    // [스마트폰 환경] 터치 한 번에 카카오톡/사진첩 공유 창 띄우기
-    try {
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
-      const file = new File([blob], fileName, { type: 'image/jpeg' });
-      await navigator.share({ title: '아파트 현황판 상황보고', files: [file] });
-    } catch (error) {
-      console.log('공유 취소 또는 에러:', error);
-    }
+    // 🌟 핵심: 거대한 텍스트 변환 과정을 아예 없애고, 캔버스에서 직접 사진 파일(Blob)로 압축해서 보냄!
+    canvas.toBlob(async (blob) => {
+      try {
+        const file = new File([blob], fileName, { type: 'image/jpeg' });
+        await navigator.share({ title: '아파트 현황판 상황보고', files: [file] });
+      } catch (error) {
+        console.log('공유 취소 또는 에러:', error);
+      }
+    }, 'image/jpeg', 0.9);
   } else {
-    // [PC 환경] 1. 파일 다운로드 실행 (시간이 적힌 파일명으로 다운로드됨)
+    // [PC 환경 처리]
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
     const link = document.createElement('a');
     link.href = dataUrl;
     link.download = fileName; 
     link.click(); 
     
-    // [PC 환경] 2. 카카오톡 바로 붙여넣기를 위한 클립보드 자동 변환 및 복사
-    try {
-      const img = new Image();
-      img.src = dataUrl;
-      img.onload = async () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        
-        canvas.toBlob(async (pngBlob) => {
-          const item = new ClipboardItem({ "image/png": pngBlob });
-          await navigator.clipboard.write([item]);
-          // 안내창에 바뀐 파일명도 함께 띄워줌
-          alert(`✅ 캡처 완료!\n[${fileName}]\n저장 및 복사가 완료되었습니다.\n\nPC 카카오톡 채팅창에 '붙여넣기(Ctrl + V)'를 하시면 바로 전송됩니다.`);
-        }, 'image/png');
-      };
-    } catch (err) {
-      alert(`✅ 캡처 이미지가 [다운로드] 폴더에 [${fileName}] 이름으로 저장되었습니다.`);
-    }
+    canvas.toBlob(async (pngBlob) => {
+      try {
+        const item = new ClipboardItem({ "image/png": pngBlob });
+        await navigator.clipboard.write([item]);
+        alert(`✅ 캡처 완료!\n[${fileName}]\n저장 및 복사가 완료되었습니다.\n\nPC 카카오톡 채팅창에 '붙여넣기(Ctrl + V)'를 하시면 바로 전송됩니다.`);
+      } catch (err) {
+        alert(`✅ 캡처 이미지가 [다운로드] 폴더에 [${fileName}] 이름으로 저장되었습니다.`);
+      }
+    }, 'image/png');
   }
 }
 
