@@ -1411,7 +1411,17 @@ function render(){
   function unitSuffix(u, floorName){ return u.no.slice(String(floorName).length); }
   const suffixSet = new Set();
   floors.forEach(fl=> fl.units.forEach(u=> suffixSet.add(unitSuffix(u, fl.floor))));
-  const columns = Array.from(suffixSet).sort((a,b)=> a.localeCompare(b, undefined, {numeric:true}));
+  
+  // 🌟 입력한 '기본 호수' 패턴 순서를 기억해서 최우선으로 정렬 (중간에 한글이 있어도 순서 유지!)
+  const basePattern = document.getElementById('unitPattern').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const columns = Array.from(suffixSet).sort((a, b) => {
+    let idxA = basePattern.indexOf(a);
+    let idxB = basePattern.indexOf(b);
+    if (idxA === -1) idxA = 9999; // 패턴에 없던 나중에 추가된 호수는 맨 뒤로
+    if (idxB === -1) idxB = 9999;
+    if (idxA !== idxB) return idxA - idxB;
+    return a.localeCompare(b, undefined, {numeric:true});
+  });
   
   const maxUnits = columns.length || 1;
   const totalCols = maxUnits + 1; 
