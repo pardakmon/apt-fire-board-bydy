@@ -750,14 +750,27 @@ function captureBoard() {
   const origMaxWidth = mainWrap.style.maxWidth;
   const origWidth = captureTarget.style.width;
 
+  // 넓은 표를 한 화면에 펼치기 위한 강제 해제
   boardHolder.style.overflow = 'visible';
   mainWrap.style.maxWidth = 'none';
-  captureTarget.style.width = Math.max(captureTarget.offsetWidth, boardHolder.scrollWidth) + 'px';
+  
+  // 🌟 실제 내용물(스크롤되는 표)의 전체 너비를 정확히 계산
+  const fullWidth = Math.max(captureTarget.offsetWidth, boardHolder.scrollWidth);
+  captureTarget.style.width = fullWidth + 'px';
 
   setTimeout(() => {
     html2canvas(captureTarget, {
-      scale: 1.5, useCORS: true, logging: false, backgroundColor: "#f1f5f9"
+      scale: 1.5, 
+      useCORS: true, 
+      logging: false, 
+      backgroundColor: "#f1f5f9",
+      // 🌟 모바일 세로 캡처 시 우측 짤림 방지 핵심 옵션! (렌즈 넓히기)
+      windowWidth: fullWidth,
+      width: fullWidth,
+      scrollX: 0,
+      scrollY: 0
     }).then(canvas => {
+      // 캡처 후 원래 상태로 복구
       boardHolder.style.overflow = origOverflow;
       mainWrap.style.maxWidth = origMaxWidth;
       captureTarget.style.width = origWidth;
