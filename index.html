@@ -822,7 +822,7 @@ async function shareCapturedCanvas(canvas) {
   const ss = String(now.getSeconds()).padStart(2, '0');
   const timeString = `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
   
-  const fileName = `아파트현황판_${timeString}.png`;
+  const fileName = `공동주택현황판_${timeString}.png`;
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   
   if (navigator.share && isMobile) {
@@ -830,7 +830,7 @@ async function shareCapturedCanvas(canvas) {
     canvas.toBlob(async (blob) => {
       try {
         const file = new File([blob], fileName, { type: 'image/png' });
-        await navigator.share({ title: '아파트 현황판 상황보고', files: [file] });
+        await navigator.share({ title: '공동주택 현황판 상황보고', files: [file] });
       } catch (error) {
         console.log('공유 취소 또는 에러:', error);
       }
@@ -847,7 +847,7 @@ async function shareCapturedCanvas(canvas) {
       try {
         const item = new ClipboardItem({ "image/png": pngBlob });
         await navigator.clipboard.write([item]);
-        alert(`✅ 캡처 완료!\n[${fileName}]\n저장 및 복사가 완료되었습니다.\n\nPC 카카오톡 채팅창에 '붙여넣기(Ctrl + V)'를 하시면 바로 전송됩니다.`);
+        alert(`✅ 캡처 완료!\n[${fileName}]\n저장 및 복사가 완료되었습니다.\n\nPC 네이버웍스에 '붙여넣기(Ctrl + V)'를 하시면 바로 전송됩니다.`);
       } catch (err) {
         alert(`✅ 캡처 이미지가 [다운로드] 폴더에 [${fileName}] 이름으로 저장되었습니다.`);
       }
