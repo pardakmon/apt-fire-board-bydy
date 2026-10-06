@@ -1239,17 +1239,43 @@ function openEditor(floorIdx, unitIdx){
   overlay.id='editorOverlay';
   
   overlay.innerHTML = `
-    <div class="modal" style="z-index:100;">
-      <!-- 🌟 인명검색완료 체크박스가 추가된 헤더 -->
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:2px solid #e2e8f0; padding-bottom:12px;">
+    <div class="modal" style="z-index:100; padding:18px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:2px solid #e2e8f0; padding-bottom:8px;">
         <h3 style="margin:0; border:none; padding:0; font-size:18px; color:var(--navy); font-weight:800;">${u.no}호 현황</h3>
-        <label style="font-size:14px; font-weight:800; color:#15803d; display:flex; align-items:center; gap:6px; margin:0; cursor:pointer; background:#dcfce7; padding:6px 12px; border-radius:8px; border:1px solid #86efac; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-          <input type="checkbox" id="m_searchCompleted" ${u.isSearchCompleted?'checked':''} style="width:18px; height:18px; accent-color:#16a34a;">
-          ✅ 인명검색완료
+        <label style="font-size:13px; font-weight:800; color:#15803d; display:flex; align-items:center; gap:4px; margin:0; cursor:pointer; background:#dcfce7; padding:4px 10px; border-radius:8px; border:1px solid #86efac;">
+          <input type="checkbox" id="m_searchCompleted" ${u.isSearchCompleted?'checked':''} style="width:16px; height:16px; accent-color:#16a34a;">✅ 검색완료
         </label>
       </div>
+
+      <!-- 🌟 초경량 투입 소방대 입력칸 (가로 스와이프 버튼) -->
+      <style>
+        .h-scroll { display: flex; overflow-x: auto; gap: 6px; padding-bottom: 2px; scrollbar-width: none; -ms-overflow-style: none; }
+        .h-scroll::-webkit-scrollbar { display: none; }
+        .t-btn { flex: 0 0 auto; padding: 5px 12px; font-size: 11.5px; background: #fff; color: #334155; border: 1px solid #cbd5e1; border-radius: 12px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+      </style>
       
-      <div class="mrow" style="margin-top:0;">
+      <div class="mrow" style="margin-top:0; margin-bottom:12px; padding:10px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <label style="color:var(--navy); font-size:12px; margin:0; font-weight:800;">🚒 투입/활동 소방대</label>
+          <button type="button" class="small secondary" onclick="document.getElementById('m_activeTeams').value=''" style="padding:2px 8px; font-size:11px; margin:0; border-radius:6px;">지우기</button>
+        </div>
+        <input type="text" id="m_activeTeams" value="${u.activeTeams || ''}" placeholder="직접 입력 (예: 1구조, 본서펌프)" style="margin-bottom:8px; padding:8px 10px; font-size:13px; height:auto;">
+        
+        <div class="h-scroll" style="margin-bottom: 6px;">
+          <div style="flex:0 0 auto; font-size:11px; font-weight:800; color:#0ea5e9; padding-top:6px; margin-right:2px;">관내</div>
+          ${['영등포펌프','여의도펌프','당산펌프','대림펌프','신길펌프','영등포구조대'].map(t => 
+            `<button type="button" class="t-btn" onclick="let el=document.getElementById('m_activeTeams'); el.value += (el.value?', ':'')+'${t}';">${t}</button>`
+          ).join('')}
+        </div>
+        <div class="h-scroll">
+          <div style="flex:0 0 auto; font-size:11px; font-weight:800; color:#f59e0b; padding-top:6px; margin-right:2px;">타서</div>
+          ${['구로구조대','동작구조대','양천구조대','금천구조대','관악구조대','마포구조대','강서구조대'].map(t => 
+            `<button type="button" class="t-btn" onclick="let el=document.getElementById('m_activeTeams'); el.value += (el.value?', ':'')+'${t}';">${t}</button>`
+          ).join('')}
+        </div>
+      </div>
+      
+      <div class="mrow" style="margin-top:0; margin-bottom:10px;">
         <label style="color:var(--clear-bg);">🏠 자택대기 인원</label>
         <div class="stepper-row">
           <button type="button" class="step-btn" onclick="adjustNewCount('m_clearCount', -1)">−</button>
@@ -1257,43 +1283,44 @@ function openEditor(floorIdx, unitIdx){
           <button type="button" class="step-btn" onclick="adjustNewCount('m_clearCount', 1)">+</button>
         </div>
       </div>
-      <hr style="border:0; border-top:1px solid #e2e8f0; margin:16px 0;">
-      <div class="mrow">
+      <hr style="border:0; border-top:1px solid #e2e8f0; margin:10px 0;">
+      
+      <div class="mrow" style="margin-bottom:10px;">
         <label style="color:var(--evac);">🏃 자력대피 인원</label>
         <div class="stepper-row">
           <button type="button" class="step-btn" onclick="adjustNewCount('m_evacCount', -1)">−</button>
           <input type="number" id="m_evacCount" min="0" value="${u.evacCount||0}">
           <button type="button" class="step-btn" onclick="adjustNewCount('m_evacCount', 1)">+</button>
         </div>
-        <div id="evacDetailsList" style="margin-top:8px;"></div>
+        <div id="evacDetailsList" style="margin-top:6px;"></div>
         <div class="detail-add-row" style="margin-top:4px;">
-          <input type="text" id="m_evacDetailInput" placeholder="메모 (예: 단순연기흡입)">
-          <button type="button" class="small" onclick="addEvacDetailLine()">추가</button>
+          <input type="text" id="m_evacDetailInput" placeholder="메모 (예: 연기흡입)" style="height:auto; padding:6px 10px;">
+          <button type="button" class="small" onclick="addEvacDetailLine()" style="padding:6px 12px;">추가</button>
         </div>
       </div>
-      <hr style="border:0; border-top:1px solid #e2e8f0; margin:16px 0;">
-      <div class="mrow">
+      <hr style="border:0; border-top:1px solid #e2e8f0; margin:10px 0;">
+      
+      <div class="mrow" style="margin-bottom:10px;">
         <label style="color:var(--rescue);">🚁 구조 인원</label>
         <div class="stepper-row">
           <button type="button" class="step-btn" onclick="adjustNewCount('m_rescueCount', -1)">−</button>
           <input type="number" id="m_rescueCount" min="0" value="${u.rescueCount||0}">
           <button type="button" class="step-btn" onclick="adjustNewCount('m_rescueCount', 1)">+</button>
         </div>
-        <div id="detailsList" style="margin-top:8px;"></div>
+        <div id="detailsList" style="margin-top:6px;"></div>
         <div class="detail-add-row" style="margin-top:4px;">
-          <input type="text" id="m_detailInput" placeholder="메모 (예: OO병원 이송)">
-          <button type="button" class="small" onclick="addDetailLine()">추가</button>
+          <input type="text" id="m_detailInput" placeholder="메모 (예: OO병원)" style="height:auto; padding:6px 10px;">
+          <button type="button" class="small" onclick="addDetailLine()" style="padding:6px 12px;">추가</button>
         </div>
       </div>
-      <hr style="border:0; border-top:1px solid #e2e8f0; margin:16px 0;">
       
-      <div class="mrow checks" style="margin-top:0; flex-wrap:wrap;">
-        <label><input type="checkbox" id="m_origin" ${u.origin?'checked':''}> 🔥 발화지점</label>
-        <label><input type="checkbox" id="m_spread" ${u.spread?'checked':''}> 💥 연소확대</label>
-        <label><input type="checkbox" id="m_isLocked" ${u.isLocked?'checked':''}> 🔒 문잠김(미확인)</label>
+      <div class="mrow checks" style="margin-top:12px; flex-wrap:wrap; padding:10px; background:#fefce8; border-radius:8px;">
+        <label><input type="checkbox" id="m_origin" ${u.origin?'checked':''}> 🔥발화지점</label>
+        <label><input type="checkbox" id="m_spread" ${u.spread?'checked':''}> 💥연소확대</label>
+        <label><input type="checkbox" id="m_isLocked" ${u.isLocked?'checked':''}> 🔒문잠김</label>
       </div>
       
-      <div class="modal-actions">
+      <div class="modal-actions" style="margin-top:16px;">
         <button type="button" class="secondary" onclick="closeEditor()">취소</button>
         <button type="button" onclick="saveEditor()">저장</button>
       </div>
@@ -1357,6 +1384,8 @@ function saveEditor(){
   u.rescueCount = parseInt(document.getElementById('m_rescueCount').value)||0;
   u.origin = document.getElementById('m_origin').checked;
   u.spread = document.getElementById('m_spread').checked;
+
+  u.activeTeams = document.getElementById('m_activeTeams').value.trim();
   
   u.evacDetails = editingEvacDetails.slice();
   u.rescueDetails = editingDetails.slice();
@@ -1604,7 +1633,36 @@ const controlsHtml = isReadOnly ? '' : (
       let bodyHtml = ''; 
       
       if(u.isSearchCompleted) bodyHtml += `<div style="background:#15803d; color:#fff; font-size:12px; font-weight:800; padding:4px 6px; border-radius:6px; margin-bottom:4px; display:inline-block; border:1px solid #16a34a; box-shadow:0 1px 2px rgba(0,0,0,0.1); white-space:nowrap;">✅ <span class="hide-on-portrait">인명검색완료</span></div><br>`;
-      
+
+      if(u.activeTeams) {
+        const teams = u.activeTeams.split(',').map(t => t.trim()).filter(Boolean);
+        teams.forEach(t => {
+          let hash = 0;
+          for (let k = 0; k < t.length; k++) hash = (hash * 31) + t.charCodeAt(k);
+          hash = Math.abs(hash);
+
+          let theme = { bg: '#f1f5f9', color: '#475569', border: '#cbd5e1' }; let icon = '🚒';
+          if(t.includes('구조')) { 
+            const p = [ {bg:'#fff1f2', color:'#e11d48', border:'#fda4af'}, {bg:'#fdf4ff', color:'#c026d3', border:'#f0abfc'}, {bg:'#fff7ed', color:'#ea580c', border:'#fdba74'}, {bg:'#faf5ff', color:'#9333ea', border:'#d8b4fe'}, {bg:'#fff1f2', color:'#be123c', border:'#fecdd3'}, {bg:'#fef2f2', color:'#991b1b', border:'#fca5a5'}, {bg:'#fffbeb', color:'#d97706', border:'#fde68a'}, {bg:'#f5f3ff', color:'#7c3aed', border:'#c4b5fd'}, {bg:'#ffe4e6', color:'#f43f5e', border:'#fecdd3'}, {bg:'#ffedd5', color:'#f97316', border:'#fed7aa'} ];
+            theme = p[hash % p.length]; icon = '🪓'; 
+          }
+          else if(t.includes('구급')) { 
+            const p = [ {bg:'#f0fdf4', color:'#16a34a', border:'#86efac'}, {bg:'#ecfdf5', color:'#0d9488', border:'#5eead4'}, {bg:'#f7fee7', color:'#65a30d', border:'#bef264'}, {bg:'#f0fdf4', color:'#15803d', border:'#86efac'} ];
+            theme = p[hash % p.length]; icon = '🚑'; 
+          }
+          else if(t.includes('지휘') || t.includes('조사')) { 
+            const p = [{bg:'#fefce8', color:'#ca8a04', border:'#fef08a'}, {bg:'#fffbeb', color:'#d97706', border:'#fde68a'}];
+            theme = p[hash % p.length]; icon = '📋'; 
+          }
+          else if(t.includes('펌프') || t.includes('진압') || t.includes('탱크') || t.includes('화학') || t.includes('고가') || t.includes('굴절')) { 
+            const p = [ {bg:'#eff6ff', color:'#2563eb', border:'#bfdbfe'}, {bg:'#eef2ff', color:'#4f46e5', border:'#c7d2fe'}, {bg:'#f0f9ff', color:'#0284c7', border:'#7dd3fc'}, {bg:'#f5f3ff', color:'#7c3aed', border:'#c4b5fd'}, {bg:'#ecfeff', color:'#0891b2', border:'#a5f3fc'}, {bg:'#f8fafc', color:'#0f172a', border:'#cbd5e1'}, {bg:'#e0f2fe', color:'#0369a1', border:'#bae6fd'}, {bg:'#ede9fe', color:'#6d28d9', border:'#ddd6fe'} ];
+            theme = p[hash % p.length]; icon = '🚒'; 
+          }
+          bodyHtml += `<div style="display:inline-block; background:${theme.bg}; color:${theme.color}; border:1px solid ${theme.border}; font-size:11.5px; font-weight:800; padding:3px 6px; border-radius:6px; margin-right:4px; margin-bottom:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05); white-space:nowrap;">${icon} ${t}</div>`;
+        });
+        bodyHtml += `<br>`;
+      }
+    
       if(isClearActive) bodyHtml += `<div class="tag-clear">🏠 <span class="hide-on-portrait">자택대기 </span>${cc}명</div>`;
       if(u.isLocked) bodyHtml += `<div class="tag-locked">🔒 <span class="hide-on-portrait">문잠김</span></div>`;
       
