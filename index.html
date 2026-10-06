@@ -741,96 +741,63 @@ function captureBoard() {
   const topbar = document.querySelector('.board-topbar');
   const autosaveNote = document.getElementById('autosaveNote');
 
-  // 스크롤 초기화
+  // 스크롤 위치를 맨 앞으로 당기기
   window.scrollTo(0, 0);
-  if(boardHolder) boardHolder.scrollLeft = 0;
+  if (boardHolder) boardHolder.scrollLeft = 0;
 
-  // UI 숨김
+  // 불필요한 UI 숨김
   toolbar.style.display = 'none';
   topbar.style.display = 'none';
   autosaveNote.style.display = 'none';
 
-  // 🌟 실제 길이 측정 (여백 넉넉히 추가)
-  const realWidth = boardHolder.scrollWidth + 40; 
+  // 🌟 교통사고 현황판에서 완벽하게 작동했던 그 방식 그대로 적용! 🌟
+  const origOverflow = boardHolder.style.overflow;
+  const origMaxWidth = mainWrap.style.maxWidth;
+  const origWidth = captureTarget.style.width;
 
-  // 🌟 최후의 수단: 스마트폰 기기 자체의 시야각(Viewport) 강제 확장 해킹 🌟
-  const viewportMeta = document.querySelector('meta[name="viewport"]');
-  const originalViewport = viewportMeta ? viewportMeta.content : "width=device-width, initial-scale=1.0";
-  
-  if(viewportMeta) {
-    // 폰에게 "이 화면은 지금부터 기기 너비가 아니라 표 전체 길이만큼 넒은 태블릿이다"라고 세뇌 (화면이 순간 줌아웃 됨)
-    viewportMeta.content = "width=" + realWidth;
-  }
-
-  // 🌟 기존 스타일 백업
-  const orig = {
-    htmlWidth: document.documentElement.style.width,
-    bodyWidth: document.body.style.width,
-    wrapMaxWidth: mainWrap.style.maxWidth,
-    targetWidth: captureTarget.style.width,
-    holderOverflow: boardHolder.style.overflow
-  };
-
-  // 표 강제 확장
-  document.documentElement.style.width = realWidth + 'px';
-  document.body.style.width = realWidth + 'px';
-  mainWrap.style.maxWidth = 'none';
-  captureTarget.style.width = realWidth + 'px';
   boardHolder.style.overflow = 'visible';
+  mainWrap.style.maxWidth = 'none';
+  
+  // 핵심: 내용물 크기만큼만 딱 맞게 무한대로 늘려주는 마법의 단어
+  captureTarget.style.width = 'max-content';
 
-  // 🌟 폰이 강제로 화면을 줌아웃하여 전체 픽셀을 물리적으로 다 그릴 때까지 0.6초 대기
   setTimeout(() => {
     html2canvas(captureTarget, {
-      scale: 1.5,
-      useCORS: true,
-      logging: false,
+      scale: 1.5, // 폰 메모리 터짐 방지를 위해 1.5배율 유지
       backgroundColor: "#f1f5f9",
-      width: realWidth,
-      windowWidth: realWidth,
-      scrollX: 0,
-      scrollY: 0
+      width: captureTarget.scrollWidth,
+      height: captureTarget.scrollHeight,
+      useCORS: true
     }).then(canvas => {
-      // 🌟 캡처 즉시 마법 해제 (원래 스마트폰 크기와 줌 상태로 100% 복구)
-      if(viewportMeta) viewportMeta.content = originalViewport;
-      document.documentElement.style.width = orig.htmlWidth;
-      document.body.style.width = orig.bodyWidth;
-      mainWrap.style.maxWidth = orig.wrapMaxWidth;
-      captureTarget.style.width = orig.targetWidth;
-      boardHolder.style.overflow = orig.holderOverflow;
+      // 🌟 1. 캡처 완료 즉시 원래 상태로 복구
+      boardHolder.style.overflow = origOverflow;
+      mainWrap.style.maxWidth = origMaxWidth;
+      captureTarget.style.width = origWidth;
 
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
       autosaveNote.style.display = 'block';
 
-      // 0.1초 쉬고 공유창 띄우기
+      // 🌟 2. 폰이 버벅거리지 않게 화면 복구 후 0.1초 쉬고 공유 창 띄우기!
       setTimeout(() => {
-        if(typeof shareCapturedCanvas === 'function') {
-           shareCapturedCanvas(canvas);
-        } else {
-           const imgData = canvas.toDataURL('image/jpeg', 0.9);
-           shareCapturedImage(imgData);
-        }
+        shareCapturedCanvas(canvas);
       }, 100);
 
     }).catch(err => {
       console.error("캡처 오류:", err);
-      // 에러 시에도 무조건 원상 복구
-      if(viewportMeta) viewportMeta.content = originalViewport;
-      document.documentElement.style.width = orig.htmlWidth;
-      document.body.style.width = orig.bodyWidth;
-      mainWrap.style.maxWidth = orig.wrapMaxWidth;
-      captureTarget.style.width = orig.targetWidth;
-      boardHolder.style.overflow = orig.holderOverflow;
-      
+      // 에러 발생 시에도 무조건 화면 복구
+      boardHolder.style.overflow = origOverflow;
+      mainWrap.style.maxWidth = origMaxWidth;
+      captureTarget.style.width = origWidth;
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
       autosaveNote.style.display = 'block';
-      alert("캡처 중 오류가 발생했습니다.");
+      alert('캡처 도중 오류가 발생했습니다.');
     });
-  }, 600); // 0.6초 대기 (가장 중요)
+  }, 150); 
 }
 
-// 🌟 메모리 다운/공유창 깨짐을 방지하는 다이렉트 이미지 공유 함수 (기존 shareCapturedImage 대체)
+// 🌟 메모리 과부하(공유창 깨짐) 방지용 초경량 다이렉트 공유 함수
 async function shareCapturedCanvas(canvas) {
   const now = new Date();
   const yyyy = now.getFullYear();
@@ -845,11 +812,11 @@ async function shareCapturedCanvas(canvas) {
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   
   if (navigator.share && isMobile) {
-    // 🌟 핵심: 거대한 텍스트 변환 과정을 아예 없애고, 캔버스에서 직접 사진 파일(Blob)로 압축해서 보냄!
+    // 🌟 핵심: 거대한 텍스트 변환 과정을 없애고 캔버스에서 사진(Blob)으로 즉시 압축 전송
     canvas.toBlob(async (blob) => {
       try {
         const file = new File([blob], fileName, { type: 'image/jpeg' });
-        await navigator.share({ title: '아파트 현황판 상황보고', files: [file] });
+        await navigator.share({ title: '공동주택 현황판 상황보고', files: [file] });
       } catch (error) {
         console.log('공유 취소 또는 에러:', error);
       }
