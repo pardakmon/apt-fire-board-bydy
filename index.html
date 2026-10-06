@@ -735,73 +735,74 @@ function showSetupScreen(){
 
 function captureBoard() {
   const captureTarget = document.getElementById('captureTarget');
-  const table = document.querySelector('table.board');
+  const boardHolder = document.getElementById('boardHolder');
+  const mainWrap = document.getElementById('mainWrap');
   const toolbar = document.getElementById('toolbar');
   const topbar = document.querySelector('.board-topbar');
   const autosaveNote = document.getElementById('autosaveNote');
 
-  if(!table) return;
-
+  // 스크롤 초기화
   window.scrollTo(0, 0);
+  if(boardHolder) boardHolder.scrollLeft = 0;
 
-  // 1. 캡처에 불필요한 원본 UI 숨김
+  // UI 숨김
   toolbar.style.display = 'none';
   topbar.style.display = 'none';
   autosaveNote.style.display = 'none';
 
-  // 2. 표의 실제 전체 길이 픽셀 측정 (잘려나간 우측 여백까지 모두 포함)
-  const realWidth = table.scrollWidth + 40; 
-  const realHeight = captureTarget.scrollHeight + 20;
+  // 🌟 실제 길이 측정 (여백 넉넉히 추가)
+  const realWidth = boardHolder.scrollWidth + 40; 
 
-  // 3. 🌟 스마트폰 화면 제약을 완벽히 회피하는 '도플갱어(복제본)' 생성 🌟
-  // 화면 밖은 그리지 않으려는 모바일 브라우저의 고집을 꺾기 위해, 
-  // 아예 똑같은 현황판을 새로 만들어서 화면 맨 위에 끝까지 쫙 펼칩니다.
-  const clone = captureTarget.cloneNode(true);
-  clone.id = 'captureClone';
+  // 🌟 최후의 수단: 스마트폰 기기 자체의 시야각(Viewport) 강제 확장 해킹 🌟
+  const viewportMeta = document.querySelector('meta[name="viewport"]');
+  const originalViewport = viewportMeta ? viewportMeta.content : "width=device-width, initial-scale=1.0";
   
-  clone.style.position = 'absolute';
-  clone.style.top = '0';
-  clone.style.left = '0';
-  clone.style.width = realWidth + 'px';
-  clone.style.height = realHeight + 'px';
-  clone.style.maxWidth = 'none';
-  clone.style.overflow = 'visible';
-  clone.style.zIndex = '99999'; // 화면 맨 앞으로 강제 배치
-  clone.style.backgroundColor = '#f1f5f9';
-
-  // 복제본 내부의 스크롤 통(#boardHolder)도 강제 확장
-  const cloneHolder = clone.querySelector('#boardHolder');
-  if (cloneHolder) {
-    cloneHolder.style.width = realWidth + 'px';
-    cloneHolder.style.overflow = 'visible';
-    cloneHolder.style.maxWidth = 'none';
+  if(viewportMeta) {
+    // 폰에게 "이 화면은 지금부터 기기 너비가 아니라 표 전체 길이만큼 넒은 태블릿이다"라고 세뇌 (화면이 순간 줌아웃 됨)
+    viewportMeta.content = "width=" + realWidth;
   }
 
-  // 화면에 복제본 몰래 추가
-  document.body.appendChild(clone);
+  // 🌟 기존 스타일 백업
+  const orig = {
+    htmlWidth: document.documentElement.style.width,
+    bodyWidth: document.body.style.width,
+    wrapMaxWidth: mainWrap.style.maxWidth,
+    targetWidth: captureTarget.style.width,
+    holderOverflow: boardHolder.style.overflow
+  };
 
-  // 4. 스마트폰이 거대한 복제본을 다 그릴 때까지 0.4초 넉넉히 대기 후 캡처
+  // 표 강제 확장
+  document.documentElement.style.width = realWidth + 'px';
+  document.body.style.width = realWidth + 'px';
+  mainWrap.style.maxWidth = 'none';
+  captureTarget.style.width = realWidth + 'px';
+  boardHolder.style.overflow = 'visible';
+
+  // 🌟 폰이 강제로 화면을 줌아웃하여 전체 픽셀을 물리적으로 다 그릴 때까지 0.6초 대기
   setTimeout(() => {
-    html2canvas(clone, {
+    html2canvas(captureTarget, {
       scale: 1.5,
       useCORS: true,
       logging: false,
       backgroundColor: "#f1f5f9",
-      // 🌟 카메라 렌즈 너비를 표의 실제 길이만큼 강제 주입
       width: realWidth,
-      windowWidth: realWidth, 
-      height: realHeight,
-      windowHeight: realHeight,
+      windowWidth: realWidth,
       scrollX: 0,
       scrollY: 0
     }).then(canvas => {
-      // 🌟 캡처 즉시 복제본 파괴 및 원본 UI 복구
-      document.body.removeChild(clone);
+      // 🌟 캡처 즉시 마법 해제 (원래 스마트폰 크기와 줌 상태로 100% 복구)
+      if(viewportMeta) viewportMeta.content = originalViewport;
+      document.documentElement.style.width = orig.htmlWidth;
+      document.body.style.width = orig.bodyWidth;
+      mainWrap.style.maxWidth = orig.wrapMaxWidth;
+      captureTarget.style.width = orig.targetWidth;
+      boardHolder.style.overflow = orig.holderOverflow;
+
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
       autosaveNote.style.display = 'block';
 
-      // 폰 메모리 다운 방지를 위해 0.1초 쉬고 다이렉트 공유창 띄우기
+      // 0.1초 쉬고 공유창 띄우기
       setTimeout(() => {
         if(typeof shareCapturedCanvas === 'function') {
            shareCapturedCanvas(canvas);
@@ -813,14 +814,20 @@ function captureBoard() {
 
     }).catch(err => {
       console.error("캡처 오류:", err);
-      // 에러 시에도 복제본 삭제 및 원상 복구
-      document.body.removeChild(clone);
+      // 에러 시에도 무조건 원상 복구
+      if(viewportMeta) viewportMeta.content = originalViewport;
+      document.documentElement.style.width = orig.htmlWidth;
+      document.body.style.width = orig.bodyWidth;
+      mainWrap.style.maxWidth = orig.wrapMaxWidth;
+      captureTarget.style.width = orig.targetWidth;
+      boardHolder.style.overflow = orig.holderOverflow;
+      
       toolbar.style.display = 'flex';
       topbar.style.display = 'flex';
       autosaveNote.style.display = 'block';
-      alert("캡처 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      alert("캡처 중 오류가 발생했습니다.");
     });
-  }, 400);
+  }, 600); // 0.6초 대기 (가장 중요)
 }
 
 // 🌟 메모리 다운/공유창 깨짐을 방지하는 다이렉트 이미지 공유 함수 (기존 shareCapturedImage 대체)
