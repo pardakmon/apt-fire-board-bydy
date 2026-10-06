@@ -1438,22 +1438,45 @@ function render(){
   `;
 
   function unitSuffix(u, floorName){ return u.no.slice(String(floorName).length); }
-  const suffixSet = new Set();
-  floors.forEach(fl=> fl.units.forEach(u=> suffixSet.add(unitSuffix(u, fl.floor))));
   
-  // 🌟 투명 공백을 포함한 패턴으로 완벽하게 순서 정렬
   const basePatternRaw = document.getElementById('unitPattern').value.split(',').map(s=>s.trim()).filter(Boolean);
   const basePattern = [];
   const occ_r = {};
   basePatternRaw.forEach(s => { occ_r[s] = (occ_r[s]||0)+1; basePattern.push(s + '\u200B'.repeat(occ_r[s]-1)); });
 
-  const columns = Array.from(suffixSet).sort((a, b) => {
-    let idxA = basePattern.indexOf(a);
-    let idxB = basePattern.indexOf(b);
-    if (idxA === -1) idxA = 9999; 
-    if (idxB === -1) idxB = 9999;
-    if (idxA !== idxB) return idxA - idxB;
-    return a.localeCompare(b, undefined, {numeric:true});
+  let columns = [...basePattern];
+
+  // 🌟 핵심: 모든 세대를 기본 패턴(columns) 칸에 1:1로 매칭시킵니다.
+  floors.forEach(fl => {
+    fl.alignedUnits = new Array(columns.length).fill(null);
+    let unMatched = [];
+    
+    // 1차: 기본 호수(01, 02...)와 똑같은 이름이 있으면 그 자리에 넣기
+    fl.units.forEach(u => {
+      let suf = unitSuffix(u, fl.floor);
+      let colIdx = columns.indexOf(suf);
+      if(colIdx !== -1 && !fl.alignedUnits[colIdx]) {
+        fl.alignedUnits[colIdx] = u;
+      } else {
+        unMatched.push(u); // 매칭 안 된 애들(계단실 등)은 대기
+      }
+    });
+    
+    // 2차: 남은 빈칸들에 대기 중인(계단실 등) 애들을 순서대로 채워 넣기!
+    for(let i=0; i<columns.length; i++){
+      if(!fl.alignedUnits[i] && unMatched.length > 0){
+        fl.alignedUnits[i] = unMatched.shift();
+      }
+    }
+    
+    // 3차: 혹시라도 칸보다 입력한 세대가 더 많으면 표를 확장
+    unMatched.forEach(u => {
+      fl.alignedUnits.push(u);
+      columns.push(unitSuffix(u, fl.floor));
+      floors.forEach(otherFl => {
+        if(otherFl !== fl && otherFl.alignedUnits) otherFl.alignedUnits.push(null);
+      });
+    });
   });
   
   const maxUnits = columns.length || 1;
@@ -1523,17 +1546,21 @@ const controlsHtml = isReadOnly ? '' : (
   
   html += `<tr><td class="floor-cell"><div ${clickAttr}>${floorLabel}</div>${controlsHtml}</td>`;
     
-  columns.forEach(suf=>{
-      const ui = fl.units.findIndex(x=> unitSuffix(x, fl.floor)===suf);
-      if(ui===-1){
+  fl.alignedUnits.forEach(u => {
+      if(!u){
         html += `<td class="unit-cell empty-cell"></td>`;
         return;
       }
-      const u = fl.units[ui];
+      
+      const ui = fl.units.indexOf(u);
+      
+      // 🌟 숫자로 끝나면 '호'를 붙이고, 한글 등 글자(계단실 등)로 끝나면 '호'를 빼서 자연스럽게 만듭니다.
+      const cleanNo = u.no.replace(/\u200B/g, ''); 
+      const displayNo = cleanNo + (/[0-9]/.test(cleanNo.slice(-1)) ? '호' : '');
       
       if (fl.noIssue) {
         html += `<td class="unit-cell" style="cursor:default;">
-          <div class="unit-no">${u.no}호</div>
+          <div class="unit-no">${displayNo}</div>
           <div class="unit-status">
             <div class="tag-clear">✅ 특이사항 없음</div>
           </div>
@@ -1549,7 +1576,6 @@ const controlsHtml = isReadOnly ? '' : (
       
       let bodyHtml = ''; 
       
-// 🌟 인명검색완료 표시 마크 (가장 눈에 잘 띄게 맨 위에 큼직하게 배치)
       if(u.isSearchCompleted) bodyHtml += `<div style="background:#15803d; color:#fff; font-size:12px; font-weight:800; padding:4px 6px; border-radius:6px; margin-bottom:4px; display:inline-block; border:1px solid #16a34a; box-shadow:0 1px 2px rgba(0,0,0,0.1); white-space:nowrap;">✅ <span class="hide-on-portrait">인명검색완료</span></div><br>`;
       
       if(isClearActive) bodyHtml += `<div class="tag-clear">🏠 <span class="hide-on-portrait">자택대기 </span>${cc}명</div>`;
@@ -1568,7 +1594,7 @@ const controlsHtml = isReadOnly ? '' : (
       const updateLog = u.lastUpdatedTime ? `<div style="font-size:10.5px; color:#fff; background:rgba(0,0,0,0.4); border-radius:4px; padding:2px 4px; margin-top:6px; font-weight:600; display:inline-block;">🕒 ${u.lastUpdatedTime} (${u.lastUpdatedBy})</div>` : '';
       
       html += `<td class="${cellCls}" data-fi="${i}" data-ui="${ui}" onclick="__cellClick(this)" style="${bg?('background:'+bg+';'):''}">
-        <div class="unit-no">${u.no}호</div>
+        <div class="unit-no">${displayNo}</div>
         <div class="unit-status">${bodyHtml}${originTag}${spreadTag}<br>${updateLog}</div>
       </td>`;
     });
