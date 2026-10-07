@@ -1634,19 +1634,24 @@ const controlsHtml = isReadOnly ? '' : (
       
       if(u.isSearchCompleted) bodyHtml += `<div style="background:#15803d; color:#fff; font-size:12px; font-weight:800; padding:4px 6px; border-radius:6px; margin-bottom:4px; display:inline-block; border:1px solid #16a34a; box-shadow:0 1px 2px rgba(0,0,0,0.1); white-space:nowrap;">✅ <span class="hide-on-portrait">인명검색완료</span></div><br>`;
 
+// 🌟👇 여기서부터 색상 분류 배지 추가 👇🌟
       if(u.activeTeams) {
-        const teams = u.activeTeams.split(',').map(t => t.trim()).filter(Boolean);
+        // 🌟 핵심: .toUpperCase() 를 추가해서 소문자 p, r 을 입력해도 무조건 대문자 P, R 로 강제 변환합니다!
+        const teams = u.activeTeams.split(',').map(t => t.trim().toUpperCase()).filter(Boolean);
+        
         teams.forEach(t => {
           let hash = 0;
           for (let k = 0; k < t.length; k++) hash = (hash * 31) + t.charCodeAt(k);
           hash = Math.abs(hash);
 
           let theme = { bg: '#f1f5f9', color: '#475569', border: '#cbd5e1' }; let icon = '🚒';
-          if(t.includes('구조') || t.includes('R') || t.toUpperCase().includes('RESCUE')) { 
+          
+          // 이제 글자가 전부 대문자로 변환되었으므로, 그냥 'R', 'P' 만 찾아도 완벽하게 작동합니다.
+          if(t.includes('구조') || t.includes('R') || t.includes('RESCUE')) { 
             const p = [ {bg:'#fff1f2', color:'#e11d48', border:'#fda4af'}, {bg:'#fdf4ff', color:'#c026d3', border:'#f0abfc'}, {bg:'#fff7ed', color:'#ea580c', border:'#fdba74'}, {bg:'#faf5ff', color:'#9333ea', border:'#d8b4fe'}, {bg:'#fff1f2', color:'#be123c', border:'#fecdd3'}, {bg:'#fef2f2', color:'#991b1b', border:'#fca5a5'}, {bg:'#fffbeb', color:'#d97706', border:'#fde68a'}, {bg:'#f5f3ff', color:'#7c3aed', border:'#c4b5fd'}, {bg:'#ffe4e6', color:'#f43f5e', border:'#fecdd3'}, {bg:'#ffedd5', color:'#f97316', border:'#fed7aa'} ];
             theme = p[hash % p.length]; icon = '🪓'; 
           }
-          else if(t.includes('구급') || t.includes('A') || t.toUpperCase().includes('AMBU')) { 
+          else if(t.includes('구급') || t.includes('A') || t.includes('AMBU')) { 
             const p = [ {bg:'#f0fdf4', color:'#16a34a', border:'#86efac'}, {bg:'#ecfdf5', color:'#0d9488', border:'#5eead4'}, {bg:'#f7fee7', color:'#65a30d', border:'#bef264'}, {bg:'#f0fdf4', color:'#15803d', border:'#86efac'} ];
             theme = p[hash % p.length]; icon = '🚑'; 
           }
@@ -1658,10 +1663,12 @@ const controlsHtml = isReadOnly ? '' : (
             const p = [ {bg:'#eff6ff', color:'#2563eb', border:'#bfdbfe'}, {bg:'#eef2ff', color:'#4f46e5', border:'#c7d2fe'}, {bg:'#f0f9ff', color:'#0284c7', border:'#7dd3fc'}, {bg:'#f5f3ff', color:'#7c3aed', border:'#c4b5fd'}, {bg:'#ecfeff', color:'#0891b2', border:'#a5f3fc'}, {bg:'#f8fafc', color:'#0f172a', border:'#cbd5e1'}, {bg:'#e0f2fe', color:'#0369a1', border:'#bae6fd'}, {bg:'#ede9fe', color:'#6d28d9', border:'#ddd6fe'} ];
             theme = p[hash % p.length]; icon = '🚒'; 
           }
+          // 변환된 대문자 이름(t)이 예쁘게 현황판 배지에 찍힙니다.
           bodyHtml += `<div style="display:inline-block; background:${theme.bg}; color:${theme.color}; border:1px solid ${theme.border}; font-size:11.5px; font-weight:800; padding:3px 6px; border-radius:6px; margin-right:4px; margin-bottom:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05); white-space:nowrap;">${icon} ${t}</div>`;
         });
         bodyHtml += `<br>`;
       }
+      // 🌟👆 여기까지 👆🌟
     
       if(isClearActive) bodyHtml += `<div class="tag-clear">🏠 <span class="hide-on-portrait">자택대기 </span>${cc}명</div>`;
       if(u.isLocked) bodyHtml += `<div class="tag-locked">🔒 <span class="hide-on-portrait">문잠김</span></div>`;
