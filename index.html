@@ -1642,19 +1642,19 @@ const controlsHtml = isReadOnly ? '' : (
           hash = Math.abs(hash);
 
           let theme = { bg: '#f1f5f9', color: '#475569', border: '#cbd5e1' }; let icon = '🚒';
-          if(t.includes('구조')) { 
+          if(t.includes('구조') || t.includes('R') || t.toUpperCase().includes('RESCUE')) { 
             const p = [ {bg:'#fff1f2', color:'#e11d48', border:'#fda4af'}, {bg:'#fdf4ff', color:'#c026d3', border:'#f0abfc'}, {bg:'#fff7ed', color:'#ea580c', border:'#fdba74'}, {bg:'#faf5ff', color:'#9333ea', border:'#d8b4fe'}, {bg:'#fff1f2', color:'#be123c', border:'#fecdd3'}, {bg:'#fef2f2', color:'#991b1b', border:'#fca5a5'}, {bg:'#fffbeb', color:'#d97706', border:'#fde68a'}, {bg:'#f5f3ff', color:'#7c3aed', border:'#c4b5fd'}, {bg:'#ffe4e6', color:'#f43f5e', border:'#fecdd3'}, {bg:'#ffedd5', color:'#f97316', border:'#fed7aa'} ];
             theme = p[hash % p.length]; icon = '🪓'; 
           }
-          else if(t.includes('구급')) { 
+          else if(t.includes('구급') || t.includes('A') || t.toUpperCase().includes('AMBU')) { 
             const p = [ {bg:'#f0fdf4', color:'#16a34a', border:'#86efac'}, {bg:'#ecfdf5', color:'#0d9488', border:'#5eead4'}, {bg:'#f7fee7', color:'#65a30d', border:'#bef264'}, {bg:'#f0fdf4', color:'#15803d', border:'#86efac'} ];
             theme = p[hash % p.length]; icon = '🚑'; 
           }
-          else if(t.includes('지휘') || t.includes('조사')) { 
+          else if(t.includes('지휘') || t.includes('조사') || t.includes('C')) { 
             const p = [{bg:'#fefce8', color:'#ca8a04', border:'#fef08a'}, {bg:'#fffbeb', color:'#d97706', border:'#fde68a'}];
             theme = p[hash % p.length]; icon = '📋'; 
           }
-          else if(t.includes('펌프') || t.includes('진압') || t.includes('탱크') || t.includes('화학') || t.includes('고가') || t.includes('굴절')) { 
+          else if(t.includes('펌프') || t.includes('진압') || t.includes('탱크') || t.includes('화학') || t.includes('고가') || t.includes('굴절') || t.includes('P')) { 
             const p = [ {bg:'#eff6ff', color:'#2563eb', border:'#bfdbfe'}, {bg:'#eef2ff', color:'#4f46e5', border:'#c7d2fe'}, {bg:'#f0f9ff', color:'#0284c7', border:'#7dd3fc'}, {bg:'#f5f3ff', color:'#7c3aed', border:'#c4b5fd'}, {bg:'#ecfeff', color:'#0891b2', border:'#a5f3fc'}, {bg:'#f8fafc', color:'#0f172a', border:'#cbd5e1'}, {bg:'#e0f2fe', color:'#0369a1', border:'#bae6fd'}, {bg:'#ede9fe', color:'#6d28d9', border:'#ddd6fe'} ];
             theme = p[hash % p.length]; icon = '🚒'; 
           }
