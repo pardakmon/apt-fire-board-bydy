@@ -461,7 +461,7 @@
         <button type="button" class="secondary" id="backToBoardBtn" style="display:none;" onclick="showBoardScreen()">← 현황판으로 돌아가기(재생성 없이)</button>
       </div>
     </div>
-    <div class="credit-line">제작 영등포소방서 화재조사 2팀</div>
+    <div class="credit-line" onclick="triggerEasterEgg()" style="cursor:pointer; user-select:none; -webkit-user-select:none;">제작 영등포소방서 화재조사 2팀</div>
   </div>
   
   <div id="boardScreen" style="display:none;">
@@ -1934,6 +1934,42 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+let eggClickCount = 0;
+let eggTimeout = null;
+
+function triggerEasterEgg() {
+  eggClickCount++;
+  
+  // 1초 안에 다음 터치가 없으면 카운트 초기화
+  if (eggTimeout) clearTimeout(eggTimeout);
+  eggTimeout = setTimeout(() => { eggClickCount = 0; }, 1000);
+
+  if (eggClickCount >= 5) {
+    eggClickCount = 0; // 카운트 리셋
+    
+    // 화면 전체에 소방차 경광등(빨강/파랑) 깜빡임 효과
+    const flash = document.createElement('div');
+    flash.style.position = 'fixed';
+    flash.style.inset = '0';
+    flash.style.zIndex = '999999';
+    flash.style.pointerEvents = 'none';
+    document.body.appendChild(flash);
+    
+    let toggle = 0;
+    const interval = setInterval(() => {
+      flash.style.backgroundColor = toggle % 2 === 0 ? 'rgba(225, 29, 72, 0.3)' : 'rgba(37, 99, 235, 0.3)';
+      toggle++;
+      
+      // 6번 깜빡이고 팝업창 띄우기
+      if (toggle > 5) {
+        clearInterval(interval);
+        flash.remove();
+        alert("🚒 System Designed by 파닥몬 (김도율) 🚒\n\n최고의 현장 관리 시스템이 활성화되었습니다.\n오늘도 안전하게 임무를 완수하시길 바랍니다!");
+      }
+    }, 150);
+  }
+}  
+  
 </script>
 </body>
 </html>
