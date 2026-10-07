@@ -1259,17 +1259,17 @@ function openEditor(floorIdx, unitIdx){
           <label style="color:var(--navy); font-size:12px; margin:0; font-weight:800;">🚒 투입/활동 소방대</label>
           <button type="button" class="small secondary" onclick="document.getElementById('m_activeTeams').value=''" style="padding:2px 8px; font-size:11px; margin:0; border-radius:6px;">지우기</button>
         </div>
-        <input type="text" id="m_activeTeams" value="${u.activeTeams || ''}" placeholder="직접 입력 (예: 1구조, 본서펌프)" style="margin-bottom:8px; padding:8px 10px; font-size:13px; height:auto;">
+        <input type="text" id="m_activeTeams" value="${u.activeTeams || ''}" placeholder="직접 입력 (예: P, R)" style="margin-bottom:8px; padding:8px 10px; font-size:13px; height:auto;">
         
         <div class="h-scroll" style="margin-bottom: 6px;">
           <div style="flex:0 0 auto; font-size:11px; font-weight:800; color:#0ea5e9; padding-top:6px; margin-right:2px;">관내</div>
-          ${['영등포펌프','영등포구조대','여의도펌프','당산펌프','대림펌프','신길펌프'].map(t => 
+          ${['영등포P','영등포R','여의도P','당산P','대림P','신길P'].map(t => 
             `<button type="button" class="t-btn" onclick="let el=document.getElementById('m_activeTeams'); el.value += (el.value?', ':'')+'${t}';">${t}</button>`
           ).join('')}
         </div>
         <div class="h-scroll">
           <div style="flex:0 0 auto; font-size:11px; font-weight:800; color:#f59e0b; padding-top:6px; margin-right:2px;">타서</div>
-          ${['구로구조대','동작구조대','양천구조대','마포구조대','관악구조대','강서구조대','금천구조대'].map(t => 
+          ${['구로R','동작R','양천R','마포R','관악R','강서R','금천R'].map(t => 
             `<button type="button" class="t-btn" onclick="let el=document.getElementById('m_activeTeams'); el.value += (el.value?', ':'')+'${t}';">${t}</button>`
           ).join('')}
         </div>
