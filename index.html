@@ -1450,19 +1450,25 @@ function render(){
   document.getElementById('titleLine').textContent = name || '';
 
   const wmImg = document.querySelector('.watermark-content img');
-  if (wmImg) {
+  const wmBg = document.querySelector('.watermark-bg'); // 🌟 투명도 제한을 풀기 위해 껍데기 박스도 선택!
+
+  if (wmImg && wmBg) {
     if (name.includes('펭펭몬')) {
-      // 🌟 아래 'pengpeng.png' 자리에 준비하신 이미지 파일 이름을 정확히 적어주세요! 🌟
-      // (온라인에 있는 이미지 주소 'http://...' 를 통째로 넣으셔도 됩니다.)
       wmImg.src = 'pengpeng.png'; 
       wmImg.style.transform = 'scale(1.2)';
-      wmImg.style.opacity = '0.8'; // 사진이 너무 진하면 표 글씨를 가리므로 0.2 ~ 0.4 사이를 추천합니다.
-      wmImg.style.transition = 'all 0.5s ease-in-out';
+      
+      // 🌟 핵심: 이미지 안쪽이 아니라 바깥쪽 껍데기 박스의 투명도를 0.8로 쫙 올려버립니다!
+      wmBg.style.opacity = '0.8'; 
+      
+      wmBg.style.transition = 'opacity 0.5s ease-in-out';
+      wmImg.style.transition = 'transform 0.5s ease-in-out';
     } else {
       // 펭펭몬 글씨가 지워지면 다시 원래 서울소방 마크로 복구
       wmImg.src = 'seoulfire.png';
       wmImg.style.transform = 'scale(1)';
-      wmImg.style.opacity = '1';
+      
+      // 🌟 다시 서울소방 마크 기본 투명도인 0.15 (15%)로 얌전하게 되돌리기
+      wmBg.style.opacity = '0.15'; 
     }
   }
   
