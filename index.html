@@ -532,6 +532,28 @@
   </div>
 </div>
 
+<div id="mapModal" class="overlay" style="display:none; z-index:40000; align-items:flex-end;" data-html2canvas-ignore="true">
+  <div style="background:#fff; width:100%; border-radius:20px 20px 0 0; padding:24px; text-align:center; box-sizing:border-box; box-shadow: 0 -10px 25px rgba(0,0,0,0.15); animation: slideUp 0.3s ease-out;">
+    <h3 style="margin-top:0; color:var(--navy); font-size:18px; font-weight:800;">지도 어플 선택</h3>
+    <p id="targetAddress" style="color:#64748b; margin-bottom:20px; font-size:14px; font-weight:600;">주소가 여기에 표시됩니다</p>
+    
+    <button onclick="openMapApp('kakao')" style="width:100%; padding:16px; margin-bottom:12px; border:none; border-radius:12px; background:#FEE500; color:#000; font-weight:900; font-size:16px; cursor:pointer; box-shadow:0 4px 6px rgba(254, 229, 0, 0.3);">
+      카카오맵으로 열기
+    </button>
+    
+    <button onclick="openMapApp('naver')" style="width:100%; padding:16px; margin-bottom:12px; border:none; border-radius:12px; background:#03C75A; color:#fff; font-weight:900; font-size:16px; cursor:pointer; box-shadow:0 4px 6px rgba(3, 199, 90, 0.3);">
+      네이버지도로 열기
+    </button>
+    
+    <button onclick="closeMapModal()" style="width:100%; padding:16px; border:none; border-radius:12px; background:#f1f5f9; color:#475569; font-weight:800; font-size:15px; cursor:pointer;">
+      취소
+    </button>
+  </div>
+</div>
+<style>
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+</style>
+
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -1447,7 +1469,12 @@ function render(){
   document.getElementById('toolbar').style.display='flex';
   document.getElementById('iconBadge').innerHTML = APT_FIRE_ICON_SVG;
   const name = document.getElementById('bldgName').value.trim();
-  document.getElementById('titleLine').textContent = name || '';
+
+  if (name) {
+    document.getElementById('titleLine').innerHTML = `${name} <span onclick="showMapModal('${name.replace(/'/g, "\\'")}')" style="display:inline-block; font-size:14px; font-weight:800; color:#fff; background:rgba(255,255,255,0.25); border:1px solid rgba(255,255,255,0.4); padding:4px 10px; border-radius:12px; margin-left:8px; cursor:pointer; vertical-align:middle; transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.4)'" onmouseout="this.style.background='rgba(255,255,255,0.25)'">🗺️ 지도/로드뷰</span>`;
+  } else {
+    document.getElementById('titleLine').textContent = '';
+  }
 
   const wmImg = document.querySelector('.watermark-content img');
   const wmBg = document.querySelector('.watermark-bg'); // 🌟 투명도 제한을 풀기 위해 껍데기 박스도 선택!
@@ -1991,7 +2018,33 @@ function triggerEasterEgg() {
       }
     }, 150);
   }
-}  
+}
+
+let currentMapAddress = ""; 
+
+function showMapModal(address) {
+  if (isReadOnly && window.isDraggingBoard) return; // 드래그 중 오작동 방지
+  
+  // '화재'라는 단어가 있으면 지도 검색이 꼬일 수 있으므로 제거
+  currentMapAddress = address.replace(' 화재', '').trim();
+  document.getElementById('targetAddress').innerText = currentMapAddress + "\n(현장 및 주변 로드뷰 확인)"; 
+  document.getElementById('mapModal').style.display = 'flex';
+}
+
+function closeMapModal() {
+  document.getElementById('mapModal').style.display = 'none';
+}
+
+function openMapApp(appType) {
+  const encodedAddress = encodeURIComponent(currentMapAddress); 
+  
+  if (appType === 'kakao') {
+    window.open(`https://map.kakao.com/link/search/${encodedAddress}`, '_blank');
+  } else if (appType === 'naver') {
+    window.open(`https://m.map.naver.com/search2/search.naver?query=${encodedAddress}`, '_blank');
+  }
+  closeMapModal(); 
+}
   
 </script>
 </body>
