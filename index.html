@@ -2039,7 +2039,8 @@ function openMapApp(appType) {
   const encodedAddress = encodeURIComponent(currentMapAddress); 
   
   if (appType === 'kakao') {
-    window.open(`https://map.kakao.com/link/search/${encodedAddress}`, '_blank');
+    // 🌟 수정됨: 오류가 잦은 link 주소 대신 안정적인 모바일 전용 주소(m.map...) 사용
+    window.open(`https://m.map.kakao.com/actions/searchView?q=${encodedAddress}`, '_blank');
   } else if (appType === 'naver') {
     window.open(`https://m.map.naver.com/search2/search.naver?query=${encodedAddress}`, '_blank');
   }
