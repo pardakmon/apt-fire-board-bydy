@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>공동주택 화재 현황판</title>
 <!-- 화면 캡처를 위한 html2canvas 라이브러리 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -25,6 +25,7 @@
     --gold:#f59e0b;
   }
   *{box-sizing:border-box;}
+  * { touch-action: manipulation; }
   
   body{
     font-family:"Malgun Gothic","맑은 고딕",sans-serif;
