@@ -2038,13 +2038,23 @@ function closeMapModal() {
 
 function openMapApp(appType) {
   const encodedAddress = encodeURIComponent(currentMapAddress); 
+  // 🌟 현재 접속한 기기가 모바일(스마트폰)인지 PC인지 확인
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   
-  if (appType === 'kakao') {
-    // 🌟 카카오맵 '어플' 강제 호출 명령어
-    window.location.href = `kakaomap://search?q=${encodedAddress}`;
-  } else if (appType === 'naver') {
-    // 🌟 네이버지도 '어플' 강제 호출 명령어
-    window.location.href = `nmap://search?query=${encodedAddress}&appname=fireboard`;
+  if (isMobile) {
+    // 📱 [스마트폰] 진짜 '지도 어플'을 깨워서 실행
+    if (appType === 'kakao') {
+      window.location.href = `kakaomap://search?q=${encodedAddress}`;
+    } else if (appType === 'naver') {
+      window.location.href = `nmap://search?query=${encodedAddress}&appname=fireboard`;
+    }
+  } else {
+    // 💻 [PC 컴퓨터] 인터넷 브라우저 '새 탭'으로 지도 웹사이트 접속
+    if (appType === 'kakao') {
+      window.open(`https://map.kakao.com/link/search/${encodedAddress}`, '_blank');
+    } else if (appType === 'naver') {
+      window.open(`https://map.naver.com/p/search/${encodedAddress}`, '_blank');
+    }
   }
   
   closeMapModal(); 
