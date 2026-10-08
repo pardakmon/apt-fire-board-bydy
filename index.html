@@ -2039,11 +2039,13 @@ function openMapApp(appType) {
   const encodedAddress = encodeURIComponent(currentMapAddress); 
   
   if (appType === 'kakao') {
-    // 🌟 수정됨: 오류가 잦은 link 주소 대신 안정적인 모바일 전용 주소(m.map...) 사용
-    window.open(`https://m.map.kakao.com/actions/searchView?q=${encodedAddress}`, '_blank');
+    // 🌟 카카오맵 '어플' 강제 호출 명령어
+    window.location.href = `kakaomap://search?q=${encodedAddress}`;
   } else if (appType === 'naver') {
-    window.open(`https://m.map.naver.com/search2/search.naver?query=${encodedAddress}`, '_blank');
+    // 🌟 네이버지도 '어플' 강제 호출 명령어
+    window.location.href = `nmap://search?query=${encodedAddress}&appname=fireboard`;
   }
+  
   closeMapModal(); 
 }
   
