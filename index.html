@@ -413,7 +413,7 @@
     
     <div class="field" style="margin-bottom:12px;">
       <label style="font-size:12px; color:#64748b; font-weight:700;">대원 성명</label>
-      <input type="text" id="signupName" placeholder="예: 김도율" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; box-sizing:border-box;">
+      <input type="text" id="signupName" placeholder="예: 백기태" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; box-sizing:border-box;">
     </div>
     <div class="field" style="margin-bottom:12px;">
       <label style="font-size:12px; color:#64748b; font-weight:700;">소속 및 팀</label>
@@ -426,6 +426,11 @@
     <div class="field" style="margin-bottom:16px;">
       <label style="font-size:12px; color:#64748b; font-weight:700;">비밀번호 (6자리 이상)</label>
       <input type="password" id="signupPassword" placeholder="비밀번호 입력" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; box-sizing:border-box;">
+    </div>
+
+    <div class="field" style="margin-bottom:16px;">
+      <label style="font-size:12px; color:#64748b; font-weight:700;">비밀번호 확인</label>
+      <input type="password" id="signupPasswordConfirm" placeholder="비밀번호 재입력" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; box-sizing:border-box;">
     </div>
     
     <button type="button" onclick="handleSignUp()" style="width:100%; padding:12px; font-size:14.5px; font-weight:700; background:#0071e3; color:#fff; border:none; border-radius:10px; cursor:pointer;">가입 신청하기</button>
@@ -774,6 +779,7 @@ function closeSignupModal() {
   document.getElementById('signupTeam').value = '';
   document.getElementById('signupEmail').value = '';
   document.getElementById('signupPassword').value = '';
+  document.getElementById('signupPasswordConfirm').value = '';
 }
 
 function handleSignUp() {
@@ -781,6 +787,7 @@ function handleSignUp() {
   const team = document.getElementById('signupTeam').value.trim();
   const email = document.getElementById('signupEmail').value.trim();
   const password = document.getElementById('signupPassword').value;
+  const passwordConfirm = document.getElementById('signupPasswordConfirm').value;
 
   if (!name || !team || !email || !password) {
     alert("모든 항목을 빠짐없이 입력해주세요.");
@@ -789,6 +796,12 @@ function handleSignUp() {
 
   if (password.length < 6) {
     alert("비밀번호는 최소 6자리 이상이어야 합니다.");
+    return;
+  }
+
+  if (password !== passwordConfirm) {
+    alert("비밀번호가 일치하지 않습니다.\n다시 확인해주세요.");
+    document.getElementById('signupPasswordConfirm').focus();
     return;
   }
 
