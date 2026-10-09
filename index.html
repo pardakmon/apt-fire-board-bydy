@@ -390,6 +390,12 @@
     </div>
     <div id="loginError" class="login-error">아이디 또는 비밀번호를 확인해주세요.</div>
     <button type="button" onclick="doLogin()">관리자 로그인 (작성/수정)</button>
+
+    <div style="margin-top:12px; text-align:center;">
+      <button type="button" onclick="openSignupModal()" style="background:none; border:none; color:#0071e3; font-size:13px; text-decoration:underline; cursor:pointer; padding:4px;">
+        처음이신가요? 대원 회원가입 신청
+      </button>
+    </div>
     
     <div style="margin-top:20px; border-top:1px solid #e2e8f0; padding-top:20px;">
       <button type="button" class="secondary" style="width:100%; background:#f8fafc;" onclick="enterViewMode()">👀 실시간 관전 모드 (조회 전용)</button>
@@ -397,6 +403,33 @@
         관전 모드에서는 로그인 없이 실시간 현황을 <br>조회하고 캡처할 수 있습니다.
       </div>
     </div>
+  </div>
+</div>
+
+<div id="signupModal" class="overlay" style="display:none; z-index:30000;">
+  <div class="modal" style="width:90vw; max-width:380px; padding:24px;">
+    <h3 style="margin:0 0 6px 0; color:var(--navy); font-size:18px; text-align:center; font-weight:800;">대원 회원가입 신청</h3>
+    <p style="font-size:12px; color:#64748b; text-align:center; margin:0 0 16px 0;">관리자 승인 완료 후 현황판 이용이 가능합니다.</p>
+    
+    <div class="field" style="margin-bottom:12px;">
+      <label style="font-size:12px; color:#64748b; font-weight:700;">대원 성명</label>
+      <input type="text" id="signupName" placeholder="예: 김도율" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; box-sizing:border-box;">
+    </div>
+    <div class="field" style="margin-bottom:12px;">
+      <label style="font-size:12px; color:#64748b; font-weight:700;">소속 및 팀</label>
+      <input type="text" id="signupTeam" placeholder="예: 현장대응단 1팀" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; box-sizing:border-box;">
+    </div>
+    <div class="field" style="margin-bottom:12px;">
+      <label style="font-size:12px; color:#64748b; font-weight:700;">아이디 (이메일 형식)</label>
+      <input type="email" id="signupEmail" placeholder="예: ydp01@fire.local" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; box-sizing:border-box;">
+    </div>
+    <div class="field" style="margin-bottom:16px;">
+      <label style="font-size:12px; color:#64748b; font-weight:700;">비밀번호 (6자리 이상)</label>
+      <input type="password" id="signupPassword" placeholder="비밀번호 입력" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; box-sizing:border-box;">
+    </div>
+    
+    <button type="button" onclick="handleSignUp()" style="width:100%; padding:12px; font-size:14.5px; font-weight:700; background:#0071e3; color:#fff; border:none; border-radius:10px; cursor:pointer;">가입 신청하기</button>
+    <button type="button" class="secondary" onclick="closeSignupModal()" style="width:100%; margin-top:8px; padding:10px; font-size:13px; border-radius:8px; cursor:pointer;">닫기</button>
   </div>
 </div>
 
@@ -589,7 +622,8 @@ const dbRef = db.ref('apt_evac_board_v1');
 
 let floors = []; 
 let isInitialLoad = true; 
-let isReadOnly = false; 
+let isReadOnly = false;
+let isSigningUp = false;
 
 let isListening = false;
 let currentRole = "알수없음";
@@ -660,18 +694,36 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 auth.onAuthStateChanged(user => {
+  if (isSigningUp) return; // 가입 신청 중에는 화면 진입 방지
+
   if (user) {
-    isReadOnly = false;
-    currentRole = localStorage.getItem('myRole') || '대원'; 
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('mainWrap').style.display = 'block';
-    
-    document.getElementById('btnLogout').style.display = 'inline-block';
-    document.getElementById('btnLoginFromView').style.display = 'none';
-    document.getElementById('btnBackToSetup').style.display = 'inline-block';
-    document.getElementById('btnResetDB').style.display = 'inline-block';
-    
-    startDatabaseListener();
+    // 💡 DB에서 관리자 승인(approved: true) 여부 검사
+    db.ref('users/' + user.uid).once('value').then(snapshot => {
+      const userData = snapshot.val();
+
+      // 계정 정보가 DB에 존재하지만 아직 미승인(false) 상태인 경우 차단
+      if (userData && userData.approved !== true) {
+        alert("⏳ 관리자 승인 대기 중인 계정입니다.\n관리자 승인 완료 후 이용 가능합니다.");
+        auth.signOut();
+        return;
+      }
+
+      // 승인 완료된 대원 또는 기존 관리자 계정 통과
+      isReadOnly = false;
+      currentRole = localStorage.getItem('myRole') || (userData ? userData.name : '대원'); 
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('mainWrap').style.display = 'block';
+      
+      document.getElementById('btnLogout').style.display = 'inline-block';
+      document.getElementById('btnLoginFromView').style.display = 'none';
+      document.getElementById('btnBackToSetup').style.display = 'inline-block';
+      document.getElementById('btnResetDB').style.display = 'inline-block';
+      
+      startDatabaseListener();
+    }).catch(err => {
+      console.error("사용자 정보 조회 실패:", err);
+      auth.signOut();
+    });
   } else {
     if(!isReadOnly) {
       document.getElementById('loginScreen').style.display = 'flex';
@@ -679,6 +731,71 @@ auth.onAuthStateChanged(user => {
     }
   }
 });
+
+// 🌟 [추가] 회원가입 팝업 제어 및 신청 처리 함수
+function openSignupModal() {
+  document.getElementById('signupModal').style.display = 'flex';
+}
+
+function closeSignupModal() {
+  document.getElementById('signupModal').style.display = 'none';
+  document.getElementById('signupName').value = '';
+  document.getElementById('signupTeam').value = '';
+  document.getElementById('signupEmail').value = '';
+  document.getElementById('signupPassword').value = '';
+}
+
+function handleSignUp() {
+  const name = document.getElementById('signupName').value.trim();
+  const team = document.getElementById('signupTeam').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+
+  if (!name || !team || !email || !password) {
+    alert("모든 항목을 빠짐없이 입력해주세요.");
+    return;
+  }
+
+  if (password.length < 6) {
+    alert("비밀번호는 최소 6자리 이상이어야 합니다.");
+    return;
+  }
+
+  isSigningUp = true; // 가입 시작
+
+  // 1. Firebase Auth 계정 생성
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(userCredential => {
+      const uid = userCredential.user.uid;
+      // 2. Realtime Database의 users 경로에 'approved: false' 상태로 보관
+      return db.ref('users/' + uid).set({
+        name: name,
+        team: team,
+        email: email,
+        approved: false, // 👈 관리자가 콘솔에서 true로 바꾸면 승인
+        createdAt: new Date().toISOString()
+      });
+    })
+    .then(() => {
+      // 3. 가입 직후 보안을 위해 즉시 로그아웃
+      return auth.signOut();
+    })
+    .then(() => {
+      isSigningUp = false;
+      alert("✅ 대원 가입 신청이 완료되었습니다!\n관리자 승인 완료 후 로그인할 수 있습니다.");
+      closeSignupModal();
+    })
+    .catch(error => {
+      isSigningUp = false;
+      if (error.code === 'auth/email-already-in-use') {
+        alert("이미 등록된 아이디(이메일)입니다.");
+      } else if (error.code === 'auth/invalid-email') {
+        alert("올바른 이메일 형식을 입력해주세요. (예: ydp01@fire.local)");
+      } else {
+        alert("가입 신청 실패: " + error.message);
+      }
+    });
+}
 
 function doLogin() {
   const email = document.getElementById('loginEmail').value;
