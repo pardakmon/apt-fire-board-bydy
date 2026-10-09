@@ -231,7 +231,32 @@
   .toolbar button { min-width: 165px; } /* 🌟 PC에서 버튼 4개의 너비를 똑같이 통일 */
   .empty-hint{color:#94a3b8;font-size:14px;text-align:center;padding:40px 0;font-weight:600;}
   .credit-line{text-align:center;font-size:12px;color:#94a3b8;margin:20px 0 10px;letter-spacing:0.5px;font-weight:600;}
-  .board-topbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:1px; flex-wrap:wrap; gap:10px; }
+  .board-topbar { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 8px; 
+    flex-wrap: nowrap; 
+    gap: 6px; 
+    overflow-x: auto; 
+    scrollbar-width: none; 
+  }
+  .board-topbar::-webkit-scrollbar { display: none; }
+  .board-topbar button { 
+    padding: 8px 12px !important; 
+    font-size: 13px !important; 
+    border-radius: 10px !important; 
+    white-space: nowrap !important; 
+    flex-shrink: 0; 
+  }
+
+  /* 스마트폰 세로 화면에서도 한 줄에 쏙 들어가도록 글자/여백 미세 조정 */
+  @media (max-width: 640px) {
+    .board-topbar button {
+      padding: 6px 9px !important;
+      font-size: 11.5px !important;
+    }
+  }
 
   /* modal */
   .overlay{ position:fixed;inset:0;background:rgba(15,23,42,0.6); display:flex;align-items:center;justify-content:center;z-index:10000; backdrop-filter: blur(2px); }
