@@ -1678,7 +1678,7 @@ function render(){
   const name = document.getElementById('bldgName').value.trim();
 
   if (name) {
-    document.getElementById('titleLine').innerHTML = `${name} <span onclick="showMapModal('${name.replace(/'/g, "\\'")}')" style="display:inline-block; font-size:14px; font-weight:800; color:#fff; background:rgba(255,255,255,0.25); border:1px solid rgba(255,255,255,0.4); padding:4px 10px; border-radius:12px; margin-left:8px; cursor:pointer; vertical-align:middle; transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.4)'" onmouseout="this.style.background='rgba(255,255,255,0.25)'">🗺️ 지도/로드뷰</span>`;
+    document.getElementById('titleLine').innerHTML = `${name} <span onclick="showMapModal('${name.replace(/'/g, "\\'")}')" style="display:inline-block; font-size:14px; font-weight:800; color:#fff; background:rgba(255,255,255,0.25); border:1px solid rgba(255,255,255,0.4); padding:4px 10px; border-radius:12px; margin-left:8px; cursor:pointer; vertical-align:middle; transition:0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.4)'" onmouseout="this.style.background='rgba(255,255,255,0.25)'">📍 48</span>`;
   } else {
     document.getElementById('titleLine').textContent = '';
   }
