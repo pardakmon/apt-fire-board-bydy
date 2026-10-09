@@ -421,9 +421,13 @@
     <div id="loginError" class="login-error">아이디 또는 비밀번호를 확인해주세요.</div>
     <button type="button" onclick="doLogin()">관리자 로그인 (작성/수정)</button>
 
-    <div style="margin-top:12px; text-align:center;">
-      <button type="button" onclick="openSignupModal()" style="background:none; border:none; color:#0071e3; font-size:13px; text-decoration:underline; cursor:pointer; padding:4px;">
-        처음이신가요? 대원 회원가입 신청
+    <div style="margin-top:14px; display:flex; justify-content:center; align-items:center; gap:10px; font-size:12.5px;">
+      <button type="button" onclick="openSignupModal()" style="background:none; border:none; color:#0071e3; font-size:12.5px; text-decoration:underline; cursor:pointer; padding:2px;">
+        회원가입 신청
+      </button>
+      <span style="color:#cbd5e1;">|</span>
+      <button type="button" onclick="handleResetPassword()" style="background:none; border:none; color:#64748b; font-size:12.5px; text-decoration:underline; cursor:pointer; padding:2px;">
+        비밀번호 찾기
       </button>
     </div>
     
@@ -2358,6 +2362,31 @@ function rejectUser(uid) {
   db.ref('users/' + uid).remove().then(() => {
     openApprovalModal();
   });
+}
+
+function handleResetPassword() {
+  const currentInputEmail = document.getElementById('loginEmail') ? document.getElementById('loginEmail').value.trim() : '';
+  const email = prompt("비밀번호를 재설정할 이메일 아이디를 입력해주세요:", currentInputEmail);
+
+  if (email === null) return; // 취소 누른 경우
+  if (!email.trim()) {
+    alert("이메일 주소를 입력해주세요.");
+    return;
+  }
+
+  auth.sendPasswordResetEmail(email.trim())
+    .then(() => {
+      alert(`✅ 비밀번호 재설정 메일이 발송되었습니다!\n[${email.trim()}] 메일함을 확인하여 비밀번호를 변경해 주세요.`);
+    })
+    .catch(error => {
+      if (error.code === 'auth/user-not-found') {
+        alert("등록되지 않은 이메일 주소입니다.");
+      } else if (error.code === 'auth/invalid-email') {
+        alert("올바른 이메일 형식을 입력해주세요. (예: ydp01@seoul.go.kr)");
+      } else {
+        alert("메일 발송 실패: " + error.message);
+      }
+    });
 }
   
 </script>
