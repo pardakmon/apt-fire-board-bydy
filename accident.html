@@ -610,60 +610,48 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// --- [인증 및 로그인 처리] ---
 auth.onAuthStateChanged(user => {
-  if (isSigningUp) return;
-
   if (user) {
-    // 💡 DB에서 관리자 승인(approved: true) 여부 검사
     db.ref('users/' + user.uid).once('value').then(snapshot => {
       const userData = snapshot.val();
-
-      // 승인 대기 중 계정 차단
       if (userData && userData.approved !== true) {
-        alert("⏳ 관리자 승인 대기 중인 계정입니다.\n관리자 승인 완료 후 이용 가능합니다.");
+        alert("⏳ 관리자 승인 대기 중인 계정입니다.");
         auth.signOut();
         return;
       }
 
-      isSpectator = false;
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('mainWrap').style.display = 'block';
-
-      // 상단바 버튼 상태 정비
-      document.getElementById('btnBackToSetup').style.display = 'inline-block';
-      document.getElementById('btnLogout').style.display = 'inline-block';
-      document.getElementById('btnExitSpectator').style.display = 'none';
-
-      // 관리자 권한 확인
       const btnAdmin = document.getElementById('btnAdminApproval');
       if (userData && userData.role === 'admin') {
         if (btnAdmin) btnAdmin.style.display = 'inline-block';
-        listenPendingUsers(); // 실시간 승인 대기자 감시 시작
+        listenPendingUsers(); 
       } else {
         if (btnAdmin) btnAdmin.style.display = 'none';
       }
 
-      const resetBtn = document.querySelector('button.danger');
-      if (resetBtn) resetBtn.style.display = 'inline-block';
-
+      isReadOnly = false;
+      currentRole = userData ? userData.name : '대원'; 
+      
+      // 💡 에러의 원인이었던 로그인 화면 숨김 코드를 제거하고 본문만 띄웁니다
+      document.getElementById('mainWrap').style.display = 'block';
+      
+      document.getElementById('btnLogout').style.display = 'inline-block';
+      document.getElementById('btnLoginFromView').style.display = 'none';
+      document.getElementById('btnBackToSetup').style.display = 'inline-block';
+      document.getElementById('btnResetDB').style.display = 'inline-block';
+      
       startDatabaseListener();
-    }).catch(err => {
-      console.error("사용자 정보 조회 실패:", err);
-      auth.signOut();
     });
   } else {
-    if (!isSpectator) {
-      document.getElementById('loginScreen').style.display = 'flex';
-      document.getElementById('mainWrap').style.display = 'none';
-    }
-    if (isListening) {
-      boardRef.off('value');
-      isListening = false;
+    // 💡 로그인이 안 되어 있으면 통합 허브(index.html)로 돌려보냅니다
+    if(sessionStorage.getItem('isSpectator') === 'true') {
+       isReadOnly = true;
+       document.getElementById('mainWrap').style.display = 'block';
+       startDatabaseListener();
+    } else {
+       location.href = 'index.html';
     }
   }
 });
-
 function doLogin() {
   const email = document.getElementById('loginEmail').value;
   const pwd = document.getElementById('loginPwd').value;
