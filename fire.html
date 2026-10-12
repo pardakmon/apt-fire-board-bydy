@@ -685,32 +685,28 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 auth.onAuthStateChanged(user => {
-  if (isSigningUp) return; // 가입 신청 중에는 화면 진입 방지
-
   if (user) {
-    // 💡 DB에서 관리자 승인(approved: true) 여부 검사
     db.ref('users/' + user.uid).once('value').then(snapshot => {
       const userData = snapshot.val();
-
-      // 계정 정보가 DB에 존재하지만 아직 미승인(false) 상태인 경우 차단
       if (userData && userData.approved !== true) {
-        alert("⏳ 관리자 승인 대기 중인 계정입니다.\n관리자 승인 완료 후 이용 가능합니다.");
+        alert("⏳ 관리자 승인 대기 중인 계정입니다.");
         auth.signOut();
         return;
       }
 
+      // 1. 관리자 권한 버튼 체크
       const btnAdmin = document.getElementById('btnAdminApproval');
       if (userData && userData.role === 'admin') {
         if (btnAdmin) btnAdmin.style.display = 'inline-block';
-        listenPendingUsers(); // 대기 인원수 실시간 감시 시작
+        listenPendingUsers(); 
       } else {
         if (btnAdmin) btnAdmin.style.display = 'none';
       }
 
-      // 승인 완료된 대원 또는 기존 관리자 계정 통과
       isReadOnly = false;
-      currentRole = localStorage.getItem('myRole') || (userData ? userData.name : '대원'); 
-      document.getElementById('loginScreen').style.display = 'none';
+      currentRole = userData ? userData.name : '대원'; 
+      
+      // 💡 여기가 핵심! (에러 나던 loginScreen 코드를 지우고 본문만 띄움)
       document.getElementById('mainWrap').style.display = 'block';
       
       document.getElementById('btnLogout').style.display = 'inline-block';
@@ -719,14 +715,15 @@ auth.onAuthStateChanged(user => {
       document.getElementById('btnResetDB').style.display = 'inline-block';
       
       startDatabaseListener();
-    }).catch(err => {
-      console.error("사용자 정보 조회 실패:", err);
-      auth.signOut();
     });
   } else {
-    if(!isReadOnly) {
-      document.getElementById('loginScreen').style.display = 'flex';
-      document.getElementById('mainWrap').style.display = 'none';
+    // 💡 로그인 안 된 상태면 허브(index.html)로 쫓아내기
+    if(sessionStorage.getItem('isSpectator') === 'true') {
+       isReadOnly = true;
+       document.getElementById('mainWrap').style.display = 'block';
+       startDatabaseListener();
+    } else {
+       location.href = 'index.html';
     }
   }
 });
