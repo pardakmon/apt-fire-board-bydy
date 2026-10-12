@@ -501,8 +501,10 @@
       </button>
       
       <div style="flex:1;"></div>
-      <button type="button" class="secondary" id="btnLoginFromView" onclick="location.reload()" style="display:none; color:var(--navy); border-color:#cbd5e1;">관리자 로그인</button>
-      <button type="button" class="secondary" id="btnLogout" onclick="doLogout()" style="display:none; color:var(--rescue); border-color:#fecdd3;">로그아웃</button>
+      <!-- 로그아웃 대신 허브 이동 버튼 추가 -->
+      <button type="button" class="secondary" onclick="location.href='index.html'" style="color:var(--navy); border-color:#cbd5e1; font-weight:800; background:#f8fafc;">
+        🏠 현황판 선택 (허브)
+      </button>
     </div>
     
     <!-- 📷 캡처될 내용물이 쏙 들어가는 알맹이 구역 -->
