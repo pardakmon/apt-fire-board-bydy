@@ -506,6 +506,18 @@
   </div>
 </div>
 
+<!-- 🌟 [추가] 상단 요약 카드 터치 시 상세 내역 팝업창 -->
+<div id="statDetailOverlay" class="overlay" style="display:none; z-index:30000;" onclick="if(event.target===this) this.style.display='none'" data-html2canvas-ignore="true">
+  <div class="modal" style="width:90vw; max-width:400px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--navy); padding-bottom:10px; margin-bottom:12px;">
+      <h3 id="statDetailTitle" style="margin:0; font-size:16px;">상세 현황</h3>
+      <button type="button" class="small secondary" onclick="document.getElementById('statDetailOverlay').style.display='none'">닫기</button>
+    </div>
+    <div id="statDetailBody" style="max-height:60vh; overflow-y:auto; font-size:13.5px; line-height:1.6; color:#334155;">
+    </div>
+  </div>
+</div>
+
 <div class="wrap" id="mainWrap" style="display:none;">
   <div id="setupScreen">
     <h1>공동주택 화재 현황판</h1>
@@ -1737,10 +1749,10 @@ function render(){
   });
   
   document.getElementById('summaryCards').innerHTML = `
-    <div class="stat-card total"><div class="num">${evacTotal}</div><div class="label">총 대피(명)</div></div>
-    <div class="stat-card rescue"><div class="num">${rescueTotal}</div><div class="label">구조(명)</div></div>
-    <div class="stat-card evac"><div class="num">${evacSelfTotal}</div><div class="label">자력대피(명)</div></div>
-    <div class="stat-card clear"><div class="num">${clearTotal}</div><div class="label">자택대기(명)</div></div>
+    <div class="stat-card total" style="cursor:pointer;" onclick="openStatDetail('total')"><div class="num">${evacTotal}</div><div class="label">총 대피(명)</div></div>
+    <div class="stat-card rescue" style="cursor:pointer;" onclick="openStatDetail('rescue')"><div class="num">${rescueTotal}</div><div class="label">구조(명)</div></div>
+    <div class="stat-card evac" style="cursor:pointer;" onclick="openStatDetail('evac')"><div class="num">${evacSelfTotal}</div><div class="label">자력대피(명)</div></div>
+    <div class="stat-card clear" style="cursor:pointer;" onclick="openStatDetail('clear')"><div class="num">${clearTotal}</div><div class="label">자택대기(명)</div></div>
   `;
 
   function unitSuffix(u, floorName){ return u.no.slice(String(floorName).length); }
@@ -2391,6 +2403,71 @@ function handleResetPassword() {
       }
     });
 }
+
+// 💡 [추가] 상단 요약 카드 터치 시 해당 인원 상세 내역 팝업 띄우기
+window.openStatDetail = function(type) {
+    let rescueTotal = 0, evacSelfTotal = 0, clearTotal = 0;
+    const rescueList = [], evacList = [], clearList = [];
+
+    floors.forEach(fl => {
+        (fl.units || []).forEach(u => {
+            const cleanNo = String(u.no).replace(/\u200B/g, '');
+            const rc = u.rescueCount || 0;
+            const ec = u.evacCount || 0;
+            const cc = u.clearCount || 0;
+
+            if (rc > 0) {
+                rescueTotal += rc;
+                let line = cleanNo + '호 ' + rc + '명';
+                if (u.rescueDetails && u.rescueDetails.length) line += ' [' + u.rescueDetails.join('; ') + ']';
+                rescueList.push(line);
+            }
+            if (ec > 0) {
+                evacSelfTotal += ec;
+                let line = cleanNo + '호 ' + ec + '명';
+                if (u.evacDetails && u.evacDetails.length) line += ' [' + u.evacDetails.join('; ') + ']';
+                evacList.push(line);
+            }
+            if (cc > 0) {
+                clearTotal += cc;
+                clearList.push(cleanNo + '호 ' + cc + '명');
+            }
+        });
+    });
+
+    const titleEl = document.getElementById('statDetailTitle');
+    const bodyEl = document.getElementById('statDetailBody');
+    let html = '';
+
+    const makeBox = (label, color, count, list) => `
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid ${color}; border-radius:8px; padding:10px 12px; margin-bottom:10px;">
+            <div style="font-weight:800; color:${color}; margin-bottom:6px;">※ ${label} ${count}명</div>
+            <div style="color:#334155; word-break:keep-all;">${list.join(', ')}</div>
+        </div>
+    `;
+
+    if (type === 'total') {
+        titleEl.textContent = `총 대피 현황 (${rescueTotal + evacSelfTotal}명)`;
+        if (rescueTotal > 0) html += makeBox('구조', 'var(--rescue)', rescueTotal, rescueList);
+        if (evacSelfTotal > 0) html += makeBox('자력대피', 'var(--evac)', evacSelfTotal, evacList);
+    } else if (type === 'rescue') {
+        titleEl.textContent = `🚁 구조 현황 (${rescueTotal}명)`;
+        if (rescueTotal > 0) html += makeBox('구조', 'var(--rescue)', rescueTotal, rescueList);
+    } else if (type === 'evac') {
+        titleEl.textContent = `🏃 자력대피 현황 (${evacSelfTotal}명)`;
+        if (evacSelfTotal > 0) html += makeBox('자력대피', 'var(--evac)', evacSelfTotal, evacList);
+    } else if (type === 'clear') {
+        titleEl.textContent = `🏠 자택대기 현황 (${clearTotal}명)`;
+        if (clearTotal > 0) html += makeBox('자택대기', 'var(--clear-bg)', clearTotal, clearList);
+    }
+
+    if (!html) {
+        html = '<div style="text-align:center; padding:24px 0; color:#94a3b8; font-weight:600;">입력된 인원이 없습니다.</div>';
+    }
+
+    bodyEl.innerHTML = html;
+    document.getElementById('statDetailOverlay').style.display = 'flex';
+};
   
 </script>
 </body>
