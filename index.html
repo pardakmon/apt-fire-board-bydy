@@ -125,8 +125,14 @@
   .btn-util:hover { background:rgba(0,0,0,0.5); }
   .btn-util.elec.active { background:#e11d48; color:#fff; border-color:#fda4af; }
   .btn-util.gas.active { background:#ea580c; color:#fff; border-color:#fdba74; }
+  .btn-util.standby.active { background:#0284c7; color:#fff; border-color:#7dd3fc; }
   .btn-util.elec::before { content: "⚡ "; }
   .btn-util.gas::before { content: "💨 "; }
+  .btn-util.standby::before { content: "🅿️ "; }
+
+  .h-scroll { display: flex; overflow-x: auto; gap: 6px; padding-bottom: 2px; scrollbar-width: none; -ms-overflow-style: none; }
+  .h-scroll::-webkit-scrollbar { display: none; }
+  .t-btn { flex: 0 0 auto; padding: 5px 12px; font-size: 11.5px; background: #fff; color: #334155; border: 1px solid #cbd5e1; border-radius: 12px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
 
   #titleLine{ color:#fff; }
   .stat-cards{ display:flex;gap:12px;margin:4px 0 16px; flex-wrap: wrap; }
@@ -518,6 +524,62 @@
   </div>
 </div>
 
+<!-- 🌟 [추가] 직전대기(후착대) 조회 및 입력 팝업창 -->
+<div id="standbyOverlay" class="overlay" style="display:none; z-index:30000;" onclick="if(event.target===this) closeStandbyModal()" data-html2canvas-ignore="true">
+  <div class="modal" style="width:92vw; max-width:420px; padding:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--navy); padding-bottom:10px; margin-bottom:12px;">
+      <h3 style="margin:0; font-size:16px; color:var(--navy); font-weight:800;">🅿️ 직전대기 현황 <span id="standbyModalCount" style="color:#0284c7;">(0대)</span></h3>
+      <button type="button" class="small secondary" onclick="closeStandbyModal()">닫기</button>
+    </div>
+
+    <div id="standbyBadgeList" style="min-height:48px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:14px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+    </div>
+
+    <div id="standbyControlArea">
+      <div style="display:flex; gap:6px; margin-bottom:10px;">
+        <input type="text" id="standbyInput" placeholder="직접 입력 (예: 구로P, 여의도1A)" onkeydown="if(event.key==='Enter'){ event.preventDefault(); addStandbyFromInput(); }" style="flex:1; padding:8px 10px; font-size:13px;">
+        <button type="button" class="small" onclick="addStandbyFromInput()" style="padding:8px 14px; white-space:nowrap;">추가</button>
+      </div>
+
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
+        <div style="font-size:11.5px; color:#64748b; font-weight:700; margin-bottom:8px;">⚡ 원터치 빠른 추가 (터치 시 즉시 대기 등록)</div>
+        <div class="h-scroll" style="margin-bottom:6px;">
+          <div style="flex:0 0 auto; font-size:11px; font-weight:800; color:#0ea5e9; padding-top:5px; margin-right:2px;">진압·구조</div>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('영등포P')">영등포P</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('영등포R')">영등포R</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('여의도P')">여의도P</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('당산P')">당산P</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('대림P')">대림P</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('신길P')">신길P</button>
+        </div>
+        <div class="h-scroll" style="margin-bottom:6px;">
+          <div style="flex:0 0 auto; font-size:11px; font-weight:800; color:#16a34a; padding-top:5px; margin-right:2px;">관내구급</div>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('영등포1A')">영등포1A</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('영등포2A')">영등포2A</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('여의도1A')">여의도1A</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('당산1A')">당산1A</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('대림1A')">대림1A</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('신길1A')">신길1A</button>
+        </div>
+        <div class="h-scroll">
+          <div style="flex:0 0 auto; font-size:11px; font-weight:800; color:#f59e0b; padding-top:5px; margin-right:2px;">타서지원</div>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('구로R')">구로R</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('동작R')">동작R</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('양천R')">양천R</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('마포R')">마포R</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('관악R')">관악R</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('강서R')">강서R</button>
+          <button type="button" class="t-btn" onclick="addStandbyTeam('금천R')">금천R</button>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+        <button type="button" class="small danger" onclick="clearStandbyTeams()" style="padding:6px 12px;">대기 전체 비우기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="wrap" id="mainWrap" style="display:none;">
   <div id="setupScreen">
     <h1>공동주택 화재 현황판</h1>
@@ -620,6 +682,7 @@
           <div class="header-utilities">
             <button id="btn-elec" class="btn-util elec" onclick="toggleUtility('elec')">전기차단 X</button>
             <button id="btn-gas" class="btn-util gas" onclick="toggleUtility('gas')">가스차단 X</button>
+            <button id="btn-standby" class="btn-util standby" onclick="openStandbyModal()">직전대기 0대</button>
           </div>
         </div>
       </div>
@@ -707,6 +770,7 @@ let currentRole = "알수없음";
 let elecData = { status: false, updateTime: '', updateBy: '' };
 let gasData = { status: false, updateTime: '', updateBy: '' };
 let timeRecords = { oin: '', chojin: '', wanjin: '' }; // 🌟 타임스탬프 저장 변수
+let standbyTeams = []; // 🌟 직전대기 팀 목록
 
 // 🌟 원터치 타임스탬프 로직
 function stampTime(type) {
@@ -1118,6 +1182,7 @@ function saveState(){
       elec: elecData,
       gas: gasData,
       timeRecords: timeRecords,
+      standbyTeams: standbyTeams,
       savedAt: new Date().toISOString()
     };
     
@@ -1183,9 +1248,11 @@ function startDatabaseListener() {
     elecData = state.elec || { status: false, updateTime: '', updateBy: '' };
     gasData = state.gas || { status: false, updateTime: '', updateBy: '' };
     timeRecords = state.timeRecords || { oin: '', chojin: '', wanjin: '' };
+    standbyTeams = state.standbyTeams ? (Array.isArray(state.standbyTeams) ? state.standbyTeams : Object.values(state.standbyTeams)) : [];
     
     updateUtilityButtons();
-    if(typeof renderTimeButtons === 'function') renderTimeButtons(); //
+    if(typeof updateStandbyUI === 'function') updateStandbyUI();
+    if(typeof renderTimeButtons === 'function') renderTimeButtons();
     
     document.getElementById('backToBoardBtn').style.display = isReadOnly ? 'none' : 'inline-block';
     
@@ -2488,7 +2555,148 @@ window.openStatDetail = function(type) {
     bodyEl.innerHTML = html;
     document.getElementById('statDetailOverlay').style.display = 'flex';
 };
-  
+
+// ==========================================
+// 🌟 [추가] 직전대기(후착대) 팝업 조회·추가·삭제 로직
+// ==========================================
+function getStandbyBadgeTheme(teamName) {
+  const t = String(teamName).trim().toUpperCase();
+  let hash = 0;
+  for (let k = 0; k < t.length; k++) hash = (hash * 31) + t.charCodeAt(k);
+  hash = Math.abs(hash);
+
+  let theme = { bg: '#f1f5f9', color: '#475569', border: '#cbd5e1' };
+  let icon = '🚒';
+
+  if (t.includes('구조') || t.includes('R') || t.includes('RESCUE')) {
+    const p = [
+      { bg: '#fff1f2', color: '#e11d48', border: '#fda4af' },
+      { bg: '#fdf4ff', color: '#c026d3', border: '#f0abfc' },
+      { bg: '#fff7ed', color: '#ea580c', border: '#fdba74' },
+      { bg: '#faf5ff', color: '#9333ea', border: '#d8b4fe' }
+    ];
+    theme = p[hash % p.length];
+    icon = '🪓';
+  } else if (t.includes('구급') || t.includes('A') || t.includes('AMBU')) {
+    const p = [
+      { bg: '#f0fdf4', color: '#16a34a', border: '#86efac' },
+      { bg: '#ecfdf5', color: '#0d9488', border: '#5eead4' },
+      { bg: '#f7fee7', color: '#65a30d', border: '#bef264' }
+    ];
+    theme = p[hash % p.length];
+    icon = '🚑';
+  } else if (t.includes('지휘') || t.includes('조사') || t.includes('C')) {
+    theme = { bg: '#fefce8', color: '#ca8a04', border: '#fef08a' };
+    icon = '📋';
+  } else if (t.includes('펌프') || t.includes('진압') || t.includes('탱크') || t.includes('화학') || t.includes('고가') || t.includes('굴절') || t.includes('P')) {
+    const p = [
+      { bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
+      { bg: '#eef2ff', color: '#4f46e5', border: '#c7d2fe' },
+      { bg: '#f0f9ff', color: '#0284c7', border: '#7dd3fc' },
+      { bg: '#ecfeff', color: '#0891b2', border: '#a5f3fc' }
+    ];
+    theme = p[hash % p.length];
+    icon = '🚒';
+  }
+  return { theme, icon, label: t };
+}
+
+function updateStandbyUI() {
+  const btn = document.getElementById('btn-standby');
+  if (btn) {
+    const count = standbyTeams.length;
+    btn.textContent = `직전대기 ${count}대`;
+    if (count > 0) btn.classList.add('active');
+    else btn.classList.remove('active');
+  }
+  const overlay = document.getElementById('standbyOverlay');
+  if (overlay && overlay.style.display === 'flex') {
+    renderStandbyModal();
+  }
+}
+
+window.openStandbyModal = function() {
+  const ctrl = document.getElementById('standbyControlArea');
+  if (ctrl) ctrl.style.display = isReadOnly ? 'none' : 'block';
+  renderStandbyModal();
+  document.getElementById('standbyOverlay').style.display = 'flex';
+};
+
+window.closeStandbyModal = function() {
+  document.getElementById('standbyOverlay').style.display = 'none';
+};
+
+function renderStandbyModal() {
+  const listEl = document.getElementById('standbyBadgeList');
+  const cntEl = document.getElementById('standbyModalCount');
+  if (cntEl) cntEl.textContent = `(${standbyTeams.length}대)`;
+  if (!listEl) return;
+
+  if (standbyTeams.length === 0) {
+    listEl.innerHTML = '<div style="width:100%; text-align:center; color:#94a3b8; font-size:13px; font-weight:600; padding:8px 0;">현재 직전대기 중인 대가 없습니다.</div>';
+    return;
+  }
+
+  listEl.innerHTML = standbyTeams.map((team, idx) => {
+    const { theme, icon, label } = getStandbyBadgeTheme(team);
+    const delBtn = isReadOnly ? '' : `<span onclick="removeStandbyTeam(${idx})" style="margin-left:6px; cursor:pointer; font-weight:900; opacity:0.75; padding:0 2px;" title="대기 해제">✕</span>`;
+    return `<div style="display:inline-flex; align-items:center; background:${theme.bg}; color:${theme.color}; border:1px solid ${theme.border}; font-size:13px; font-weight:800; padding:5px 10px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">${icon} ${label}${delBtn}</div>`;
+  }).join('');
+}
+
+window.addStandbyTeam = function(teamName) {
+  if (isReadOnly) return;
+  const clean = String(teamName || '').trim().toUpperCase();
+  if (!clean) return;
+  if (standbyTeams.includes(clean)) {
+    alert(`이미 직전대기 목록에 [${clean}]가 등록되어 있습니다.`);
+    return;
+  }
+  standbyTeams.push(clean);
+  dbRef.child('standbyTeams').set(standbyTeams);
+  writeLog('직전대기 등록', `${clean} 대기 추가`);
+  updateStandbyUI();
+};
+
+window.addStandbyFromInput = function() {
+  if (isReadOnly) return;
+  const input = document.getElementById('standbyInput');
+  const raw = input.value.trim();
+  if (!raw) return;
+
+  const items = raw.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+  let added = [];
+  items.forEach(item => {
+    if (!standbyTeams.includes(item)) {
+      standbyTeams.push(item);
+      added.push(item);
+    }
+  });
+  input.value = '';
+  if (added.length > 0) {
+    dbRef.child('standbyTeams').set(standbyTeams);
+    writeLog('직전대기 등록', `${added.join(', ')} 대기 추가`);
+    updateStandbyUI();
+  }
+};
+
+window.removeStandbyTeam = function(idx) {
+  if (isReadOnly) return;
+  const removed = standbyTeams[idx];
+  standbyTeams.splice(idx, 1);
+  dbRef.child('standbyTeams').set(standbyTeams);
+  writeLog('직전대기 해제', `${removed} 대기 해제`);
+  updateStandbyUI();
+};
+
+window.clearStandbyTeams = function() {
+  if (isReadOnly || standbyTeams.length === 0) return;
+  if (!confirm('직전대기 목록을 모두 비우시겠습니까?')) return;
+  standbyTeams = [];
+  dbRef.child('standbyTeams').set(standbyTeams);
+  writeLog('직전대기 초기화', '대기 목록 전체 비움');
+  updateStandbyUI();
+};
 </script>
 </body>
 </html>
