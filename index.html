@@ -555,7 +555,7 @@
           <label>4층 표기/제외 옵션</label>
           <select id="skip4Floor">
             <option value="none">기본 (4층 포함)</option>
-            <option value="skip">4층 완전 제외 (건너뛰기)</option>
+            <option value="skip">4층 → 501호~</option>
             <option value="f_floor">4층을 'F층'으로 표기</option>
           </select>
         </div>
@@ -1272,6 +1272,25 @@ const APT_FIRE_ICON_SVG = `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/200
   <path d="M34 15C34 15 27 25 27 33C27 39 31 44 35 44C40 44 44 39 44 33C44 29 41 26 41 26C41 26 41 29 39 31C40 26 38 21 34 15Z" fill="#f59e0b"/>
 </svg>`;
 
+// 🌟 층 이름 → 실제 호수 앞자리 변환 (예: skip 옵션일 때 4층→5, 9층→10)
+function getFloorPrefix(floorStr) {
+  const skipOption = document.getElementById('skip4Floor').value;
+  const num = parseInt(floorStr);
+  if (!isNaN(num) && String(num) === String(floorStr).trim()) {
+    if (skipOption === 'skip' && num >= 4) return String(num + 1);
+    if (skipOption === 'f_floor' && num === 4) return 'F';
+  }
+  return String(floorStr);
+}
+
+// 🌟 호수에서 뒷자리만 정확히 추출 (9층 1001호처럼 자릿수가 달라도 꼬임 방지)
+function getUnitSuffix(uNo, floorStr) {
+  const prefix = getFloorPrefix(floorStr);
+  if (uNo.startsWith(prefix)) return uNo.slice(prefix.length);
+  if (uNo.startsWith(String(floorStr))) return uNo.slice(String(floorStr).length);
+  return uNo;
+}
+
 function generateBoard(){
   if(isReadOnly) return;
   const top = parseInt(document.getElementById('topFloor').value);
@@ -1290,10 +1309,9 @@ function generateBoard(){
   const newFloors = [];
   for(let f = top; f >= bot; f--){
     if(f === 0) continue; // 🌟 0층은 우리나라에 없으므로 자동 건너뛰기 (-1층으로 직행)
-    if(f === 4 && skipOption === 'skip') continue;
     let floorName = String(f);
-    let floorPrefix = String(f);
-    if(f === 4 && skipOption === 'f_floor'){ floorName = 'F'; floorPrefix = 'F'; }
+    if(f === 4 && skipOption === 'f_floor'){ floorName = 'F'; }
+    let floorPrefix = getFloorPrefix(floorName);
 
     const oldFl = oldFloorByName[floorName];
     const oldUnitsByNo = {};
@@ -1329,16 +1347,15 @@ function toggleLayoutLock() {
 // 🌟 1. 위로 층 추가 및 삭제
 function addFloorAbove() {
   if(isReadOnly || floors.length === 0) return;
-  let topNum = parseInt(floors[0].floor);
+  let topNum = floors[0].floor === 'F' ? 4 : parseInt(floors[0].floor);
   let nextNum = topNum + 1;
   if(nextNum === 0) nextNum = 1;
   const skipOption = document.getElementById('skip4Floor').value;
-  if (nextNum === 4 && skipOption === 'skip') nextNum = 5;
   let floorName = String(nextNum);
-  let floorPrefix = floorName;
-  if(nextNum === 4 && skipOption === 'f_floor') { floorName = 'F'; floorPrefix = 'F'; }
+  if(nextNum === 4 && skipOption === 'f_floor') floorName = 'F';
+  let floorPrefix = getFloorPrefix(floorName);
   const suffixSet = new Set();
-  floors[0].units.forEach(u => suffixSet.add(u.no.slice(String(floors[0].floor).length)));
+  floors[0].units.forEach(u => suffixSet.add(getUnitSuffix(u.no, floors[0].floor)));
   const columns = Array.from(suffixSet).sort((a,b)=> a.localeCompare(b, undefined, {numeric:true}));
   floors.unshift({
     floor: floorName, noIssue: false,
@@ -1356,16 +1373,15 @@ function removeFloorAbove() {
 // 🌟 2. 아래(지하) 층 추가 및 삭제
 function addFloorBelow() {
   if(isReadOnly || floors.length === 0) return;
-  let botNum = parseInt(floors[floors.length - 1].floor);
+  let botNum = floors[floors.length - 1].floor === 'F' ? 4 : parseInt(floors[floors.length - 1].floor);
   let nextNum = botNum - 1;
   if(nextNum === 0) nextNum = -1;
   const skipOption = document.getElementById('skip4Floor').value;
-  if (nextNum === 4 && skipOption === 'skip') nextNum = 3;
   let floorName = String(nextNum);
-  let floorPrefix = floorName;
-  if(nextNum === 4 && skipOption === 'f_floor') { floorName = 'F'; floorPrefix = 'F'; }
+  if(nextNum === 4 && skipOption === 'f_floor') floorName = 'F';
+  let floorPrefix = getFloorPrefix(floorName);
   const suffixSet = new Set();
-  floors[0].units.forEach(u => suffixSet.add(u.no.slice(String(floors[0].floor).length)));
+  floors[0].units.forEach(u => suffixSet.add(getUnitSuffix(u.no, floors[0].floor)));
   const columns = Array.from(suffixSet).sort((a,b)=> a.localeCompare(b, undefined, {numeric:true}));
   floors.push({
     floor: floorName, noIssue: false,
@@ -1390,7 +1406,7 @@ function removeFloorBelow() {
 function addUnitColumn() {
   if(isReadOnly || floors.length === 0) return;
   const suffixSet = new Set();
-  floors.forEach(fl => fl.units.forEach(u => suffixSet.add(u.no.slice(String(fl.floor).length))));
+  floors.forEach(fl => fl.units.forEach(u => suffixSet.add(getUnitSuffix(u.no, fl.floor))));
   let maxNum = 0; let suffixLen = 2;
   suffixSet.forEach(suf => {
     const num = parseInt(suf);
@@ -1399,7 +1415,7 @@ function addUnitColumn() {
   });
   const nextSuf = String(maxNum + 1).padStart(suffixLen, '0');
   floors.forEach(fl => {
-    let floorPrefix = String(fl.floor);
+    let floorPrefix = getFloorPrefix(fl.floor);
     fl.units.push({ no: floorPrefix + nextSuf, isLocked: false, clearCount: 0, evacCount: 0, rescueCount: 0, origin: false, spread: false, evacDetails: [], rescueDetails: [] });
   });
   
@@ -1422,7 +1438,8 @@ function removeUnitColumn() {
 function editUnits(floorIdx){
   if(isReadOnly) return;
   const fName = String(floors[floorIdx].floor);
-  const cur = floors[floorIdx].units.map(u=>u.no.slice(fName.length)).join(',');
+  const fPrefix = getFloorPrefix(fName);
+  const cur = floors[floorIdx].units.map(u=>getUnitSuffix(u.no, fName)).join(',');
   const val = prompt(fName+'층 호수(뒤 2자리, 콤마구분) 수정:', cur);
   if(val===null) return;
   
@@ -1434,7 +1451,7 @@ function editUnits(floorIdx){
   
   const oldByNo = {}; floors[floorIdx].units.forEach(u=>oldByNo[u.no]=u);
   floors[floorIdx].units = pattern.map(suf=>{
-    const no = fName + suf;
+    const no = fPrefix + suf;
     return oldByNo[no] || {no, isLocked: false, clearCount: 0, evacCount: 0, rescueCount: 0, origin: false, spread: false, evacDetails: [], rescueDetails: []};
   });
   render();
@@ -1445,15 +1462,18 @@ function editUnits(floorIdx){
 function editFloorName(floorIdx) {
   if (isReadOnly) return;
   const oldName = String(floors[floorIdx].floor);
+  const oldPrefix = getFloorPrefix(oldName);
   const newName = prompt('층 이름을 수정하세요 (예: 옥상, 옥탑, PH, B1):', oldName);
   if (newName === null || newName.trim() === '') return;
 
   floors[floorIdx].floor = newName.trim();
+  const newPrefix = getFloorPrefix(newName.trim());
   
-  // 기존 호수(예: 1501) 앞부분(15)을 새 이름(옥상)으로 자동 교체 (예: 옥상01)
   floors[floorIdx].units.forEach(u => {
-    if (u.no.startsWith(oldName)) {
-      u.no = newName.trim() + u.no.slice(oldName.length);
+    if (u.no.startsWith(oldPrefix)) {
+      u.no = newPrefix + u.no.slice(oldPrefix.length);
+    } else if (u.no.startsWith(oldName)) {
+      u.no = newPrefix + u.no.slice(oldName.length);
     }
   });
   
@@ -1755,7 +1775,7 @@ function render(){
     <div class="stat-card clear" style="cursor:pointer;" onclick="openStatDetail('clear')"><div class="num">${clearTotal}</div><div class="label">자택대기(명)</div></div>
   `;
 
-  function unitSuffix(u, floorName){ return u.no.slice(String(floorName).length); }
+  function unitSuffix(u, floorName){ return getUnitSuffix(u.no, floorName); }
   
   const basePatternRaw = document.getElementById('unitPattern').value.split(',').map(s=>s.trim()).filter(Boolean);
   const basePattern = [];
