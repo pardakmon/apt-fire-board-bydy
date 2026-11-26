@@ -1999,7 +1999,7 @@ const controlsHtml = isReadOnly ? '' : (
   const floorLabel = fl.floor.includes('옥상') || fl.floor.includes('옥탑') ? fl.floor : fl.floor + '층';
   const clickAttr = isReadOnly ? '' : `onclick="editFloorName(${i})" style="cursor:pointer; text-decoration:underline; text-underline-offset:4px;" title="층 이름 변경 (터치)"`;
   
-  html += `<tr><td class="floor-cell"><div ${clickAttr}>${floorLabel}</div>${controlsHtml}</td>`;
+  html += `<tr><td class="floor-cell"><div ${clickAttr}>${floorLabel}</div>${floorTeamsHtml}${controlsHtml}</td>`;
     
   fl.alignedUnits.forEach(u => {
       if(!u){
