@@ -226,8 +226,15 @@
   .floor-controls { display:flex; justify-content:center; flex-wrap:wrap; gap:6px; margin-top:6px; }
   .floor-controls button.small { word-break:keep-all; }
 
+  /* 🌟 층별 투입대 배지 기본 스타일 (PC/가로 화면) */
+  .floor-teams-wrap { display:flex; flex-wrap:wrap; justify-content:center; gap:4px; margin-top:6px; cursor:pointer; }
+  .floor-team-badge { display:inline-block; font-size:11.5px; font-weight:800; padding:2px 6px; border-radius:5px; border:1px solid transparent; white-space:nowrap; line-height:1.3; box-sizing:border-box; }
+
   /* 🌟 오직 '핸드폰 세로' 화면일 때만: 칸 밖으로 삐져나오지 않게 위아래로 쌓기 */
   @media (max-width: 640px) and (orientation: portrait) {
+    td.floor-cell { min-width:68px !important; width:68px !important; padding:8px 4px !important; }
+    .floor-teams-wrap { flex-direction:column; align-items:stretch; gap:3px; margin-top:6px; }
+    .floor-team-badge { width:100%; font-size:10.5px; padding:3px 2px; text-align:center; white-space:normal; word-break:keep-all; }
     .floor-controls { flex-direction:column; align-items:stretch; gap:4px; margin-top:8px; }
     .floor-controls button.small { width:100%; padding:6px 0; font-size:11px; margin:0; }
   }
@@ -575,6 +582,62 @@
 
       <div style="display:flex; justify-content:flex-end; margin-top:10px;">
         <button type="button" class="small danger" onclick="clearStandbyTeams()" style="padding:6px 12px;">대기 전체 비우기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🌟 [추가] 층별 투입 소방대 입력/관리 팝업창 -->
+<div id="floorTeamOverlay" class="overlay" style="display:none; z-index:30000;" onclick="if(event.target===this) closeFloorTeamModal()" data-html2canvas-ignore="true">
+  <div class="modal" style="width:92vw; max-width:420px; padding:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--navy); padding-bottom:10px; margin-bottom:12px;">
+      <h3 id="floorTeamModalTitle" style="margin:0; font-size:16px; color:var(--navy); font-weight:800;">🚒 투입 소방대</h3>
+      <button type="button" class="small secondary" onclick="closeFloorTeamModal()">닫기</button>
+    </div>
+
+    <div id="floorTeamBadgeList" style="min-height:48px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:14px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+    </div>
+
+    <div id="floorTeamControlArea">
+      <div style="display:flex; gap:6px; margin-bottom:10px;">
+        <input type="text" id="floorTeamInput" placeholder="직접 입력 (예: 영등포P, 구로R)" onkeydown="if(event.key==='Enter'){ event.preventDefault(); addFloorTeamFromInput(); }" style="flex:1; padding:8px 10px; font-size:13px;">
+        <button type="button" class="small" onclick="addFloorTeamFromInput()" style="padding:8px 14px; white-space:nowrap;">추가</button>
+      </div>
+
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
+        <div style="font-size:11.5px; color:#64748b; font-weight:700; margin-bottom:8px;">⚡ 원터치 빠른 추가 (터치 시 즉시 투입)</div>
+        <div class="h-scroll" style="margin-bottom:6px;">
+          <div style="flex:0 0 auto; font-size:11px; font-weight:800; color:#0ea5e9; padding-top:5px; margin-right:2px;">진압·구조</div>
+          <button type="button" class="t-btn" onclick="addFloorTeam('영등포P')">영등포P</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('영등포R')">영등포R</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('여의도P')">여의도P</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('당산P')">당산P</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('대림P')">대림P</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('신길P')">신길P</button>
+        </div>
+        <div class="h-scroll" style="margin-bottom:6px;">
+          <div style="flex:0 0 auto; font-size:11px; font-weight:800; color:#16a34a; padding-top:5px; margin-right:2px;">관내구급</div>
+          <button type="button" class="t-btn" onclick="addFloorTeam('영등포1A')">영등포1A</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('영등포2A')">영등포2A</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('여의도1A')">여의도1A</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('당산1A')">당산1A</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('대림1A')">대림1A</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('신길1A')">신길1A</button>
+        </div>
+        <div class="h-scroll">
+          <div style="flex:0 0 auto; font-size:11px; font-weight:800; color:#f59e0b; padding-top:5px; margin-right:2px;">타서지원</div>
+          <button type="button" class="t-btn" onclick="addFloorTeam('구로R')">구로R</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('동작R')">동작R</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('양천R')">양천R</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('마포R')">마포R</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('관악R')">관악R</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('강서R')">강서R</button>
+          <button type="button" class="t-btn" onclick="addFloorTeam('금천R')">금천R</button>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+        <button type="button" class="small danger" onclick="clearFloorTeams()" style="padding:6px 12px;">이 층 투입대 비우기</button>
       </div>
     </div>
   </div>
@@ -1072,6 +1135,9 @@ function captureBoard() {
     mobileStyle = document.createElement('style');
     // 스마트폰 세로 모드의 홀쭉한 CSS를 캡처 중에도 강제로 주입하여 크기가 커지지 않게 꽉 묶어둡니다.
     mobileStyle.innerHTML = `
+      td.floor-cell { min-width: 68px !important; width: 68px !important; padding: 8px 4px !important; }
+      .floor-teams-wrap { flex-direction: column !important; align-items: stretch !important; gap: 3px !important; }
+      .floor-team-badge { width: 100% !important; font-size: 10.5px !important; padding: 3px 2px !important; text-align: center !important; white-space: normal !important; word-break: keep-all !important; }
       td.unit-cell { min-width: 75px !important; padding: 8px 4px !important; }
       .hide-on-portrait { display: inline !important; }
       .tag-clear, .tag-locked, .tag-evac, .tag-rescue, .origin-tag, .spread-tag { white-space: normal !important; word-break: keep-all !important; line-height: 1.3 !important; padding: 4px !important; }
@@ -1387,6 +1453,7 @@ function generateBoard(){
     newFloors.push({
       floor: floorName,
       noIssue: oldFl ? oldFl.noIssue : false,
+      activeTeams: oldFl ? getFloorTeams(oldFl) : [],
       units: pattern.map(suf => {
         const no = floorPrefix + suf;
         return oldUnitsByNo[no] || {
@@ -1581,34 +1648,6 @@ function openEditor(floorIdx, unitIdx){
           <input type="checkbox" id="m_searchCompleted" ${u.isSearchCompleted?'checked':''} style="width:16px; height:16px; accent-color:#16a34a;">✅ 인명검색완료
         </label>
       </div>
-
-      <!-- 🌟 초경량 투입 소방대 입력칸 (가로 스와이프 버튼) -->
-      <style>
-        .h-scroll { display: flex; overflow-x: auto; gap: 6px; padding-bottom: 2px; scrollbar-width: none; -ms-overflow-style: none; }
-        .h-scroll::-webkit-scrollbar { display: none; }
-        .t-btn { flex: 0 0 auto; padding: 5px 12px; font-size: 11.5px; background: #fff; color: #334155; border: 1px solid #cbd5e1; border-radius: 12px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
-      </style>
-      
-      <div class="mrow" style="margin-top:0; margin-bottom:12px; padding:10px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <label style="color:var(--navy); font-size:12px; margin:0; font-weight:800;">🚒 투입/활동 소방대</label>
-          <button type="button" class="small secondary" onclick="document.getElementById('m_activeTeams').value=''" style="padding:2px 8px; font-size:11px; margin:0; border-radius:6px;">지우기</button>
-        </div>
-        <input type="text" id="m_activeTeams" value="${u.activeTeams || ''}" placeholder="직접 입력 (예: □□P, □□R, □□A, □□C)" style="margin-bottom:8px; padding:8px 10px; font-size:13px; height:auto;">
-        
-        <div class="h-scroll" style="margin-bottom: 6px;">
-          <div style="flex:0 0 auto; font-size:11px; font-weight:800; color:#0ea5e9; padding-top:6px; margin-right:2px;">관내</div>
-          ${['영등포P','영등포R','여의도P','당산P','대림P','신길P'].map(t => 
-            `<button type="button" class="t-btn" onclick="let el=document.getElementById('m_activeTeams'); el.value += (el.value?', ':'')+'${t}';">${t}</button>`
-          ).join('')}
-        </div>
-        <div class="h-scroll">
-          <div style="flex:0 0 auto; font-size:11px; font-weight:800; color:#f59e0b; padding-top:6px; margin-right:2px;">타서</div>
-          ${['구로R','동작R','양천R','마포R','관악R','강서R','금천R'].map(t => 
-            `<button type="button" class="t-btn" onclick="let el=document.getElementById('m_activeTeams'); el.value += (el.value?', ':'')+'${t}';">${t}</button>`
-          ).join('')}
-        </div>
-      </div>
       
       <div class="mrow" style="margin-top:0; margin-bottom:10px;">
         <label style="color:var(--clear-bg);">🏠 자택대기 인원</label>
@@ -1719,8 +1758,6 @@ function saveEditor(){
   u.rescueCount = parseInt(document.getElementById('m_rescueCount').value)||0;
   u.origin = document.getElementById('m_origin').checked;
   u.spread = document.getElementById('m_spread').checked;
-
-  u.activeTeams = document.getElementById('m_activeTeams').value.trim();
   
   u.evacDetails = editingEvacDetails.slice();
   u.rescueDetails = editingDetails.slice();
@@ -1937,13 +1974,26 @@ function render(){
 const controlsHtml = isReadOnly ? '' : (
     fl.noIssue 
     ? `<div class="floor-controls">
+         <button type="button" class="small secondary" onclick="openFloorTeamModal(${i})" style="color:#0284c7; font-weight:800;">투입대</button>
          <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">해제</button>
        </div>`
     : `<div class="floor-controls">
+         <button type="button" class="small secondary" onclick="openFloorTeamModal(${i})" style="color:#0284c7; font-weight:800;">투입대</button>
          <button type="button" class="small secondary" onclick="editUnits(${i})">세대수정</button>
          <button type="button" class="small secondary" onclick="toggleNoIssue(${i})">특이없음</button>
        </div>`
   );
+
+  // 🌟 층별 투입 소방대 배지 생성 (배지를 눌러도 바로 수정 팝업 열림)
+  const fTeams = getFloorTeams(fl);
+  let floorTeamsHtml = '';
+  if (fTeams.length > 0) {
+    const badges = fTeams.map(t => {
+      const { theme, icon, label } = getStandbyBadgeTheme(t);
+      return `<div class="floor-team-badge" style="background:${theme.bg}; color:${theme.color}; border-color:${theme.border};">${icon} ${label}</div>`;
+    }).join('');
+    floorTeamsHtml = `<div class="floor-teams-wrap" onclick="openFloorTeamModal(${i})" title="투입대 수정">${badges}</div>`;
+  }
     
   // 🌟 '옥상'이라는 글자가 들어가면 '층' 자를 빼고, 클릭 시 이름 변경(editFloorName) 기능 실행
   const floorLabel = fl.floor.includes('옥상') || fl.floor.includes('옥탑') ? fl.floor : fl.floor + '층';
@@ -1996,42 +2046,6 @@ const controlsHtml = isReadOnly ? '' : (
       let bodyHtml = ''; 
       
       if(u.isSearchCompleted) bodyHtml += `<div style="background:#15803d; color:#fff; font-size:12px; font-weight:800; padding:4px 6px; border-radius:6px; margin-bottom:4px; display:inline-block; border:1px solid #16a34a; box-shadow:0 1px 2px rgba(0,0,0,0.1); white-space:nowrap;">✅ <span class="hide-on-portrait">인명검색완료</span></div><br>`;
-
-// 🌟👇 여기서부터 색상 분류 배지 추가 👇🌟
-      if(u.activeTeams) {
-        // 🌟 핵심: .toUpperCase() 를 추가해서 소문자 p, r 을 입력해도 무조건 대문자 P, R 로 강제 변환합니다!
-        const teams = u.activeTeams.split(',').map(t => t.trim().toUpperCase()).filter(Boolean);
-        
-        teams.forEach(t => {
-          let hash = 0;
-          for (let k = 0; k < t.length; k++) hash = (hash * 31) + t.charCodeAt(k);
-          hash = Math.abs(hash);
-
-          let theme = { bg: '#f1f5f9', color: '#475569', border: '#cbd5e1' }; let icon = '🚒';
-          
-          // 이제 글자가 전부 대문자로 변환되었으므로, 그냥 'R', 'P' 만 찾아도 완벽하게 작동합니다.
-          if(t.includes('구조') || t.includes('R') || t.includes('RESCUE')) { 
-            const p = [ {bg:'#fff1f2', color:'#e11d48', border:'#fda4af'}, {bg:'#fdf4ff', color:'#c026d3', border:'#f0abfc'}, {bg:'#fff7ed', color:'#ea580c', border:'#fdba74'}, {bg:'#faf5ff', color:'#9333ea', border:'#d8b4fe'}, {bg:'#fff1f2', color:'#be123c', border:'#fecdd3'}, {bg:'#fef2f2', color:'#991b1b', border:'#fca5a5'}, {bg:'#fffbeb', color:'#d97706', border:'#fde68a'}, {bg:'#f5f3ff', color:'#7c3aed', border:'#c4b5fd'}, {bg:'#ffe4e6', color:'#f43f5e', border:'#fecdd3'}, {bg:'#ffedd5', color:'#f97316', border:'#fed7aa'} ];
-            theme = p[hash % p.length]; icon = '🪓'; 
-          }
-          else if(t.includes('구급') || t.includes('A') || t.includes('AMBU')) { 
-            const p = [ {bg:'#f0fdf4', color:'#16a34a', border:'#86efac'}, {bg:'#ecfdf5', color:'#0d9488', border:'#5eead4'}, {bg:'#f7fee7', color:'#65a30d', border:'#bef264'}, {bg:'#f0fdf4', color:'#15803d', border:'#86efac'} ];
-            theme = p[hash % p.length]; icon = '🚑'; 
-          }
-          else if(t.includes('지휘') || t.includes('조사') || t.includes('C')) { 
-            const p = [{bg:'#fefce8', color:'#ca8a04', border:'#fef08a'}, {bg:'#fffbeb', color:'#d97706', border:'#fde68a'}];
-            theme = p[hash % p.length]; icon = '📋'; 
-          }
-          else if(t.includes('펌프') || t.includes('진압') || t.includes('탱크') || t.includes('화학') || t.includes('고가') || t.includes('굴절') || t.includes('P')) { 
-            const p = [ {bg:'#eff6ff', color:'#2563eb', border:'#bfdbfe'}, {bg:'#eef2ff', color:'#4f46e5', border:'#c7d2fe'}, {bg:'#f0f9ff', color:'#0284c7', border:'#7dd3fc'}, {bg:'#f5f3ff', color:'#7c3aed', border:'#c4b5fd'}, {bg:'#ecfeff', color:'#0891b2', border:'#a5f3fc'}, {bg:'#f8fafc', color:'#0f172a', border:'#cbd5e1'}, {bg:'#e0f2fe', color:'#0369a1', border:'#bae6fd'}, {bg:'#ede9fe', color:'#6d28d9', border:'#ddd6fe'} ];
-            theme = p[hash % p.length]; icon = '🚒'; 
-          }
-          // 변환된 대문자 이름(t)이 예쁘게 현황판 배지에 찍힙니다.
-          bodyHtml += `<div style="display:inline-block; background:${theme.bg}; color:${theme.color}; border:1px solid ${theme.border}; font-size:13px; font-weight:800; padding:3px 6px; border-radius:6px; margin-right:4px; margin-bottom:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05); white-space:nowrap;">${icon} ${t}</div>`;
-        });
-        bodyHtml += `<br>`;
-      }
-      // 🌟👆 여기까지 👆🌟
     
       if(isClearActive) bodyHtml += `<div class="tag-clear">🏠 <span class="hide-on-portrait">자택대기 </span>${cc}명</div>`;
       if(u.isLocked) bodyHtml += `<div class="tag-locked">🔒 <span class="hide-on-portrait">문잠김</span></div>`;
@@ -2696,6 +2710,124 @@ window.clearStandbyTeams = function() {
   dbRef.child('standbyTeams').set(standbyTeams);
   writeLog('직전대기 초기화', '대기 목록 전체 비움');
   updateStandbyUI();
+};
+
+// ==========================================
+// 🌟 [추가] 층별 투입 소방대 팝업 조회·추가·삭제 로직
+// ==========================================
+let currentFloorTeamIdx = null;
+
+function getFloorTeams(fl) {
+  if (!fl || !fl.activeTeams) return [];
+  if (Array.isArray(fl.activeTeams)) return fl.activeTeams;
+  if (typeof fl.activeTeams === 'string') {
+    return fl.activeTeams.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+  }
+  return Object.values(fl.activeTeams);
+}
+
+window.openFloorTeamModal = function(floorIdx) {
+  currentFloorTeamIdx = floorIdx;
+  const fl = floors[floorIdx];
+  if (!fl) return;
+
+  const floorLabel = fl.floor.includes('옥상') || fl.floor.includes('옥탑') ? fl.floor : fl.floor + '층';
+  document.getElementById('floorTeamModalTitle').textContent = `🚒 ${floorLabel} 투입 소방대`;
+
+  const ctrl = document.getElementById('floorTeamControlArea');
+  if (ctrl) ctrl.style.display = isReadOnly ? 'none' : 'block';
+
+  renderFloorTeamModal();
+  document.getElementById('floorTeamOverlay').style.display = 'flex';
+};
+
+window.closeFloorTeamModal = function() {
+  document.getElementById('floorTeamOverlay').style.display = 'none';
+  currentFloorTeamIdx = null;
+};
+
+function renderFloorTeamModal() {
+  if (currentFloorTeamIdx === null || !floors[currentFloorTeamIdx]) return;
+  const listEl = document.getElementById('floorTeamBadgeList');
+  if (!listEl) return;
+
+  const teams = getFloorTeams(floors[currentFloorTeamIdx]);
+  if (teams.length === 0) {
+    listEl.innerHTML = '<div style="width:100%; text-align:center; color:#94a3b8; font-size:13px; font-weight:600; padding:8px 0;">이 층에 등록된 투입 소방대가 없습니다.</div>';
+    return;
+  }
+
+  listEl.innerHTML = teams.map((team, idx) => {
+    const { theme, icon, label } = getStandbyBadgeTheme(team);
+    const delBtn = isReadOnly ? '' : `<span onclick="removeFloorTeam(${idx})" style="margin-left:6px; cursor:pointer; font-weight:900; opacity:0.75; padding:0 2px;" title="투입 해제">✕</span>`;
+    return `<div style="display:inline-flex; align-items:center; background:${theme.bg}; color:${theme.color}; border:1px solid ${theme.border}; font-size:13px; font-weight:800; padding:5px 10px; border-radius:8px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">${icon} ${label}${delBtn}</div>`;
+  }).join('');
+}
+
+function saveFloorTeams(floorIdx, teams) {
+  floors[floorIdx].activeTeams = teams;
+  dbRef.child('floors/' + floorIdx + '/activeTeams').set(teams);
+  render();
+  renderFloorTeamModal();
+}
+
+window.addFloorTeam = function(teamName) {
+  if (isReadOnly || currentFloorTeamIdx === null) return;
+  const clean = String(teamName || '').trim().toUpperCase();
+  if (!clean) return;
+
+  const teams = getFloorTeams(floors[currentFloorTeamIdx]).slice();
+  if (teams.includes(clean)) {
+    alert(`이미 이 층에 [${clean}]가 등록되어 있습니다.`);
+    return;
+  }
+  teams.push(clean);
+  const flName = floors[currentFloorTeamIdx].floor;
+  saveFloorTeams(currentFloorTeamIdx, teams);
+  writeLog('층별 투입대 등록', `${flName}층 — ${clean} 투입`);
+};
+
+window.addFloorTeamFromInput = function() {
+  if (isReadOnly || currentFloorTeamIdx === null) return;
+  const input = document.getElementById('floorTeamInput');
+  const raw = input.value.trim();
+  if (!raw) return;
+
+  const teams = getFloorTeams(floors[currentFloorTeamIdx]).slice();
+  const items = raw.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+  let added = [];
+  items.forEach(item => {
+    if (!teams.includes(item)) {
+      teams.push(item);
+      added.push(item);
+    }
+  });
+  input.value = '';
+  if (added.length > 0) {
+    const flName = floors[currentFloorTeamIdx].floor;
+    saveFloorTeams(currentFloorTeamIdx, teams);
+    writeLog('층별 투입대 등록', `${flName}층 — ${added.join(', ')} 투입`);
+  }
+};
+
+window.removeFloorTeam = function(idx) {
+  if (isReadOnly || currentFloorTeamIdx === null) return;
+  const teams = getFloorTeams(floors[currentFloorTeamIdx]).slice();
+  const removed = teams[idx];
+  teams.splice(idx, 1);
+  const flName = floors[currentFloorTeamIdx].floor;
+  saveFloorTeams(currentFloorTeamIdx, teams);
+  writeLog('층별 투입대 해제', `${flName}층 — ${removed} 철수/해제`);
+};
+
+window.clearFloorTeams = function() {
+  if (isReadOnly || currentFloorTeamIdx === null) return;
+  const teams = getFloorTeams(floors[currentFloorTeamIdx]);
+  if (teams.length === 0) return;
+  if (!confirm('이 층의 투입 소방대를 모두 비우시겠습니까?')) return;
+  const flName = floors[currentFloorTeamIdx].floor;
+  saveFloorTeams(currentFloorTeamIdx, []);
+  writeLog('층별 투입대 초기화', `${flName}층 투입대 전체 비움`);
 };
 </script>
 </body>
